@@ -25,6 +25,7 @@ import { mapIntakeToFormFields } from "@/lib/profileMapper";
 import { fillPdf } from "@/lib/pdfFill";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnedDeal } from "@/lib/supabase/getOwnedDeal";
+import { logError } from "@/lib/logger";
 
 const TEMPLATES_DIR = path.join(process.cwd(), "forms", "blank_templates");
 
@@ -58,6 +59,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ dea
     .eq("deal_id", dealId)
     .maybeSingle();
   if (intakeErr) {
+    logError({ route: "generate", userId: user.id, dealId }, intakeErr);
     return NextResponse.json({ error: intakeErr.message }, { status: 500 });
   }
   if (!intakeRow) {
@@ -97,6 +99,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ dea
       results.push({ form: formId, downloadUrl: `/api/deals/${dealId}/download/${formId}` });
     }
   } catch (err) {
+    logError({ route: "generate", userId: user.id, dealId, selectedForms }, err);
     return NextResponse.json({ error: err instanceof Error ? err.message : "Failed to generate PDF" }, { status: 500 });
   }
 

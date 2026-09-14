@@ -39,6 +39,7 @@ import { claudeExtractWithTool } from "@/lib/claude";
 import { splitFullName } from "@/lib/splitFullName";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { logError } from "@/lib/logger";
 import type Anthropic from "@anthropic-ai/sdk";
 
 const SYSTEM_PROMPT = `You are extracting structured data from a real-estate listing export (e.g. a REALM/MLS printout) for an Ontario rental deal. Accuracy matters more than completeness — this feeds real legal/transactional forms.
@@ -234,6 +235,7 @@ export async function POST(request: Request) {
   }
 
   if (!result) {
+    logError({ route: "extract-listing", userId: user.id }, lastErr);
     return NextResponse.json(
       { error: lastErr instanceof Error ? lastErr.message : "Extraction failed (is ANTHROPIC_API_KEY set?)" },
       { status: 502 }

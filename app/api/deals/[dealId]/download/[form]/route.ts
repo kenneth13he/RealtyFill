@@ -14,6 +14,7 @@ import { NextResponse } from "next/server";
 import { ALL_FORM_IDS, FORM_LABELS, FormId } from "@/lib/schemas";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnedDeal } from "@/lib/supabase/getOwnedDeal";
+import { logError } from "@/lib/logger";
 
 export async function GET(request: Request, { params }: { params: Promise<{ dealId: string; form: string }> }) {
   const { dealId, form } = await params;
@@ -50,6 +51,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ deal
     .from("generated-forms")
     .createSignedUrl(row.storage_path, 60, isInline ? undefined : { download: `${FORM_LABELS[form as FormId].split(" — ")[0]}.pdf` });
   if (signErr || !signed) {
+    logError({ route: "download", userId: user.id, dealId, form }, signErr ?? new Error("createSignedUrl returned no data"));
     return NextResponse.json({ error: signErr?.message ?? "Failed to sign download URL" }, { status: 500 });
   }
 
