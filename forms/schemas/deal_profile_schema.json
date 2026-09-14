@@ -1,0 +1,117 @@
+{
+  "_comment": "Shared 'Property Profile' fields that repeat across two or more of the five forms. Each profile field lists the target field_id in every form it maps to. Built by cross-referencing each form's raw schema (forms/schemas/*_raw.json) against real filled values (field-name semantics only — no PII stored here).",
+
+  "tenant1_full_name": {
+    "2229e": ["txtbuyer1FName", "txtbuyer1LName"],
+    "form_400": ["txtbuyer1"],
+    "form_410": ["txtbuyer1", "txtbuyersig1"],
+    "form_324": ["txtbuyer1", "txtbuyersig1"],
+    "form_372": ["txtbuyer1", "txtbuyersig1"]
+  },
+  "tenant2_full_name": {
+    "2229e": ["txtbuyer2FName", "txtbuyer2LName"],
+    "form_400": ["txtbuyer2"],
+    "form_410": ["txtbuyer2", "txtbuyersig2"],
+    "form_324": ["txtbuyer2", "txtbuyersig2"],
+    "form_372": ["txtbuyer2", "txtbuyersig2"]
+  },
+  "landlord_full_name": {
+    "2229e": ["txtseller1", "txtRentPayable", "txtsellersig1"],
+    "form_400": ["txtseller1", "txtsellersig1"],
+    "form_324": ["txtseller1", "txtsellersig1"]
+  },
+
+  "property_street_number": {
+    "2229e": ["txtp_streetnum"],
+    "form_400": ["txtp_streetnum"],
+    "form_410": ["txtp_streetnum"],
+    "form_324": ["txtp_streetnum"]
+  },
+  "property_street_name": {
+    "2229e": ["txtp_street"],
+    "form_400": ["txtp_street"],
+    "form_410": ["txtp_street"],
+    "form_324": ["txtp_street"]
+  },
+  "property_unit_number": {
+    "2229e": ["txtp_unitNumber"],
+    "form_400": ["txtp_UnitNumber"],
+    "form_410": ["txtp_UnitNumber"],
+    "form_324": ["txtp_UnitNumber"]
+  },
+  "property_city": {
+    "2229e": ["txtp_city"],
+    "form_400": ["txtp_city"],
+    "form_410": ["txtp_city"],
+    "form_324": ["txtp_city"]
+  },
+  "property_province": {
+    "form_400": ["txtp_state"],
+    "form_324": ["txtp_state"]
+  },
+  "property_postal_code": {
+    "2229e": ["txtp_zipcode"],
+    "form_400": ["txtp_zipcode"],
+    "form_410": ["txtp_zipcode"],
+    "form_324": ["txtp_zipcode"]
+  },
+  "property_is_condo": {
+    "_note": "2229e only field with a direct Yes/No radio; other forms don't ask this directly.",
+    "2229e": ["chkOpt_Condo"]
+  },
+
+  "monthly_rent_amount": {
+    "2229e": ["txtp_MonthlyRentAmount", "txtRentTotal"],
+    "form_400": ["txtp_price", "txtp_rentwords"],
+    "form_410": ["txtrent"]
+  },
+  "rent_due_day": {
+    "2229e": ["txtRentPaidOn"],
+    "form_400": ["txtRentAdvanceDay"],
+    "form_410": ["txtdueday"]
+  },
+
+  "lease_term": {
+    "_note": "2229e wants explicit start/end dates; form_400 wants a term description string (e.g. '1 year') plus a commencing date.",
+    "2229e": ["txtLeaseStartDate", "txtLeaseEndDate"],
+    "form_400": ["txttermof", "txtp_closedate_mmmm", "txtp_closedate_d", "txtp_closedate_yyyy"]
+  },
+
+  "listing_brokerage_name": {
+    "form_400": ["txtl_broker"],
+    "form_324": ["txtl_broker"]
+  },
+  "listing_brokerage_agent_name": {
+    "form_400": ["txtl_brkagent"],
+    "form_324": ["txtl_brkagent"]
+  },
+  "listing_brokerage_phone": {
+    "form_400": ["txtl_brkphone"],
+    "form_324": ["txtl_brkphone"]
+  },
+  "coop_tenant_brokerage_name": {
+    "form_400": ["txts_broker"],
+    "form_324": ["txts_broker"],
+    "form_372": ["txts_broker"]
+  },
+  "coop_tenant_brokerage_agent_name": {
+    "form_400": ["txts_brkagent"],
+    "form_324": ["txts_brkagent"],
+    "form_372": ["txts_brkagentsig", "txts_brkname"]
+  },
+  "coop_tenant_brokerage_phone": {
+    "form_400": ["txts_brkphone"],
+    "form_324": ["txts_brkphone"],
+    "form_372": ["txts_brkphone"]
+  },
+  "coop_tenant_brokerage_address": {
+    "form_324": ["txts_brkaddr", "txts_brkcity", "txts_brkstate", "txts_brkzipcode"],
+    "form_372": ["txts_brkaddr", "txts_brkcity", "txts_brkstate", "txts_brkzipcode"]
+  },
+
+  "commission_amount_or_terms": {
+    "_note": "Same commercial deal term (e.g. 'Half Month Rent + HST'), phrased slightly differently per form's field.",
+    "form_324": ["txtp_bal2ndMortgage"],
+    "form_372": ["txtPaidComm1"]
+  }
+}
