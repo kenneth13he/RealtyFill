@@ -1,0 +1,147 @@
+{
+  "_comment": "The structured Deal Intake Form the realtor fills in once. Groups map to UI sections. Each field lists which form(s)/field_id(s) it feeds — 'profile' means it's also in deal_profile_schema.json (shared across forms), 'form_specific' means it only appears on one form. Radio/checkbox 'options' give the value code to write for the fill pipeline (reverse-engineered from real filled PDFs, order = order of appearance in the form, not guaranteed Yes-first).",
+
+  "groups": [
+    {
+      "group": "parties",
+      "label": "Parties",
+      "fields": [
+        { "key": "tenant1_first_name", "label": "Tenant 1 — First Name", "type": "text", "profile": "tenant1_full_name", "targets": { "2229e": ["txtbuyer1FName"] } },
+        { "key": "tenant1_last_name", "label": "Tenant 1 — Last Name", "type": "text", "profile": "tenant1_full_name", "targets": { "2229e": ["txtbuyer1LName"] } },
+        { "key": "tenant1_full_name", "label": "Tenant 1 — Full Name", "type": "text", "profile": "tenant1_full_name", "targets": { "form_400": ["txtbuyer1"], "form_410": ["txtbuyer1", "txtbuyersig1"], "form_324": ["txtbuyer1", "txtbuyersig1"], "form_372": ["txtbuyer1", "txtbuyersig1"] } },
+        { "key": "tenant2_first_name", "label": "Tenant 2 — First Name (optional)", "type": "text", "profile": "tenant2_full_name", "targets": { "2229e": ["txtbuyer2FName"] } },
+        { "key": "tenant2_last_name", "label": "Tenant 2 — Last Name (optional)", "type": "text", "profile": "tenant2_full_name", "targets": { "2229e": ["txtbuyer2LName"] } },
+        { "key": "tenant2_full_name", "label": "Tenant 2 — Full Name (optional)", "type": "text", "profile": "tenant2_full_name", "targets": { "form_400": ["txtbuyer2"], "form_410": ["txtbuyer2", "txtbuyersig2"], "form_324": ["txtbuyer2", "txtbuyersig2"], "form_372": ["txtbuyer2", "txtbuyersig2"] } },
+        { "key": "landlord_full_name", "label": "Landlord — Full Legal Name", "type": "text", "profile": "landlord_full_name", "targets": { "2229e": ["txtseller1", "txtRentPayable", "txtsellersig1"], "form_400": ["txtseller1", "txtsellersig1"], "form_324": ["txtseller1", "txtsellersig1"] } },
+        { "key": "guarantor_name", "label": "Guarantor Name (optional)", "type": "text", "form_specific": "form_400", "targets": { "form_400": ["txtguarsig"] } }
+      ]
+    },
+    {
+      "group": "property",
+      "label": "Property",
+      "note": "Can be pre-filled from a pasted REALM listing export — realtor should still confirm each value, especially the known traps flagged below.",
+      "fields": [
+        { "key": "property_street_number", "label": "Street Number", "type": "text", "profile": "property_street_number", "targets": { "2229e": ["txtp_streetnum"], "form_400": ["txtp_streetnum"], "form_410": ["txtp_streetnum"], "form_324": ["txtp_streetnum"] } },
+        { "key": "property_street_name", "label": "Street Name", "type": "text", "profile": "property_street_name", "targets": { "2229e": ["txtp_street"], "form_400": ["txtp_street"], "form_410": ["txtp_street"], "form_324": ["txtp_street"] } },
+        { "key": "property_unit_number", "label": "Unit Number", "type": "text", "profile": "property_unit_number", "targets": { "2229e": ["txtp_unitNumber"], "form_400": ["txtp_UnitNumber"], "form_410": ["txtp_UnitNumber"], "form_324": ["txtp_UnitNumber"] } },
+        { "key": "property_city", "label": "City / Municipality", "type": "text", "profile": "property_city", "targets": { "2229e": ["txtp_city"], "form_400": ["txtp_city"], "form_410": ["txtp_city"], "form_324": ["txtp_city"] } },
+        { "key": "property_province", "label": "Province", "type": "text", "default": "Ontario", "profile": "property_province", "targets": { "form_400": ["txtp_state"], "form_324": ["txtp_state"] } },
+        { "key": "property_postal_code", "label": "Postal Code", "type": "text", "profile": "property_postal_code", "targets": { "2229e": ["txtp_zipcode"], "form_400": ["txtp_zipcode"], "form_410": ["txtp_zipcode"], "form_324": ["txtp_zipcode"] } },
+        { "key": "property_is_condo", "label": "Is this unit in a condominium?", "type": "radio", "options": [ { "value": "/1", "label": "Yes" }, { "value": "/2", "label": "No" } ], "profile": "property_is_condo", "targets": { "2229e": ["chkOpt_Condo"] } },
+        { "key": "property_parking_info", "label": "Parking spaces & description (optional)", "type": "text", "targets": { "2229e": ["txtParkingInfo"], "form_400": ["txtp_ParkingSpaces"] } }
+      ]
+    },
+    {
+      "group": "rent_and_deposits",
+      "label": "Rent & Deposits",
+      "fields": [
+        { "key": "monthly_rent_amount", "label": "Monthly Rent ($)", "type": "currency", "profile": "monthly_rent_amount", "targets": { "2229e": ["txtp_MonthlyRentAmount", "txtRentTotal"], "form_400": ["txtp_price"], "form_410": ["txtrent"] } },
+        { "key": "monthly_rent_words", "label": "Monthly Rent (in words — auto-derivable from amount)", "type": "text", "derived_from": "monthly_rent_amount", "targets": { "form_400": ["txtp_rentwords"] } },
+        { "key": "rent_due_day", "label": "Rent Due Day (e.g. 1st)", "type": "text", "profile": "rent_due_day", "targets": { "2229e": ["txtRentPaidOn"], "form_400": ["txtRentAdvanceDay"], "form_410": ["txtdueday"] } },
+        { "key": "rent_payment_method", "label": "How will rent be paid?", "type": "text", "targets": { "2229e": ["txtRentMethod"] } },
+        { "key": "rent_deposit_required", "label": "Is a rent deposit required?", "type": "radio", "options": [ { "value": "/1", "label": "No deposit required" }, { "value": "/2", "label": "Deposit required (enter amount below)" } ], "targets": { "2229e": ["chkOpt_RentDeposit"] } },
+        { "key": "rent_deposit_amount", "label": "Rent Deposit Amount ($)", "type": "currency", "condition": "rent_deposit_required == '/2'", "targets": { "2229e": ["txtrentDeposit"] } },
+        { "key": "key_deposit_required", "label": "Is a key deposit required?", "type": "radio", "options": [ { "value": "/1", "label": "No key deposit required" }, { "value": "/2", "label": "Key deposit required (enter amount + details below)" } ], "targets": { "2229e": ["chkOpt_KeyDeposit"] } },
+        { "key": "key_deposit_amount", "label": "Key Deposit Amount ($)", "type": "currency", "condition": "key_deposit_required == '/2'", "targets": { "2229e": ["txtKeyDeposit"] } },
+        { "key": "key_deposit_details", "label": "Key/fob/access card details (e.g. '2 keys, 2 mailbox keys, 2 fobs')", "type": "text", "condition": "key_deposit_required == '/2'", "targets": { "2229e": ["txtKeyDepositAddDetails"] } },
+        { "key": "deposit_holder", "label": "Deposit Holder (usually the brokerage)", "type": "text", "targets": { "form_400": ["txtpayableto"] } },
+        { "key": "deposit_amount_400", "label": "Deposit Amount for Agreement to Lease ($)", "type": "currency", "targets": { "form_400": ["txtp_Deposit", "txtp_depo_writ"] } }
+      ]
+    },
+    {
+      "group": "term_and_conditions",
+      "label": "Lease Term & Conditions",
+      "fields": [
+        { "key": "lease_start_date", "label": "Lease Start Date", "type": "date", "profile": "lease_term", "targets": { "2229e": ["txtLeaseStartDate"], "form_400": ["txtp_closedate_mmmm", "txtp_closedate_d", "txtp_closedate_yyyy"] } },
+        { "key": "lease_end_date", "label": "Lease End Date (if fixed term)", "type": "date", "profile": "lease_term", "targets": { "2229e": ["txtLeaseEndDate"] } },
+        { "key": "lease_term_description", "label": "Term Description (e.g. '1 year')", "type": "text", "profile": "lease_term", "targets": { "form_400": ["txttermof"] } },
+        { "key": "tenancy_type", "label": "Tenancy Type", "type": "radio", "options": [ { "value": "/1", "label": "Fixed length" }, { "value": "/2", "label": "Monthly" }, { "value": "/3", "label": "Other" } ], "targets": { "2229e": ["chkOpt_Tenancy"] } },
+        { "key": "smoking_allowed", "label": "Smoking Rules", "type": "radio", "options": [ { "value": "/1", "label": "None (no additional rules)" }, { "value": "/2", "label": "Smoking rules apply (enter details below)" } ], "targets": { "2229e": ["chkOpt_Smoking"] } },
+        { "key": "smoking_rules_details", "label": "Smoking Rules Details", "type": "text", "condition": "smoking_allowed == '/2'", "targets": { "2229e": ["txtSmokingAddDetails"] } },
+        { "key": "tenant_insurance_required", "label": "Tenant Insurance", "type": "radio", "options": [ { "value": "/1", "label": "No insurance requirement" }, { "value": "/2", "label": "Tenant must have liability insurance" } ], "targets": { "2229e": ["chkOpt_Insurance"] } },
+        { "key": "additional_terms_attached", "label": "Are there additional terms (Schedule A)?", "type": "radio", "options": [ { "value": "/1", "label": "No additional terms" }, { "value": "/2", "label": "Yes — attached as Schedule A" } ], "targets": { "2229e": ["chkOpt_Terms"] } },
+        { "key": "additional_terms_text", "label": "Additional Terms Text (Schedule A)", "type": "long_text", "condition": "additional_terms_attached == '/2'", "targets": { "form_400": ["txtAddSchedule", "txtAddSchedule2"] } },
+        { "key": "premises_use", "label": "Premises to be used only for", "type": "text", "default": "Residence", "targets": { "form_400": ["txtUseDesc"] } }
+      ]
+    },
+    {
+      "group": "utilities_and_services",
+      "label": "Utilities & Included Services",
+      "note": "TRAP (from real ground-truth comparison): a listing's 'Heating Source: Gas' does NOT mean gas is included in rent, and a unit having central A/C or ensuite laundry does NOT mean it's an included service — these must be answered from the actual deal terms, never copied 1:1 from listing features.",
+      "fields": [
+        { "key": "gas_included", "label": "Is gas included in rent?", "type": "radio", "options": [ { "value": "/1", "label": "Yes" }, { "value": "/2", "label": "No" } ], "targets": { "2229e": ["chkOpt_Gas"] } },
+        { "key": "ac_included", "label": "Is air conditioning included in rent?", "type": "radio", "options": [ { "value": "/1", "label": "Yes" }, { "value": "/2", "label": "No" } ], "targets": { "2229e": ["chkOpt_AC"] } },
+        { "key": "onsite_laundry", "label": "On-Site Laundry", "type": "radio", "options": [ { "value": "/1", "label": "Yes, included" }, { "value": "/2", "label": "No" }, { "value": "/3", "label": "No charge" }, { "value": "/4", "label": "Pay per use" } ], "targets": { "2229e": ["chkOpt_OnSiteLaund"] } },
+        { "key": "guest_parking", "label": "Guest Parking", "type": "radio", "options": [ { "value": "/1", "label": "Yes, included" }, { "value": "/2", "label": "No" }, { "value": "/3", "label": "No charge" }, { "value": "/4", "label": "Pay per use" } ], "targets": { "2229e": ["chkOpt_GuestPark"] } },
+        { "key": "electricity_responsibility", "label": "Electricity paid by", "type": "radio", "options": [ { "value": "/1", "label": "Landlord" }, { "value": "/2", "label": "Tenant" } ], "targets": { "2229e": ["chkOpt_Elec"], "form_400": ["chkOpt_elec_l"] } },
+        { "key": "heat_responsibility", "label": "Heat paid by", "type": "radio", "options": [ { "value": "/1", "label": "Landlord" }, { "value": "/2", "label": "Tenant" } ], "targets": { "2229e": ["chkOpt_Heat"] } },
+        { "key": "water_responsibility", "label": "Water paid by", "type": "radio", "options": [ { "value": "/1", "label": "Landlord" }, { "value": "/2", "label": "Tenant" } ], "targets": { "2229e": ["chkOpt_Water"], "form_400": ["chkOpt_sewage_l"] } },
+        { "key": "utility_arrangement_details", "label": "Utility arrangement details (if tenant responsible)", "type": "text", "targets": { "2229e": ["txtUtilAddDetails", "txtUtilAddDetails2"] } }
+      ]
+    },
+    {
+      "group": "brokerage",
+      "label": "Brokerage & Representation",
+      "fields": [
+        { "key": "listing_brokerage_name", "label": "Listing (Landlord) Brokerage Name", "type": "text", "profile": "listing_brokerage_name", "targets": { "form_400": ["txtl_broker"], "form_324": ["txtl_broker"] } },
+        { "key": "listing_brokerage_agent_name", "label": "Listing Brokerage Agent Name", "type": "text", "profile": "listing_brokerage_agent_name", "targets": { "form_400": ["txtl_brkagent"], "form_324": ["txtl_brkagent"] } },
+        { "key": "listing_brokerage_phone", "label": "Listing Brokerage Phone", "type": "text", "profile": "listing_brokerage_phone", "targets": { "form_400": ["txtl_brkphone"], "form_324": ["txtl_brkphone"] } },
+        { "key": "coop_brokerage_name", "label": "Co-op / Tenant Brokerage Name", "type": "text", "profile": "coop_tenant_brokerage_name", "targets": { "form_400": ["txts_broker"], "form_324": ["txts_broker"], "form_372": ["txts_broker"] } },
+        { "key": "coop_brokerage_agent_name", "label": "Co-op / Tenant Brokerage Agent Name", "type": "text", "profile": "coop_tenant_brokerage_agent_name", "targets": { "form_400": ["txts_brkagent"], "form_324": ["txts_brkagent"], "form_372": ["txts_brkagentsig", "txts_brkname"] } },
+        { "key": "coop_brokerage_phone", "label": "Co-op / Tenant Brokerage Phone", "type": "text", "profile": "coop_tenant_brokerage_phone", "targets": { "form_400": ["txts_brkphone"], "form_324": ["txts_brkphone"], "form_372": ["txts_brkphone"] } },
+        { "key": "coop_brokerage_address", "label": "Co-op / Tenant Brokerage Address", "type": "text", "profile": "coop_tenant_brokerage_address", "targets": { "form_324": ["txts_brkaddr", "txts_brkcity", "txts_brkstate", "txts_brkzipcode"], "form_372": ["txts_brkaddr", "txts_brkcity", "txts_brkstate", "txts_brkzipcode"] } },
+        { "key": "commission_terms", "label": "Commission Amount / Terms (e.g. 'Half Month Rent + HST')", "type": "text", "profile": "commission_amount_or_terms", "targets": { "form_324": ["txtp_bal2ndMortgage"], "form_372": ["txtPaidComm1"] } },
+        { "key": "holdover_days", "label": "Holdover Period (days)", "type": "number", "targets": { "form_372": ["txtAgreeDays"] } }
+      ]
+    },
+    {
+      "group": "form_324_representation",
+      "label": "Confirmation of Co-operation & Representation (Form 324 only)",
+      "form_specific": "form_324",
+      "note": "These are independent checkboxes (not mutually exclusive radios) — realtor selects whichever representation scenarios actually apply.",
+      "fields": [
+        { "key": "landlord_single_representation", "label": "Landlord Brokerage represents Landlord only (single representation)", "type": "checkbox", "targets": { "form_324": ["chkOpt_ListBrok1"] } },
+        { "key": "landlord_brokerage_assists_selfrep_tenant", "label": "Landlord Brokerage is assisting a self-represented Tenant", "type": "checkbox", "targets": { "form_324": ["chkOpt_ListBrok2"] } },
+        { "key": "multiple_representation_designated", "label": "Multiple representation via designated representatives", "type": "checkbox", "targets": { "form_324": ["chkOpt_MultiDesign"] } },
+        { "key": "coop_brokerage_represents_tenant", "label": "Co-operating Brokerage represents the Tenant", "type": "checkbox", "targets": { "form_324": ["chkOpt_MultiRep1a"] } },
+        { "key": "coop_commission_paid_by_landlord_brokerage", "label": "Landlord Brokerage pays Co-operating Brokerage per MLS commission", "type": "checkbox", "targets": { "form_324": ["chkOpt_CoOp2"] } }
+      ]
+    },
+    {
+      "group": "form_372_authority",
+      "label": "Tenant Designated Representation Agreement (Form 372 only)",
+      "form_specific": "form_372",
+      "fields": [
+        { "key": "authority_start_date", "label": "Authority Start Date/Time", "type": "text", "targets": { "form_372": ["txtp_listdate_d", "txtp_listdate_mmmm", "txtp_listdate_yy", "txtp_exec_t"] } },
+        { "key": "authority_expiry_date", "label": "Authority Expiry Date", "type": "text", "targets": { "form_372": ["txtp_expiredate_d", "txtp_expiredate_mmmm", "txtp_expiredate_yy"] } },
+        { "key": "property_type_use", "label": "Property Type/Use being sought", "type": "text", "targets": { "form_372": ["txtp_type"] } },
+        { "key": "geographic_location", "label": "Geographic Location being searched", "type": "text", "targets": { "form_372": ["txtp_location"] } },
+        { "key": "designated_representative_name", "label": "Designated Representative Name", "type": "text", "targets": { "form_372": ["txtDesRep1", "txtDesRep2"] } },
+        { "key": "tenant_address", "label": "Tenant's Address", "type": "text", "targets": { "form_372": ["txtb_street", "txtb_city", "txtb_state"] } },
+        { "key": "schedule_a_services", "label": "Schedule A — Leasing Services Included", "type": "long_text", "targets": { "form_372": ["txtAddSchedule"] } }
+      ]
+    },
+    {
+      "group": "form_410_applicants",
+      "label": "Rental Application Details (Form 410 only)",
+      "form_specific": "form_410",
+      "note": "This is real applicant-screening data — DOB, driver's license/SIN, employment, bank/reference details. Not derivable from any listing; always direct realtor/applicant entry. Full field list: forms/schemas/form_410_raw.json (121 fields total, applicant #1 and #2 symmetric).",
+      "fields": [
+        { "key": "applicant1_dob", "label": "Applicant 1 — Date of Birth", "type": "date", "targets": { "form_410": ["txtdob1"] } },
+        { "key": "applicant1_drivers_license", "label": "Applicant 1 — Driver's License No.", "type": "text", "targets": { "form_410": ["txtNum2"] } },
+        { "key": "applicant1_occupation", "label": "Applicant 1 — Occupation", "type": "text", "targets": { "form_410": ["txtoccupation1"] } },
+        { "key": "applicant1_email", "label": "Applicant 1 — Email", "type": "text", "targets": { "form_410": ["txtb_email"] } },
+        { "key": "applicant2_dob", "label": "Applicant 2 — Date of Birth (optional)", "type": "date", "targets": { "form_410": ["txtdob2"] } },
+        { "key": "applicant2_drivers_license", "label": "Applicant 2 — Driver's License No. (optional)", "type": "text", "targets": { "form_410": ["txtNum4"] } },
+        { "key": "applicant2_occupation", "label": "Applicant 2 — Occupation (optional)", "type": "text", "targets": { "form_410": ["txtoccupation2"] } },
+        { "key": "applicant2_email", "label": "Applicant 2 — Email (optional)", "type": "text", "targets": { "form_410": ["txtb2_email"] } },
+        { "key": "has_pets", "label": "Any pets?", "type": "text", "targets": { "form_410": ["txtpets"] } },
+        { "key": "reason_for_vacating", "label": "Reason for vacating current residence", "type": "text", "targets": { "form_410": ["txtvacate1"] } },
+        { "key": "applicant1_present_address", "label": "Applicant 1 — Present Address & Dates", "type": "text", "targets": { "form_410": ["txtl1_addr1", "txtFromDate", "txtToDate"] } },
+        { "key": "applicant1_present_landlord", "label": "Applicant 1 — Present Landlord Name & Phone", "type": "text", "targets": { "form_410": ["txtlastLandlord1", "txtlastLndLrdPh1"] } },
+        { "key": "applicant2_present_address", "label": "Applicant 2 — Present Address & Dates (optional)", "type": "text", "targets": { "form_410": ["txtl2_addr1", "txtFromDate1", "txtToDate1"] } },
+        { "key": "applicant2_present_landlord", "label": "Applicant 2 — Present Landlord Name & Phone (optional)", "type": "text", "targets": { "form_410": ["txtlastLandlord2", "txtlastLndLrdPh2"] } }
+      ]
+    }
+  ]
+}
