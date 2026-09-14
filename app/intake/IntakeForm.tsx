@@ -1,117 +1,38 @@
 // app/intake/IntakeForm.tsx
 // Client-side renderer for the Deal Intake Form. Takes the parsed
 // intake_form_schema.json (via props, loaded server-side by page.tsx) and
-// renders one section per group, one input per field, respecting each
-// field's `type`, `options` (radio/checkbox value codes — never the human
-// label), and simple `condition` strings (e.g. only show key deposit amount
-// if key_deposit_required == '/2').
-//
-// Fields with `derived_from` (currently just monthly_rent_words) are
-// computed automatically from their source field rather than typed — see
-// the effect below and lib/numberToWords.ts.
+// renders the grouped fields via components/IntakeFieldsEditor.tsx (shared
+// with app/review/ReviewForm.tsx's inline editor so both stay in sync).
 //
 // On submit, POSTs the full answer map to /api/intake, then navigates to
 // /review — the human-reviews-before-anything-is-generated step.
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { IntakeField, IntakeFormSchema } from "@/lib/formTypes";
-import { numberToWords } from "@/lib/numberToWords";
+import type { IntakeFormSchema } from "@/lib/formTypes";
+import { useDerivedIntakeAnswers } from "@/lib/useDerivedIntakeAnswers";
+import IntakeFieldsEditor, { intakeInputClasses } from "@/components/IntakeFieldsEditor";
 
-function fieldIsVisible(condition: string | undefined, answers: Record<string, string>): boolean {
-  if (!condition) return true;
-  const match = condition.match(/^(\w+)\s*==\s*'([^']*)'$/);
-  if (!match) return true;
-  const [, key, expected] = match;
-  return answers[key] === expected;
-}
-
-const inputClasses =
-  "w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)] shadow-sm outline-none transition-colors focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20";
-
-function Field({
-  field,
-  value,
-  flagReason,
-  onChange,
+export default function IntakeForm({
+  schema,
+  initialAnswers = {},
 }: {
-  field: IntakeField;
-  value: string;
-  flagReason?: string;
-  onChange: (value: string) => void;
+  schema: IntakeFormSchema;
+  initialAnswers?: Record<string, string>;
 }) {
-  const isDerived = Boolean(field.derived_from);
-  return (
-    <div className={field.type === "long_text" ? "sm:col-span-2" : undefined}>
-      <label htmlFor={field.key} className="mb-1 block text-sm font-medium text-[var(--color-text)]">
-        {field.label}
-      </label>
-      {flagReason && (
-        <p className="mb-1 text-xs italic text-[var(--color-text-muted)]">
-          Not filled from listing — {flagReason}
-        </p>
-      )}
-      {field.type === "radio" ? (
-        <select id={field.key} value={value} onChange={(e) => onChange(e.target.value)} className={inputClasses}>
-          <option value="" disabled>
-            Select…
-          </option>
-          {field.options?.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      ) : field.type === "checkbox" ? (
-        <input
-          id={field.key}
-          type="checkbox"
-          checked={value === "/1"}
-          onChange={(e) => onChange(e.target.checked ? "/1" : "/Off")}
-          className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
-        />
-      ) : field.type === "long_text" ? (
-        <textarea
-          id={field.key}
-          value={value || field.default || ""}
-          onChange={(e) => onChange(e.target.value)}
-          rows={4}
-          className={inputClasses}
-        />
-      ) : (
-        <input
-          id={field.key}
-          type={field.type === "date" ? "date" : field.type === "number" || field.type === "currency" ? "number" : "text"}
-          value={value || field.default || ""}
-          onChange={(e) => onChange(e.target.value)}
-          readOnly={isDerived}
-          className={inputClasses + (isDerived ? " bg-[var(--color-bg)] text-[var(--color-text-muted)]" : "")}
-        />
-      )}
-    </div>
-  );
-}
-
-export default function IntakeForm({ schema }: { schema: IntakeFormSchema }) {
   const router = useRouter();
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [listingText, setListingText] = useState("");
-  const [listingFile, setListingFile] = useState<File | null>(null);
+  const [listingFiles, setListingFiles] = useState<File[]>([]);
   const [extracting, setExtracting] = useState(false);
   const [extractError, setExtractError] = useState<string | null>(null);
   const [flaggedFields, setFlaggedFields] = useState<Record<string, string>>({});
 
-  // monthly_rent_words is derived from monthly_rent_amount (lib/numberToWords.ts)
-  // rather than typed — matches the real Form 400 convention ("$3,900.00" ->
-  // "Three Thousand Nine Hundred"), verified against the real ground-truth form.
-  useEffect(() => {
-    const words = numberToWords(answers.monthly_rent_amount ?? "");
-    setAnswers((prev) => (prev.monthly_rent_words === words ? prev : { ...prev, monthly_rent_words: words }));
-  }, [answers.monthly_rent_amount]);
+  useDerivedIntakeAnswers(answers, setAnswers);
 
   function setField(key: string, value: string) {
     setAnswers((prev) => ({ ...prev, [key]: value }));
@@ -147,15 +68,15 @@ export default function IntakeForm({ schema }: { schema: IntakeFormSchema }) {
       fetch("/api/extract-listing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: listingText }),
+        body: JSON.stringify({ text: listingText, currentAnswers: answers }),
       })
     );
   }
 
   async function handleExtractListingFile() {
-    if (!listingFile) return;
+    if (listingFiles.length === 0) return;
     const formData = new FormData();
-    formData.append("file", listingFile);
+    for (const file of listingFiles) formData.append("file", file);
     await runExtraction(() => fetch("/api/extract-listing", { method: "POST", body: formData }));
   }
 
@@ -191,22 +112,52 @@ export default function IntakeForm({ schema }: { schema: IntakeFormSchema }) {
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-lg border border-[var(--color-border)] bg-white p-4">
             <label htmlFor="listing-file" className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">
-              Upload listing PDF
+              Upload listing PDF(s)
             </label>
+            <p className="mb-1.5 text-xs text-[var(--color-text-muted)]">
+              Link the main listing sheet plus any Schedules/Addenda — details like rent payment method are often on
+              those rather than the main sheet, and reading them together lets us pull from whichever one actually
+              states each fact. Add files one at a time or select several at once (Ctrl/Cmd+click in the picker).
+            </p>
             <input
               id="listing-file"
               type="file"
               accept="application/pdf"
-              onChange={(e) => setListingFile(e.target.files?.[0] ?? null)}
+              multiple
+              onChange={(e) => {
+                const newFiles = Array.from(e.target.files ?? []);
+                setListingFiles((prev) => [...prev, ...newFiles]);
+                e.target.value = ""; // reset so picking the same file again still fires onChange
+              }}
               className="block w-full text-sm text-[var(--color-text-muted)] file:mr-3 file:rounded-md file:border-0 file:bg-[var(--color-accent)]/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-[var(--color-accent)] hover:file:bg-[var(--color-accent)]/20"
             />
+            {listingFiles.length > 0 && (
+              <ul className="mt-2 flex flex-col gap-1 text-xs text-[var(--color-text-muted)]">
+                {listingFiles.map((file, i) => (
+                  <li key={`${file.name}-${i}`} className="flex items-center justify-between gap-2">
+                    <span className="truncate">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setListingFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="shrink-0 text-red-600 hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
             <button
               type="button"
               onClick={handleExtractListingFile}
-              disabled={extracting || !listingFile}
+              disabled={extracting || listingFiles.length === 0}
               className="mt-3 w-full rounded-md bg-[var(--color-accent)] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {extracting ? "Extracting…" : "Extract from PDF"}
+              {extracting
+                ? "Extracting…"
+                : listingFiles.length > 1
+                  ? `Extract from ${listingFiles.length} PDFs`
+                  : "Extract from PDF"}
             </button>
           </div>
 
@@ -220,7 +171,7 @@ export default function IntakeForm({ schema }: { schema: IntakeFormSchema }) {
               onChange={(e) => setListingText(e.target.value)}
               rows={3}
               placeholder="Paste listing text here…"
-              className={inputClasses}
+              className={intakeInputClasses}
             />
             <button
               type="button"
@@ -240,27 +191,7 @@ export default function IntakeForm({ schema }: { schema: IntakeFormSchema }) {
         )}
       </div>
 
-      {schema.groups.map((group) => {
-        const visibleFields = group.fields.filter((field) => fieldIsVisible(field.condition, answers));
-        if (visibleFields.length === 0) return null;
-        return (
-          <div key={group.group} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-            <h2 className="text-base font-semibold text-[var(--color-text)]">{group.label}</h2>
-            {group.note && <p className="mt-1 text-sm text-[var(--color-text-muted)]">{group.note}</p>}
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {visibleFields.map((field) => (
-                <Field
-                  key={field.key}
-                  field={field}
-                  value={answers[field.key] ?? ""}
-                  flagReason={flaggedFields[field.key]}
-                  onChange={(value) => setField(field.key, value)}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+      <IntakeFieldsEditor schema={schema} answers={answers} flaggedFields={flaggedFields} onChange={setField} />
 
       {error && (
         <p role="alert" className="rounded-md border border-[var(--color-error-border)] bg-[var(--color-error-bg)] px-3 py-2 text-sm text-[var(--color-error-text)]">

@@ -20,15 +20,21 @@
 //
 // Accepts two request shapes:
 //   - JSON: { text: string } — pasted listing text
-//   - multipart/form-data: a "file" field containing a PDF — sent to Claude
-//     natively as a `document` content block (base64), NOT flattened to text
-//     first. An earlier version pre-extracted text via lib/pdfText.ts /
-//     pypdf, which loses table/column layout (e.g. REALM's two-column
-//     property-info table can linearize into a jumbled label/value order) —
-//     sending the actual PDF lets Claude read the real layout instead.
+//   - multipart/form-data: one or more "file" fields containing PDFs — each
+//     sent to Claude natively as its own `document` content block (base64),
+//     NOT flattened to text first. An earlier version pre-extracted text via
+//     lib/pdfText.ts / pypdf, which loses table/column layout (e.g. REALM's
+//     two-column property-info table can linearize into a jumbled
+//     label/value order) — sending the actual PDF lets Claude read the real
+//     layout instead. Multiple files (main listing sheet + Schedules/
+//     Addenda attachments) are sent together in one message so the model can
+//     pull a fact from whichever document actually states it — e.g. rent
+//     payment method is often on a Schedule, not the main sheet — rather
+//     than only reading the first file.
 
 import { NextResponse } from "next/server";
 import { claudeExtractWithTool } from "@/lib/claude";
+import { splitFullName } from "@/lib/splitFullName";
 import type Anthropic from "@anthropic-ai/sdk";
 
 const SYSTEM_PROMPT = `You are extracting structured data from a real-estate listing export (e.g. a REALM/MLS printout) for an Ontario rental deal. Accuracy matters more than completeness — this feeds real legal/transactional forms.
@@ -36,10 +42,14 @@ const SYSTEM_PROMPT = `You are extracting structured data from a real-estate lis
 Rules:
 - Only put a value in \`fields\` if you're genuinely confident in it, either because the listing states it directly, or because a well-established real estate convention makes it a safe inference (e.g. commission phrasing, standard deposit terminology).
 - If something is ambiguous, contradictory, or you're genuinely unsure — put it in \`flagged\` with a short reason instead of guessing. Never force an answer you're not confident in just to fill every field.
+- \`flagged\` is only for a field the text actually raises but leaves unclear (e.g. it hints at a deposit without saying how much). A field the text simply never brings up at all — no relevant words anywhere — should be left out of both \`fields\` and \`flagged\` entirely. This input is sometimes a short partial update (e.g. "tenant's name is X, rent due the 2nd") rather than a full listing, so most fields will legitimately be untouched — that's expected, not something to report.
+- Don't manufacture ambiguity. If a name/value in the text matches (exactly, or as a same-person variant) a value already on file for some field, that's a simple restatement or confirmation of that field — fill it (or skip it if unchanged) rather than inventing a competing interpretation (e.g. "maybe this is actually a different, second person") or flagging it. Read names the way a person would: "Kenneth He" said plainly as a tenant's name is a first+last name, full stop — do not second-guess whether a surname could secretly be a pronoun, or whether a single name mentioned alone might really mean a different field is being replaced. Only flag a real conflict — the text plainly asserting a second, different tenant, or a value that contradicts what's on file — not a hypothetical one you constructed.
+- When the text is phrased as a direct instruction to change a specific thing (e.g. "change tenant 1's last name to Andrei", "set the rent to X", "update the address to Y") rather than a description of the property, it's a command from the realtor about their own client/deal — just do it. The realtor knows their own client's actual name; never second-guess a given value because it "looks unusual" for that kind of field (e.g. whether a surname could also be used as a first name elsewhere) — that instinct is wrong here and only produces false flags. For a field that stores a combined full name (tenant1_full_name, tenant2_full_name, landlord_full_name), if the instruction changes only the first or only the last name, keep the other part from the value already on file and output the recombined full name — don't flag it as ambiguous just because the instruction only specified one part. Only flag a direct instruction if it's genuinely unparseable (e.g. it never actually states what value to change something to).
 - Distinguish a property/unit FEATURE (e.g. "Heating Source: Gas", "A/C: Central Air", "Laundry Features: Ensuite") from an INCLUDED SERVICE (e.g. "gas is paid by the landlord", "A/C included in rent"). These are different facts. For the six inclusion fields (gas_included, ac_included, onsite_laundry_included, electricity_included, heat_included, water_included): you MAY apply the convention that an unmentioned utility is usually not included in rent (agents tend to advertise inclusions as a selling point) — but only when you're actually confident that convention applies here. If the listing's phrasing makes you genuinely unsure either way, put that field in \`flagged\` instead of guessing "not included" by default.
 - Brokerage disambiguation: the listing brokerage represents the landlord/seller and is the one named under a heading like "LISTING CONTRACTED WITH". Everything under a "CO-OP" heading is a different brokerage — the buyer's/tenant's side. A "Prepared By" name at the very top of the document is just whoever printed the report for their own records — it does NOT indicate which side is the listing brokerage vs the co-op brokerage; ignore "Prepared By" entirely when deciding this, and use only the "LISTING CONTRACTED WITH" / "CO-OP" headings.
 - Money amounts should be plain numeric strings with no currency symbols or commas (e.g. "3900.00").
-- The listing may span several pages with dense tabular data (property details, room info, history) — check every page, not just the first, before deciding a field is absent.
+- The listing may span several pages with dense tabular data (property details, room info, history) — check every page, not just the first, before deciding a field is absent. You may also be given more than one document at once — e.g. a main listing sheet plus one or more Schedules/Addenda attachments. Treat them as one combined source for the same deal: a fact can appear on any of them (rent payment method, for instance, is often stated on a Schedule rather than the main sheet), so check all of them before deciding a field is absent — don't assume only the first document matters.
+- property_city: include the municipality/city name, and if the listing separately states a TRREB-style area or community code (e.g. "C01", "W08", "E03" — sometimes labelled "Area", "Community", or shown as part of a community name), append it after the city name (e.g. "Toronto C01"). Don't invent a code that isn't stated anywhere in the document.
 - Before finalizing, re-scan the document once more against the full field list to catch anything you missed reading — a directly-stated value you overlooked, a page you skipped. This is a check for reading errors, not a reason to convert a field you correctly flagged as ambiguous into a guess. If your first pass legitimately flagged something because the listing's own language is genuinely ambiguous, it should still be flagged after the re-scan — the re-scan does not lower the bar for what counts as "confident."`;
 
 const TOOL_NAME = "record_listing_extraction";
@@ -48,13 +58,17 @@ const FIELD_SCHEMA = {
   property_street_number: { type: "string" },
   property_street_name: { type: "string" },
   property_unit_number: { type: "string" },
-  property_city: { type: "string" },
+  property_city: { type: "string", description: "e.g. 'Toronto C01' — append the MLS area/community code if the listing states one" },
   property_province: { type: "string" },
   property_postal_code: { type: "string" },
   property_is_condo: { type: "boolean" },
   monthly_rent_amount: { type: "string", description: "numeric only, e.g. '3900.00'" },
+  rent_due_day: { type: "string", description: "day of the month rent is due, e.g. '1st', '2nd'" },
+  rent_payment_method: { type: "string", description: "how rent will be paid, e.g. 'Post-dated cheques', 'e-transfer' — often stated on a Schedule/Addendum, not the main listing sheet" },
   lease_term_description: { type: "string", description: "e.g. '1 Year'" },
   landlord_full_name: { type: "string" },
+  tenant1_full_name: { type: "string" },
+  tenant2_full_name: { type: "string", description: "second tenant, if any" },
   property_parking_info: { type: "string", description: "e.g. 'None', '1 space'" },
   rent_deposit_required: { type: "boolean" },
   key_deposit_required: { type: "boolean" },
@@ -68,6 +82,7 @@ const FIELD_SCHEMA = {
   coop_brokerage_name: { type: "string" },
   coop_brokerage_agent_name: { type: "string" },
   coop_brokerage_phone: { type: "string" },
+  coop_brokerage_address: { type: "string", description: "co-op/tenant-side brokerage's mailing address" },
   gas_included: { type: "boolean" },
   ac_included: { type: "boolean" },
   onsite_laundry_included: { type: "boolean" },
@@ -86,22 +101,46 @@ async function getUserContent(request: Request): Promise<Anthropic.MessageParam[
 
   if (contentType.includes("multipart/form-data")) {
     const formData = await request.formData();
-    const file = formData.get("file");
-    if (!(file instanceof File)) {
+    const files = formData.getAll("file").filter((f): f is File => f instanceof File);
+    if (files.length === 0) {
       throw new Error("No PDF file provided");
     }
-    if (file.type !== "application/pdf") {
-      throw new Error("Uploaded file must be a PDF");
+    const nonPdf = files.find((f) => f.type !== "application/pdf");
+    if (nonPdf) {
+      throw new Error(`"${nonPdf.name}" isn't a PDF`);
     }
-    const base64 = Buffer.from(await file.arrayBuffer()).toString("base64");
-    return [
-      { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } },
-      { type: "text", text: "Extract the listing fields from this PDF per the system instructions." },
-    ];
+
+    const documentBlocks = await Promise.all(
+      files.map(async (file) => ({
+        type: "document" as const,
+        source: {
+          type: "base64" as const,
+          media_type: "application/pdf" as const,
+          data: Buffer.from(await file.arrayBuffer()).toString("base64"),
+        },
+      }))
+    );
+
+    const instruction =
+      files.length > 1
+        ? `Extract the listing fields from these ${files.length} PDF documents per the system instructions. They're all for the same property/deal (e.g. a main listing sheet plus Schedule/Addendum attachments) — read all of them as one combined source rather than assuming only the first file matters.`
+        : "Extract the listing fields from this PDF per the system instructions.";
+
+    return [...documentBlocks, { type: "text", text: instruction }];
   }
 
   const body = await request.json();
   const text = typeof body?.text === "string" ? body.text : "";
+  if (!text.trim()) {
+    throw new Error("No listing text found");
+  }
+  const currentAnswers =
+    body?.currentAnswers && typeof body.currentAnswers === "object" ? body.currentAnswers : null;
+
+  if (currentAnswers && Object.keys(currentAnswers).length > 0) {
+    return `This deal already has the following values on file (JSON):\n\n${JSON.stringify(currentAnswers, null, 2)}\n\nNew text to read — a partial update/addition to the deal above, not a fresh listing. Use the values already on file to resolve references (e.g. a bare brokerage/person name that matches one already on file belongs to that same field) instead of flagging them as ambiguous. Only include a field in \`fields\` if this new text adds or changes it — don't re-emit values that are already correct and untouched by this text.\n\n"""\n${text}\n"""`;
+  }
+
   return `Listing text:\n\n"""\n${text}\n"""`;
 }
 
@@ -113,10 +152,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Invalid request" }, { status: 400 });
   }
 
-  const isEmptyText = typeof userContent === "string" && !userContent.replace(/Listing text:|"""/g, "").trim();
-  if (isEmptyText) {
-    return NextResponse.json({ error: "No listing text found" }, { status: 400 });
-  }
 
   let result: ExtractionResult;
   try {
@@ -182,6 +217,21 @@ export async function POST(request: Request) {
     } else {
       answers[answerKey] = value;
     }
+  }
+
+  // The 2229E form has separate first/last name fields rather than one full-name
+  // field (see intake_form_schema.json's tenant1_first_name/tenant1_last_name) —
+  // split so a name extracted here reaches that form too, not just Forms
+  // 400/410/324/372 which take the combined tenant*_full_name field directly.
+  for (const [fullNameKey, firstKey, lastKey] of [
+    ["tenant1_full_name", "tenant1_first_name", "tenant1_last_name"],
+    ["tenant2_full_name", "tenant2_first_name", "tenant2_last_name"],
+  ] as const) {
+    const fullName = answers[fullNameKey];
+    if (!fullName) continue;
+    const { firstName, lastName } = splitFullName(fullName);
+    answers[firstKey] = firstName;
+    answers[lastKey] = lastName;
   }
 
   for (const [sourceKey, reason] of Object.entries(result.flagged ?? {})) {

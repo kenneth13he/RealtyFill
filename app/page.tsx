@@ -3,10 +3,23 @@
 // flow. Phase 2 replaces this with a realtor's deal dashboard (list of their
 // deals via Supabase, behind auth) — see docs/PROJECT_STRUCTURE.md.
 
+import fs from "fs/promises";
+import path from "path";
 import Link from "next/link";
 import Header from "@/components/Header";
+import StartNewDealButton from "@/components/StartNewDealButton";
 
-export default function HomePage() {
+async function hasExistingDeal(): Promise<boolean> {
+  try {
+    const raw = await fs.readFile(path.join(process.cwd(), "data", "deal.json"), "utf-8");
+    return Object.keys(JSON.parse(raw)).length > 0;
+  } catch {
+    return false;
+  }
+}
+
+export default async function HomePage() {
+  const existingDeal = await hasExistingDeal();
   return (
     <>
       <Header />
@@ -16,13 +29,14 @@ export default function HomePage() {
           Fill out one deal intake form — optionally pre-filled from a listing PDF — and generate the Ontario lease
           paperwork it feeds. Enter it once, not five times.
         </p>
-        <Link
-          href="/intake"
-          className="mt-8 inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)]"
-        >
-          Start a new deal
-          <span aria-hidden>→</span>
-        </Link>
+        <div className="mt-8 flex items-center gap-4">
+          <StartNewDealButton hasExistingDeal={existingDeal} />
+          {existingDeal && (
+            <Link href="/review" className="text-sm font-medium text-[var(--color-accent)] hover:underline">
+              Continue current deal →
+            </Link>
+          )}
+        </div>
 
         <dl className="mt-16 grid grid-cols-1 gap-6 text-left sm:grid-cols-2">
           {[

@@ -24,6 +24,10 @@ export interface IntakeField {
   derived_from?: string;
   form_specific?: FormId;
   note?: string;
+  // Computed automatically (see lib/splitFullName.ts) and never rendered as
+  // its own input — exists purely so its `targets` still get filled (e.g.
+  // 2229E's separate first/last name boxes) from a single Full Name field.
+  hidden?: boolean;
 }
 
 export interface IntakeGroup {

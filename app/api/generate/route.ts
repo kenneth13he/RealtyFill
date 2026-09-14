@@ -53,12 +53,19 @@ export async function POST(request: Request) {
   await fs.mkdir(OUTPUT_DIR, { recursive: true });
 
   const results: { form: FormId; downloadUrl: string }[] = [];
-  for (const formId of selectedForms) {
-    const fields = mapIntakeToFormFields(intakeAnswers, formId);
-    const blankPath = path.join(TEMPLATES_DIR, `${formId}_blank.pdf`);
-    const outputPath = path.join(OUTPUT_DIR, `${formId}.pdf`);
-    await fillPdf(blankPath, fields, outputPath);
-    results.push({ form: formId, downloadUrl: `/api/download/${formId}` });
+  try {
+    for (const formId of selectedForms) {
+      const fields = mapIntakeToFormFields(intakeAnswers, formId);
+      const blankPath = path.join(TEMPLATES_DIR, `${formId}_blank.pdf`);
+      const outputPath = path.join(OUTPUT_DIR, `${formId}.pdf`);
+      await fillPdf(blankPath, fields, outputPath);
+      results.push({ form: formId, downloadUrl: `/api/download/${formId}` });
+    }
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to generate PDF" },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ results });

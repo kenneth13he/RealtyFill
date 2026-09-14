@@ -6,11 +6,11 @@
       "group": "parties",
       "label": "Parties",
       "fields": [
-        { "key": "tenant1_first_name", "label": "Tenant 1 — First Name", "type": "text", "profile": "tenant1_full_name", "targets": { "2229e": ["txtbuyer1FName"] } },
-        { "key": "tenant1_last_name", "label": "Tenant 1 — Last Name", "type": "text", "profile": "tenant1_full_name", "targets": { "2229e": ["txtbuyer1LName"] } },
+        { "key": "tenant1_first_name", "label": "Tenant 1 — First Name", "type": "text", "hidden": true, "derived_from": "tenant1_full_name", "profile": "tenant1_full_name", "targets": { "2229e": ["txtbuyer1FName"] } },
+        { "key": "tenant1_last_name", "label": "Tenant 1 — Last Name", "type": "text", "hidden": true, "derived_from": "tenant1_full_name", "profile": "tenant1_full_name", "targets": { "2229e": ["txtbuyer1LName"] } },
         { "key": "tenant1_full_name", "label": "Tenant 1 — Full Name", "type": "text", "profile": "tenant1_full_name", "targets": { "form_400": ["txtbuyer1"], "form_410": ["txtbuyer1", "txtbuyersig1"], "form_324": ["txtbuyer1", "txtbuyersig1"], "form_372": ["txtbuyer1", "txtbuyersig1"] } },
-        { "key": "tenant2_first_name", "label": "Tenant 2 — First Name (optional)", "type": "text", "profile": "tenant2_full_name", "targets": { "2229e": ["txtbuyer2FName"] } },
-        { "key": "tenant2_last_name", "label": "Tenant 2 — Last Name (optional)", "type": "text", "profile": "tenant2_full_name", "targets": { "2229e": ["txtbuyer2LName"] } },
+        { "key": "tenant2_first_name", "label": "Tenant 2 — First Name (optional)", "type": "text", "hidden": true, "derived_from": "tenant2_full_name", "profile": "tenant2_full_name", "targets": { "2229e": ["txtbuyer2FName"] } },
+        { "key": "tenant2_last_name", "label": "Tenant 2 — Last Name (optional)", "type": "text", "hidden": true, "derived_from": "tenant2_full_name", "profile": "tenant2_full_name", "targets": { "2229e": ["txtbuyer2LName"] } },
         { "key": "tenant2_full_name", "label": "Tenant 2 — Full Name (optional)", "type": "text", "profile": "tenant2_full_name", "targets": { "form_400": ["txtbuyer2"], "form_410": ["txtbuyer2", "txtbuyersig2"], "form_324": ["txtbuyer2", "txtbuyersig2"], "form_372": ["txtbuyer2", "txtbuyersig2"] } },
         { "key": "landlord_full_name", "label": "Landlord — Full Legal Name", "type": "text", "profile": "landlord_full_name", "targets": { "2229e": ["txtseller1", "txtRentPayable", "txtsellersig1"], "form_400": ["txtseller1", "txtsellersig1"], "form_324": ["txtseller1", "txtsellersig1"] } },
         { "key": "guarantor_name", "label": "Guarantor Name (optional)", "type": "text", "form_specific": "form_400", "targets": { "form_400": ["txtguarsig"] } }
@@ -89,7 +89,7 @@
         { "key": "coop_brokerage_name", "label": "Co-op / Tenant Brokerage Name", "type": "text", "profile": "coop_tenant_brokerage_name", "targets": { "form_400": ["txts_broker"], "form_324": ["txts_broker"], "form_372": ["txts_broker"] } },
         { "key": "coop_brokerage_agent_name", "label": "Co-op / Tenant Brokerage Agent Name", "type": "text", "profile": "coop_tenant_brokerage_agent_name", "targets": { "form_400": ["txts_brkagent"], "form_324": ["txts_brkagent"], "form_372": ["txts_brkagentsig", "txts_brkname"] } },
         { "key": "coop_brokerage_phone", "label": "Co-op / Tenant Brokerage Phone", "type": "text", "profile": "coop_tenant_brokerage_phone", "targets": { "form_400": ["txts_brkphone"], "form_324": ["txts_brkphone"], "form_372": ["txts_brkphone"] } },
-        { "key": "coop_brokerage_address", "label": "Co-op / Tenant Brokerage Address", "type": "text", "profile": "coop_tenant_brokerage_address", "targets": { "form_324": ["txts_brkaddr", "txts_brkcity", "txts_brkstate", "txts_brkzipcode"], "form_372": ["txts_brkaddr", "txts_brkcity", "txts_brkstate", "txts_brkzipcode"] } },
+        { "key": "coop_brokerage_address", "label": "Co-op / Tenant Brokerage Address", "type": "text", "profile": "coop_tenant_brokerage_address", "targets": { "form_324": ["txts_brkaddr"], "form_372": ["txts_brkaddr"] } },
         { "key": "commission_terms", "label": "Commission Amount / Terms (e.g. 'Half Month Rent + HST')", "type": "text", "profile": "commission_amount_or_terms", "targets": { "form_324": ["txtp_bal2ndMortgage"], "form_372": ["txtPaidComm1"] } },
         { "key": "holdover_days", "label": "Holdover Period (days)", "type": "number", "targets": { "form_372": ["txtAgreeDays"] } }
       ]

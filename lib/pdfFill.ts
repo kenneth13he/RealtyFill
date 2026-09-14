@@ -22,6 +22,31 @@ const execFileAsync = promisify(execFile);
 
 const SCRIPT_PATH = path.join(process.cwd(), "scripts", "fill_fillable_fields.py");
 
+// On Windows, "python"/"python3" can resolve to the Microsoft Store's app
+// execution alias stub instead of a real interpreter, depending on PATH
+// order in whatever shell launched `next dev` — so probe candidates instead
+// of assuming one name works.
+const PYTHON_CANDIDATES = process.platform === "win32" ? ["python", "py", "python3"] : ["python3", "python"];
+let resolvedPythonBin: string | null = null;
+
+async function resolvePythonBin(): Promise<string> {
+  if (resolvedPythonBin) return resolvedPythonBin;
+  for (const candidate of PYTHON_CANDIDATES) {
+    try {
+      const { stdout } = await execFileAsync(candidate, ["--version"]);
+      if (/^Python \d/.test(stdout.trim())) {
+        resolvedPythonBin = candidate;
+        return candidate;
+      }
+    } catch {
+      // try next candidate
+    }
+  }
+  throw new Error(
+    `No working Python interpreter found on PATH (tried: ${PYTHON_CANDIDATES.join(", ")}). Install Python 3 and ensure it's on PATH.`
+  );
+}
+
 export async function fillPdf(
   blankTemplatePath: string,
   fields: FillableField[],
@@ -31,7 +56,11 @@ export async function fillPdf(
   await fs.writeFile(tmpJsonPath, JSON.stringify(fields, null, 2));
 
   try {
-    await execFileAsync("python3", [SCRIPT_PATH, blankTemplatePath, tmpJsonPath, outputPath]);
+    const pythonBin = await resolvePythonBin();
+    await execFileAsync(pythonBin, [SCRIPT_PATH, blankTemplatePath, tmpJsonPath, outputPath]);
+  } catch (err) {
+    const stderr = (err as { stderr?: string })?.stderr;
+    throw new Error(stderr ? `fill_fillable_fields.py failed: ${stderr}` : String(err));
   } finally {
     await fs.unlink(tmpJsonPath).catch(() => {});
   }

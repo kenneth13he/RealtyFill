@@ -1,29 +1,59 @@
 // app/review/ReviewForm.tsx
 // Client-side review + form-selection + generate UI. Shows the saved intake
-// answers read-only, grouped and labeled the same way the intake form was
-// (via the schema, not raw keys — was a known gap, fixed here), with a link
-// back to /intake to correct anything — no silent in-place editing. Lets the
-// realtor check which of the five forms to generate, and on submit calls
-// /api/generate, then lists download links for whatever came back.
+// answers read-only, grouped and labeled the same way the intake form was,
+// with an inline editor (shared with app/intake/IntakeForm.tsx via
+// components/IntakeFieldsEditor.tsx) instead of a link back to /intake —
+// edits autosave to data/deal.json and, once forms have been generated at
+// least once, silently regenerate them so the PDFs stay in sync without a
+// manual "Generate" click every time. Lets the realtor check which of the
+// five forms to generate, and on submit calls /api/generate, then lists
+// download links for whatever came back.
 
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { ALL_FORM_IDS, FORM_LABELS, FormId, IntakeFormSchema } from "@/lib/formTypes";
+import { useDerivedIntakeAnswers } from "@/lib/useDerivedIntakeAnswers";
+import IntakeFieldsEditor from "@/components/IntakeFieldsEditor";
 
 export default function ReviewForm({
-  answers,
+  answers: initialAnswers,
   schema,
 }: {
   answers: Record<string, string>;
   schema: IntakeFormSchema;
 }) {
+  const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers);
+  const [editing, setEditing] = useState(false);
+  const [autosaving, setAutosaving] = useState(false);
   const [selected, setSelected] = useState<Set<FormId>>(new Set());
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<{ form: FormId; downloadUrl: string }[]>([]);
+  const [hasGenerated, setHasGenerated] = useState(false);
   const [previewing, setPreviewing] = useState<FormId | null>(null);
+  const [updateText, setUpdateText] = useState("");
+  const [updating, setUpdating] = useState(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [updateFlagged, setUpdateFlagged] = useState<Record<string, string>>({});
+  const [changedKeys, setChangedKeys] = useState<Set<string>>(new Set());
+
+  useDerivedIntakeAnswers(answers, setAnswers);
+
+  // Mirrors `answers` for the debounced autosave below, so the save always
+  // sends the latest values even though the setTimeout callback closes over
+  // whatever `answers` looked like when it was scheduled.
+  const answersRef = useRef(answers);
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  const selectedRef = useRef(selected);
+  useEffect(() => {
+    selectedRef.current = selected;
+  }, [selected]);
+
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function toggle(formId: FormId) {
     setSelected((prev) => {
@@ -42,11 +72,12 @@ export default function ReviewForm({
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ selectedForms: Array.from(selected) }),
+        body: JSON.stringify({ selectedForms: Array.from(selectedRef.current) }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Failed to generate");
       setResults(body.results);
+      setHasGenerated(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -54,10 +85,76 @@ export default function ReviewForm({
     }
   }
 
+  function setField(key: string, value: string) {
+    setAnswers((prev) => ({ ...prev, [key]: value }));
+    // Deliberately not marked in `changedKeys` — that drives the "Updated"
+    // badge/highlight, which exists to surface what the AI changed on your
+    // behalf via "Update with more info". A field you just typed into
+    // yourself needs no such flag — you already know you changed it.
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    autosaveTimer.current = setTimeout(() => {
+      void autosaveAndMaybeRegenerate();
+    }, 800);
+  }
+
+  async function autosaveAndMaybeRegenerate() {
+    setAutosaving(true);
+    try {
+      const res = await fetch("/api/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(answersRef.current),
+      });
+      if (!res.ok) throw new Error("Failed to save changes");
+      if (hasGenerated && selectedRef.current.size > 0) {
+        await handleGenerate();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save changes");
+    } finally {
+      setAutosaving(false);
+    }
+  }
+
+  async function handleUpdateAndRegenerate() {
+    if (!updateText.trim()) return;
+    setUpdating(true);
+    setUpdateError(null);
+    try {
+      const extractRes = await fetch("/api/extract-listing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: updateText, currentAnswers: answers }),
+      });
+      const extractBody = await extractRes.json();
+      if (!extractRes.ok) throw new Error(extractBody.error ?? "Failed to read that update");
+
+      const mergedAnswers = { ...answers, ...extractBody.answers };
+      setAnswers(mergedAnswers);
+      setUpdateFlagged(extractBody.flagged ?? {});
+      setChangedKeys((prev) => new Set([...prev, ...Object.keys(extractBody.answers ?? {})]));
+
+      const saveRes = await fetch("/api/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mergedAnswers),
+      });
+      if (!saveRes.ok) throw new Error("Failed to save updated answers");
+
+      setUpdateText("");
+      await handleGenerate();
+    } catch (err) {
+      setUpdateError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setUpdating(false);
+    }
+  }
+
   const groupsWithAnswers = schema.groups
     .map((group) => ({
       ...group,
       fields: group.fields.filter((field) => {
+        if (field.hidden) return false;
         const value = answers[field.key];
         return value !== undefined && value !== "" && value !== "/Off";
       }),
@@ -66,22 +163,43 @@ export default function ReviewForm({
 
   const hasAnswers = groupsWithAnswers.length > 0;
 
+  const affectedForms = new Set<FormId>();
+  if (changedKeys.size > 0) {
+    for (const group of schema.groups) {
+      for (const field of group.fields) {
+        if (!changedKeys.has(field.key)) continue;
+        for (const formId of Object.keys(field.targets) as FormId[]) affectedForms.add(formId);
+      }
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6 pb-16">
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-[var(--color-text)]">Answers on file</h2>
-          <Link href="/intake" className="text-sm font-medium text-[var(--color-accent)] hover:underline">
-            Edit answers
-          </Link>
+          <div className="flex items-center gap-3">
+            {editing && autosaving && <span className="text-xs text-[var(--color-text-muted)]">Saving…</span>}
+            <button
+              type="button"
+              onClick={() => setEditing((prev) => !prev)}
+              className="text-sm font-medium text-[var(--color-accent)] hover:underline"
+            >
+              {editing ? "Done editing" : "Edit answers"}
+            </button>
+          </div>
         </div>
 
-        {!hasAnswers ? (
+        {editing ? (
+          <div className="mt-4">
+            <IntakeFieldsEditor schema={schema} answers={answers} onChange={setField} />
+          </div>
+        ) : !hasAnswers ? (
           <p className="mt-3 text-sm text-[var(--color-text-muted)]">
             No intake data yet —{" "}
-            <Link href="/intake" className="font-medium text-[var(--color-accent)] hover:underline">
-              fill out the intake form first
-            </Link>
+            <button type="button" onClick={() => setEditing(true)} className="font-medium text-[var(--color-accent)] hover:underline">
+              fill in the answers
+            </button>
             .
           </p>
         ) : (
@@ -102,9 +220,25 @@ export default function ReviewForm({
                             ? "Yes"
                             : "No"
                           : rawValue;
+                    const wasChanged = changedKeys.has(field.key);
                     return (
-                      <div key={field.key} className="flex justify-between gap-3 border-b border-[var(--color-border)]/60 py-1.5 text-sm">
-                        <dt className="text-[var(--color-text-muted)]">{field.label}</dt>
+                      <div
+                        key={field.key}
+                        className={
+                          "flex justify-between gap-3 border-b py-1.5 text-sm" +
+                          (wasChanged
+                            ? " -mx-2 rounded-md border-transparent bg-amber-50 px-2 ring-1 ring-inset ring-amber-300"
+                            : " border-[var(--color-border)]/60")
+                        }
+                      >
+                        <dt className="text-[var(--color-text-muted)]">
+                          {field.label}
+                          {wasChanged && (
+                            <span className="ml-1.5 rounded-full bg-amber-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
+                              Updated
+                            </span>
+                          )}
+                        </dt>
                         <dd className="text-right font-medium text-[var(--color-text)]">{displayValue}</dd>
                       </div>
                     );
@@ -149,6 +283,41 @@ export default function ReviewForm({
         </p>
       )}
 
+      {hasGenerated && (
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+          <h2 className="text-base font-semibold text-[var(--color-text)]">Update with more info</h2>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+            Paste any new or corrected details (an email, a note, an updated listing) — matching fields are updated
+            and the selected forms are regenerated automatically.
+          </p>
+          <textarea
+            value={updateText}
+            onChange={(e) => setUpdateText(e.target.value)}
+            rows={3}
+            placeholder="Paste additional or corrected info here…"
+            className="mt-3 w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)] shadow-sm outline-none transition-colors focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
+          />
+          <button
+            type="button"
+            onClick={handleUpdateAndRegenerate}
+            disabled={updating || generating || !updateText.trim()}
+            className="mt-3 w-full rounded-lg bg-[var(--color-accent)] px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+          >
+            {updating ? "Updating…" : "Update & regenerate forms"}
+          </button>
+          {updateError && (
+            <p role="alert" className="mt-3 rounded-md border border-[var(--color-error-border)] bg-[var(--color-error-bg)] px-3 py-2 text-sm text-[var(--color-error-text)]">
+              {updateError}
+            </p>
+          )}
+          {Object.keys(updateFlagged).length > 0 && (
+            <p className="mt-3 text-xs italic text-[var(--color-text-muted)]">
+              Left unchanged (ambiguous): {Object.entries(updateFlagged).map(([key, reason]) => `${key} (${reason})`).join("; ")}
+            </p>
+          )}
+        </div>
+      )}
+
       {results.length > 0 && (
         <div className="rounded-xl border border-green-200 bg-green-50 p-5">
           <h2 className="text-base font-semibold text-green-900">Generated PDFs</h2>
@@ -166,7 +335,14 @@ export default function ReviewForm({
                     onClick={() => setPreviewing((prev) => (prev === r.form ? null : r.form))}
                     className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left"
                   >
-                    <span className="text-sm font-medium text-green-900">{FORM_LABELS[r.form]}</span>
+                    <span className="flex items-center gap-2 text-sm font-medium text-green-900">
+                      {FORM_LABELS[r.form]}
+                      {affectedForms.has(r.form) && (
+                        <span className="rounded-full bg-amber-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
+                          Updated
+                        </span>
+                      )}
+                    </span>
                     <span aria-hidden className="text-green-700">
                       {isOpen ? "▲" : "▼"}
                     </span>
