@@ -153,34 +153,57 @@ export async function POST(request: Request) {
   }
 
 
-  let result: ExtractionResult;
-  try {
-    result = await claudeExtractWithTool<ExtractionResult>(
-      SYSTEM_PROMPT,
-      userContent,
-      TOOL_NAME,
-      "Record extracted listing fields, splitting confident values from ones that need human judgment.",
-      {
-        type: "object",
-        properties: {
-          fields: {
-            type: "object",
-            description: "Confidently-extracted or safely-inferred values, keyed by field name. Omit anything you're not sure about.",
-            properties: FIELD_SCHEMA,
-            additionalProperties: false,
+  function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+
+  // Forced tool use is normally reliable, but on rare occasions the model
+  // returns a malformed tool_use.input (observed: a `fields` value that was a
+  // raw string instead of an object) — Object.entries() on that silently
+  // produces garbage numeric-index keys, which would then get merged into
+  // deal.json by the caller and corrupt real deal data. One retry clears it
+  // every time it's been observed to happen; only give up and surface an
+  // error if it's malformed twice in a row.
+  let result: ExtractionResult | null = null;
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 2 && !result; attempt++) {
+    try {
+      const candidate = await claudeExtractWithTool<ExtractionResult>(
+        SYSTEM_PROMPT,
+        userContent,
+        TOOL_NAME,
+        "Record extracted listing fields, splitting confident values from ones that need human judgment.",
+        {
+          type: "object",
+          properties: {
+            fields: {
+              type: "object",
+              description: "Confidently-extracted or safely-inferred values, keyed by field name. Omit anything you're not sure about.",
+              properties: FIELD_SCHEMA,
+              additionalProperties: false,
+            },
+            flagged: {
+              type: "object",
+              description: "field name -> short reason it couldn't be confidently filled",
+              additionalProperties: { type: "string" },
+            },
           },
-          flagged: {
-            type: "object",
-            description: "field name -> short reason it couldn't be confidently filled",
-            additionalProperties: { type: "string" },
-          },
-        },
-        required: ["fields", "flagged"],
+          required: ["fields", "flagged"],
+        }
+      );
+      if (isPlainObject(candidate?.fields) && isPlainObject(candidate?.flagged)) {
+        result = candidate;
+      } else {
+        lastErr = new Error("Extraction returned malformed output");
       }
-    );
-  } catch (err) {
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+
+  if (!result) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Extraction failed (is ANTHROPIC_API_KEY set?)" },
+      { error: lastErr instanceof Error ? lastErr.message : "Extraction failed (is ANTHROPIC_API_KEY set?)" },
       { status: 502 }
     );
   }
