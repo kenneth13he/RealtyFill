@@ -35,6 +35,7 @@
 import { NextResponse } from "next/server";
 import { claudeExtractWithTool } from "@/lib/claude";
 import { splitFullName } from "@/lib/splitFullName";
+import { createClient } from "@/lib/supabase/server";
 import type Anthropic from "@anthropic-ai/sdk";
 
 const SYSTEM_PROMPT = `You are extracting structured data from a real-estate listing export (e.g. a REALM/MLS printout) for an Ontario rental deal. Accuracy matters more than completeness — this feeds real legal/transactional forms.
@@ -145,6 +146,14 @@ async function getUserContent(request: Request): Promise<Anthropic.MessageParam[
 }
 
 export async function POST(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let userContent: Anthropic.MessageParam["content"];
   try {
     userContent = await getUserContent(request);
