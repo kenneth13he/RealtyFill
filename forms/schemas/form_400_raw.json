@@ -916,6 +916,50 @@
     ]
   },
   {
+    "field_id": "txtsellersig1",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      73.33221,
+      289.6743,
+      223.9966,
+      300.0075
+    ]
+  },
+  {
+    "field_id": "txtbuyersig1",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      338.3282,
+      289.6743,
+      488.9926,
+      300.0075
+    ]
+  },
+  {
+    "field_id": "txtsellersig2",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      73.33221,
+      270.008,
+      223.9966,
+      280.0078
+    ]
+  },
+  {
+    "field_id": "txtbuyersig2",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      338.3282,
+      270.008,
+      488.9926,
+      280.0078
+    ]
+  },
+  {
     "field_id": "txtSellSt",
     "type": "text",
     "page": 3,
@@ -1122,6 +1166,182 @@
       120.3436,
       575.6579,
       577.3366
+    ]
+  },
+  {
+    "field_id": "txtbuyer1",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      79.33212,
+      655.6688,
+      304.9954,
+      668.6686
+    ]
+  },
+  {
+    "field_id": "hidband2",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      304.9954,
+      655.6688,
+      341.9948,
+      668.6686
+    ]
+  },
+  {
+    "field_id": "txtbuyer2",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      341.9948,
+      655.6688,
+      552.3249,
+      668.6686
+    ]
+  },
+  {
+    "field_id": "txtseller1",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      94.33189,
+      632.6691,
+      322.9951,
+      645.0023
+    ]
+  },
+  {
+    "field_id": "hidsand2",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      322.9951,
+      632.6691,
+      359.9945,
+      645.0023
+    ]
+  },
+  {
+    "field_id": "txtseller2",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      359.6612,
+      632.6691,
+      570.9913,
+      645.0023
+    ]
+  },
+  {
+    "field_id": "txtp_streetnum",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      94.33189,
+      609.6694,
+      140.9978,
+      622.3359
+    ]
+  },
+  {
+    "field_id": "txtp_street",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      141.3312,
+      609.6694,
+      346.6614,
+      622.3359
+    ]
+  },
+  {
+    "field_id": "txtp_UnitNumber",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      346.9947,
+      609.6694,
+      404.3271,
+      622.3359
+    ]
+  },
+  {
+    "field_id": "txtp_city",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      404.6605,
+      609.6694,
+      571.658,
+      622.3359
+    ]
+  },
+  {
+    "field_id": "txtp_state",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      41.66603,
+      586.6698,
+      91.33194,
+      599.3362
+    ]
+  },
+  {
+    "field_id": "txtp_zipcode",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      91.66527,
+      586.6698,
+      225.6632,
+      599.3362
+    ]
+  },
+  {
+    "field_id": "txtp_offerDate_d",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      265.6626,
+      586.6698,
+      311.9952,
+      599.3362
+    ]
+  },
+  {
+    "field_id": "txtp_offerDate_mmmm",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      341.9948,
+      586.6698,
+      511.9922,
+      599.3362
+    ]
+  },
+  {
+    "field_id": "txtp_offerDate_yy",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      527.6586,
+      586.6698,
+      571.658,
+      599.3362
+    ]
+  },
+  {
+    "field_id": "hidDynamicPage",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      10.6665,
+      563.6702,
+      35.33279,
+      576.6699
     ]
   },
   {

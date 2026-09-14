@@ -54,7 +54,12 @@ def get_field_info(reader: PdfReader):
         if field.get("/Kids"):
             if field.get("/FT") == "/Btn":
                 possible_radio_names.add(field_id)
-            continue
+                continue
+            # Non-button fields (e.g. /Tx) can still have /Kids when the same
+            # field is repeated as multiple widget annotations across pages
+            # (e.g. a tenant name printed both in the body and in a schedule).
+            # Fall through so it's still recorded — the annotation loop below
+            # will find whichever page(s) it actually appears on.
         field_info_by_id[field_id] = make_field_dict(field, field_id)
 
 

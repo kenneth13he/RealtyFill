@@ -5,10 +5,10 @@
 | File | What it is | Status |
 |---|---|---|
 | `2229e_raw.json` | Raw field dump for the **2229E Residential Tenancy Agreement** (Standard Lease) — 93 fields, field_id/type/page/position only, no semantics. | Structure done. |
-| `form_400_raw.json` | Raw field dump for **Form 400 — Agreement to Lease (Residential)** — 88 fields. | Structure done. |
+| `form_400_raw.json` | Raw field dump for **Form 400 — Agreement to Lease (Residential)** — 108 fields. | Structure done. |
 | `form_410_raw.json` | Raw field dump for **Form 410 — Rental Application (Residential)** — 121 fields. | Structure done. |
 | `form_324_raw.json` | Raw field dump for **Form 324 — Confirmation of Co-operation and Representation (Tenant/Landlord)** — 48 fields. | Structure done. |
-| `form_372_raw.json` | Raw field dump for **Form 372 — Tenant Designated Representation Agreement** — 42 fields (incl. Schedule A). | Structure done. |
+| `form_372_raw.json` | Raw field dump for **Form 372 — Tenant Designated Representation Agreement** — 48 fields (incl. Schedule A). | Structure done. |
 | `deal_profile_schema.json` | The **shared Property Profile** — fields that repeat across 2+ of the five forms (tenant/landlord names, property address, rent, term, brokerage info), each mapped to its `field_id` per form. Enter these once, reuse everywhere. | Done for the fields identified so far. |
 | `intake_form_schema.json` | The **Deal Intake Form** the realtor actually fills out — every field grouped into UI sections (Parties, Property, Rent & Deposits, Term & Conditions, Utilities, Brokerage, plus form-specific sections for 324/372/410), each with a label, input type, radio/checkbox value codes, and which form field_id(s) it writes to. **This is the contract the frontend (renders the form) and backend (maps answers → PDF fields) both build against.** | First draft done — covers the fields with known real-world semantics (see below). Needs a pass to fill gaps. |
 
@@ -16,6 +16,8 @@
 
 `*_raw.json` = "every field this PDF has, and where it sits on the page" (from `pypdf`, no meaning attached).
 `intake_form_schema.json` = "what a human actually needs to type, and which raw field(s) that answer goes into" — built by cross-referencing the raw field IDs against real filled copies of these forms (field names like `txtbuyer1`, `txtseller1`, `chkOpt_Condo` turned out to be self-describing once matched against known filled values).
+
+**Fixed bug (worth knowing if these ever get regenerated):** `scripts/extract_form_field_info.py` originally silently dropped any *text* field that appears as multiple widgets across pages (e.g. a tenant's name printed both in a form's main body and again in a Schedule A) — its multi-widget handling only covered checkbox/radio fields. This meant Form 400 was missing 20 fields and Form 372 was missing 6 (mostly names/address/signatures) until the fix. If you ever re-run extraction from a different source PDF, sanity-check the field count looks right and spot-check that `txtbuyer1`/`txtseller1`-style fields are actually present.
 
 ## What's NOT yet in `intake_form_schema.json` (still needs to be filled out)
 

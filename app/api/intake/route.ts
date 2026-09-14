@@ -1,20 +1,36 @@
 // app/api/intake/route.ts
-// Backend endpoint that persists the Deal Intake Form's answers.
-// Phase 1: can just write field_values.json to disk/scratch for the demo.
-// Phase 2 (Step 10/12): POST here saves into the `deal_intake` table (Postgres,
-// row-level security scoped to the logged-in realtor's own deals).
+// Persists Deal Intake Form answers.
 //
-// Input: JSON body matching the shape described by
-//   forms/schemas/intake_form_schema.json (one value per intake field "key").
-// Output: the created/updated deal_intake record (or, for Phase 1, just ok:true).
-//
-// Explicitly NOT this file's job: mapping intake answers to per-PDF field IDs
-// (lib/profileMapper.ts) or touching any LLM/API key (there is no LLM call in
-// this path per the current design — see mvp-build-plan.md's "Design decision"
-// note under Phase 1).
+// Phase 1 storage: a single local JSON file at data/deal.json (gitignored —
+// this is real client/deal data, never committed). Phase 2 (Step 10/12) swaps
+// this for the `deal_intake` table in Postgres, scoped to the logged-in
+// realtor via row-level security — the request/response shape here is
+// designed to carry over unchanged.
+
+import { NextResponse } from "next/server";
+import fs from "fs/promises";
+import path from "path";
+
+const DATA_DIR = path.join(process.cwd(), "data");
+const DEAL_PATH = path.join(DATA_DIR, "deal.json");
 
 export async function POST(request: Request) {
-  // TODO Phase 1: validate body against intake_form_schema.json, write to scratch/deal JSON
-  // TODO Phase 2: persist to `deal_intake` table via Supabase, scoped to auth'd user
-  return new Response(null, { status: 501 });
+  const body = await request.json();
+  if (typeof body !== "object" || body === null) {
+    return NextResponse.json({ error: "Expected a JSON object of intake answers" }, { status: 400 });
+  }
+
+  await fs.mkdir(DATA_DIR, { recursive: true });
+  await fs.writeFile(DEAL_PATH, JSON.stringify(body, null, 2));
+
+  return NextResponse.json({ ok: true });
+}
+
+export async function GET() {
+  try {
+    const raw = await fs.readFile(DEAL_PATH, "utf-8");
+    return NextResponse.json(JSON.parse(raw));
+  } catch {
+    return NextResponse.json({});
+  }
 }

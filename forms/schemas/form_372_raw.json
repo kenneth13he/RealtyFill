@@ -454,6 +454,72 @@
     ]
   },
   {
+    "field_id": "txtbuyersig1",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      105.3317,
+      111.3437,
+      387.6607,
+      122.6769
+    ]
+  },
+  {
+    "field_id": "txtbuyersig2",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      105.3317,
+      90.34404,
+      387.6607,
+      101.6772
+    ]
+  },
+  {
+    "field_id": "txts_broker",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      94.99855,
+      661.6686,
+      555.3249,
+      675.0018
+    ]
+  },
+  {
+    "field_id": "txtbuyer1",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      76.6655,
+      639.0023,
+      308.3286,
+      652.3354
+    ]
+  },
+  {
+    "field_id": "hidband",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      308.662,
+      639.0023,
+      345.6614,
+      652.3354
+    ]
+  },
+  {
+    "field_id": "txtbuyer2",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      345.9947,
+      639.0023,
+      570.658,
+      652.3354
+    ]
+  },
+  {
     "field_id": "hidDynamicPage",
     "type": "text",
     "page": 4,

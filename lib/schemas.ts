@@ -1,21 +1,36 @@
 // lib/schemas.ts
-// Loads and exposes the JSON schemas under forms/schemas/ to the rest of the app:
+// Server-only: reads and parses the JSON schemas under forms/schemas/.
 //   - intake_form_schema.json (drives the /intake UI)
-//   - deal_profile_schema.json (shared fields across 2+ forms)
 //   - <form>_raw.json x5 (per-form field structure: id, type, page, radio/checkbox values)
 //
-// This is the single place that reads those files, so the frontend (rendering
-// the intake form) and backend (mapping answers to PDF fields) both consume
-// the same parsed, typed shape rather than each re-parsing JSON independently.
+// Kept server-only (imports Node's `fs`) so it can never end up in a client
+// bundle — see lib/formTypes.ts for the client-safe types/constants this file
+// re-exports for convenience.
 
-export function getIntakeFormSchema() {
-  // TODO: read + parse forms/schemas/intake_form_schema.json
+import fs from "fs";
+import path from "path";
+import { FormId, IntakeFormSchema, RawFieldInfo } from "./formTypes";
+
+export * from "./formTypes";
+
+const SCHEMAS_DIR = path.join(process.cwd(), "forms", "schemas");
+
+function readJson<T>(filename: string): T {
+  const raw = fs.readFileSync(path.join(SCHEMAS_DIR, filename), "utf-8");
+  return JSON.parse(raw) as T;
 }
 
-export function getDealProfileSchema() {
-  // TODO: read + parse forms/schemas/deal_profile_schema.json
+export function getIntakeFormSchema(): IntakeFormSchema {
+  return readJson<IntakeFormSchema>("intake_form_schema.json");
 }
 
-export function getRawFormSchema(formId: "2229e" | "form_400" | "form_410" | "form_324" | "form_372") {
-  // TODO: read + parse forms/schemas/<formId>_raw.json
+export function getRawFormSchema(formId: FormId): RawFieldInfo[] {
+  const filenames: Record<FormId, string> = {
+    "2229e": "2229e_raw.json",
+    form_400: "form_400_raw.json",
+    form_410: "form_410_raw.json",
+    form_324: "form_324_raw.json",
+    form_372: "form_372_raw.json",
+  };
+  return readJson<RawFieldInfo[]>(filenames[formId]);
 }

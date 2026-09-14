@@ -1,0 +1,30 @@
+# dependencies
+/node_modules
+
+# next.js build output
+/.next/
+/out/
+
+# typescript
+next-env.d.ts
+*.tsbuildinfo
+
+# env files — never commit secrets (LLM keys, DB credentials, etc.)
+.env
+.env.*
+!.env.example
+
+# os
+.DS_Store
+
+# local scratch / anything containing real filled PDFs with real PII —
+# only forms/blank_templates/*_blank.pdf (verified clean) belongs in the repo
+*_filled.pdf
+*_values.json
+
+# local deal data + generated PDFs (Phase 1 demo storage — no DB/object storage yet)
+/data/
+
+# python
+__pycache__/
+*.pyc
