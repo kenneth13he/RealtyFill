@@ -26,6 +26,33 @@ async function clientIp(): Promise<string> {
   return h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 }
 
+// Google sign-in/sign-up (same action for both — OAuth creates the account
+// on first use). Run server-side rather than from the browser client
+// specifically because @supabase/ssr stores the PKCE code verifier in a
+// cookie, and /auth/callback reads that same cookie back when exchanging the
+// code for a session — doing this client-side would put the verifier
+// somewhere the callback can't see it.
+export async function signInWithGoogle(formData: FormData) {
+  const redirectTo = safeRedirectTarget(formData.get("redirectTo"));
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`,
+    },
+  });
+
+  if (error || !data?.url) {
+    redirect(
+      `/login?error=${encodeURIComponent(error?.message ?? "Could not start Google sign-in")}&redirectTo=${encodeURIComponent(redirectTo)}`
+    );
+  }
+  // Google's consent screen — external by definition, so not run through
+  // safeRedirectTarget (that guard is for user-supplied return paths).
+  redirect(data.url);
+}
+
 export async function signIn(formData: FormData) {
   const redirectTo = safeRedirectTarget(formData.get("redirectTo"));
 
