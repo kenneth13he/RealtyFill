@@ -20,17 +20,19 @@
 //
 // Accepts two request shapes:
 //   - JSON: { text: string } — pasted listing text
-//   - multipart/form-data: one or more "file" fields containing PDFs — each
-//     sent to Claude natively as its own `document` content block (base64),
-//     NOT flattened to text first. An earlier version pre-extracted text via
-//     lib/pdfText.ts / pypdf, which loses table/column layout (e.g. REALM's
-//     two-column property-info table can linearize into a jumbled
-//     label/value order) — sending the actual PDF lets Claude read the real
-//     layout instead. Multiple files (main listing sheet + Schedules/
-//     Addenda attachments) are sent together in one message so the model can
-//     pull a fact from whichever document actually states it — e.g. rent
-//     payment method is often on a Schedule, not the main sheet — rather
-//     than only reading the first file.
+//   - multipart/form-data: one or more "file" fields containing PDFs and/or
+//     plain-text (.txt) files. A PDF is sent to Claude natively as its own
+//     `document` content block (base64), NOT flattened to text first — an
+//     earlier version pre-extracted text via lib/pdfText.ts / pypdf, which
+//     loses table/column layout (e.g. REALM's two-column property-info
+//     table can linearize into a jumbled label/value order) — sending the
+//     actual PDF lets Claude read the real layout instead. A .txt file has
+//     no layout to preserve, so it's just read as text and folded into the
+//     message the same way pasted text is. Multiple files (main listing
+//     sheet + Schedules/Addenda attachments, any mix of PDF/.txt) are sent
+//     together in one message so the model can pull a fact from whichever
+//     document actually states it — e.g. rent payment method is often on a
+//     Schedule, not the main sheet — rather than only reading the first file.
 
 import { NextResponse } from "next/server";
 import { claudeExtractWithTool } from "@/lib/claude";
@@ -105,30 +107,42 @@ async function getUserContent(request: Request): Promise<Anthropic.MessageParam[
     const formData = await request.formData();
     const files = formData.getAll("file").filter((f): f is File => f instanceof File);
     if (files.length === 0) {
-      throw new Error("No PDF file provided");
+      throw new Error("No file provided");
     }
-    const nonPdf = files.find((f) => f.type !== "application/pdf");
-    if (nonPdf) {
-      throw new Error(`"${nonPdf.name}" isn't a PDF`);
+    // PDFs go to Claude as a native `document` block (preserves table/column
+    // layout — important for MLS listing sheets). A plain text file has no
+    // layout to preserve, so it's just read as text and folded in the same
+    // way pasted text already is — some browsers don't set a MIME type for
+    // .txt at all, hence the extension fallback.
+    const isPdf = (f: File) => f.type === "application/pdf";
+    const isText = (f: File) => f.type === "text/plain" || f.type === "" || f.name.toLowerCase().endsWith(".txt");
+    const unsupported = files.find((f) => !isPdf(f) && !isText(f));
+    if (unsupported) {
+      throw new Error(`"${unsupported.name}" isn't a supported file type — only PDF and plain text (.txt) are.`);
     }
 
-    const documentBlocks = await Promise.all(
-      files.map(async (file) => ({
-        type: "document" as const,
-        source: {
-          type: "base64" as const,
-          media_type: "application/pdf" as const,
-          data: Buffer.from(await file.arrayBuffer()).toString("base64"),
-        },
-      }))
+    const blocks = await Promise.all(
+      files.map(async (file) => {
+        if (isPdf(file)) {
+          return {
+            type: "document" as const,
+            source: {
+              type: "base64" as const,
+              media_type: "application/pdf" as const,
+              data: Buffer.from(await file.arrayBuffer()).toString("base64"),
+            },
+          };
+        }
+        return { type: "text" as const, text: `File "${file.name}":\n\n"""\n${await file.text()}\n"""` };
+      })
     );
 
     const instruction =
       files.length > 1
-        ? `Extract the listing fields from these ${files.length} PDF documents per the system instructions. They're all for the same property/deal (e.g. a main listing sheet plus Schedule/Addendum attachments) — read all of them as one combined source rather than assuming only the first file matters.`
-        : "Extract the listing fields from this PDF per the system instructions.";
+        ? `Extract the listing fields from these ${files.length} documents per the system instructions. They're all for the same property/deal (e.g. a main listing sheet plus Schedule/Addendum attachments) — read all of them as one combined source rather than assuming only the first file matters.`
+        : "Extract the listing fields from this document per the system instructions.";
 
-    return [...documentBlocks, { type: "text", text: instruction }];
+    return [...blocks, { type: "text", text: instruction }];
   }
 
   const body = await request.json();

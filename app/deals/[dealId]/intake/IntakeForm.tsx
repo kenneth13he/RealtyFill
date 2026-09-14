@@ -112,7 +112,7 @@ export default function IntakeForm({
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-lg border border-[var(--color-border)] bg-white p-4">
             <label htmlFor="listing-file" className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">
-              Upload listing PDF(s)
+              Upload listing file(s) — PDF or .txt
             </label>
             <p className="mb-1.5 text-xs text-[var(--color-text-muted)]">
               Link the main listing sheet plus any Schedules/Addenda — details like rent payment method are often on
@@ -122,7 +122,7 @@ export default function IntakeForm({
             <input
               id="listing-file"
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,.pdf,text/plain,.txt"
               multiple
               onChange={(e) => {
                 const newFiles = Array.from(e.target.files ?? []);
@@ -156,8 +156,8 @@ export default function IntakeForm({
               {extracting
                 ? "Extracting…"
                 : listingFiles.length > 1
-                  ? `Extract from ${listingFiles.length} PDFs`
-                  : "Extract from PDF"}
+                  ? `Extract from ${listingFiles.length} files`
+                  : "Extract from file"}
             </button>
           </div>
 
