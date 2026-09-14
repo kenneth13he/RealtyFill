@@ -1,0 +1,593 @@
+[
+  {
+    "field_id": "txtbuyer1",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      77.99881,
+      681.6683,
+      310.9952,
+      694.0015
+    ]
+  },
+  {
+    "field_id": "hidband",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      311.3286,
+      681.6683,
+      348.9947,
+      694.0015
+    ]
+  },
+  {
+    "field_id": "txtbuyer2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      349.328,
+      681.6683,
+      571.658,
+      694.0015
+    ]
+  },
+  {
+    "field_id": "txtseller1",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      90.66528,
+      665.002,
+      310.3286,
+      678.0018
+    ]
+  },
+  {
+    "field_id": "hidsand",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      310.6619,
+      665.002,
+      348.328,
+      678.0018
+    ]
+  },
+  {
+    "field_id": "txtseller2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      348.6613,
+      665.002,
+      570.9913,
+      678.0018
+    ]
+  },
+  {
+    "field_id": "txtp_streetnum",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      196.3303,
+      648.0022,
+      220.6633,
+      661.3353
+    ]
+  },
+  {
+    "field_id": "txtp_street",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      220.9966,
+      648.0022,
+      359.6612,
+      661.3353
+    ]
+  },
+  {
+    "field_id": "txtp_UnitNumber",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      360.3279,
+      648.0022,
+      394.994,
+      661.3353
+    ]
+  },
+  {
+    "field_id": "txtp_city",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      395.3273,
+      648.0022,
+      503.659,
+      661.3353
+    ]
+  },
+  {
+    "field_id": "txtp_state",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      503.3257,
+      648.0022,
+      527.9919,
+      661.3353
+    ]
+  },
+  {
+    "field_id": "txtp_zipcode",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      527.6586,
+      648.0022,
+      571.9913,
+      661.3353
+    ]
+  },
+  {
+    "field_id": "chkOpt_ListBrok1",
+    "type": "checkbox",
+    "checked_value": "/1",
+    "unchecked_value": "/Off",
+    "page": 1,
+    "rect": [
+      78.33214,
+      533.6706,
+      90.99861,
+      546.3371
+    ]
+  },
+  {
+    "field_id": "chkOpt_provide",
+    "type": "radio_group",
+    "page": 1,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          113.3316,
+          510.3376,
+          125.9981,
+          522.6708
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          113.3316,
+          487.338,
+          125.9981,
+          499.6711
+        ]
+      },
+      {
+        "value": "/3",
+        "rect": [
+          113.3316,
+          464.3383,
+          125.9981,
+          476.6715
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtaddn_list",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      57.33246,
+      418.0057,
+      572.3246,
+      443.0053
+    ]
+  },
+  {
+    "field_id": "chkOpt_ListBrok2",
+    "type": "checkbox",
+    "checked_value": "/1",
+    "unchecked_value": "/Off",
+    "page": 1,
+    "rect": [
+      78.66547,
+      390.3394,
+      90.66528,
+      402.6726
+    ]
+  },
+  {
+    "field_id": "chkOpt_ListBrok2a",
+    "type": "checkbox",
+    "checked_value": "/1",
+    "unchecked_value": "/Off",
+    "page": 1,
+    "rect": [
+      78.66547,
+      377.3397,
+      90.66528,
+      389.3395
+    ]
+  },
+  {
+    "field_id": "txtaddn_list1",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      57.33246,
+      332.6737,
+      571.9913,
+      362.0066
+    ]
+  },
+  {
+    "field_id": "chkOpt_ListBrok3",
+    "type": "radio_group",
+    "page": 1,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          78.66547,
+          310.0074,
+          90.66528,
+          322.3405
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          78.66547,
+          296.6742,
+          90.66528,
+          309.0074
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "chkOpt_MultiDesign",
+    "type": "checkbox",
+    "checked_value": "/1",
+    "unchecked_value": "/Off",
+    "page": 1,
+    "rect": [
+      78.66547,
+      262.0081,
+      90.66528,
+      274.3412
+    ]
+  },
+  {
+    "field_id": "chkOpt_MultiRep1a",
+    "type": "checkbox",
+    "checked_value": "/1",
+    "unchecked_value": "/Off",
+    "page": 1,
+    "rect": [
+      113.3316,
+      247.3416,
+      125.6647,
+      259.3415
+    ]
+  },
+  {
+    "field_id": "chkOpt_CoOp2",
+    "type": "checkbox",
+    "checked_value": "/1",
+    "unchecked_value": "/Off",
+    "page": 1,
+    "rect": [
+      78.33214,
+      226.0086,
+      91.33194,
+      238.0085
+    ]
+  },
+  {
+    "field_id": "chkOpt_MultiRep1",
+    "type": "radio_group",
+    "page": 1,
+    "radio_options": [
+      {
+        "value": "/0",
+        "rect": [
+          113.6649,
+          211.3422,
+          125.9981,
+          223.6753
+        ]
+      },
+      {
+        "value": "/1",
+        "rect": [
+          113.3316,
+          174.6761,
+          125.6647,
+          187.6759
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtp_bal2ndMortgage",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      191.6637,
+      199.3424,
+      320.9951,
+      211.6755
+    ]
+  },
+  {
+    "field_id": "txtcoopCommisionC1",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      133.998,
+      149.0098,
+      573.3246,
+      175.0094
+    ]
+  },
+  {
+    "field_id": "txtaddn_coop",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      56.99913,
+      111.677,
+      572.658,
+      136.6767
+    ]
+  },
+  {
+    "field_id": "txts_broker",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      40.33272,
+      611.6694,
+      297.3288,
+      623.3359
+    ]
+  },
+  {
+    "field_id": "txtl_broker",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      308.9953,
+      611.6694,
+      565.658,
+      623.3359
+    ]
+  },
+  {
+    "field_id": "txts_brkaddr",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      40.66605,
+      588.0031,
+      150.331,
+      598.6696
+    ]
+  },
+  {
+    "field_id": "txts_brkcity",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      150.331,
+      588.0031,
+      230.3298,
+      598.6696
+    ]
+  },
+  {
+    "field_id": "txts_brkstate",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      230.3298,
+      588.0031,
+      254.6628,
+      598.6696
+    ]
+  },
+  {
+    "field_id": "txts_brkzipcode",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      254.6628,
+      588.0031,
+      296.6621,
+      598.6696
+    ]
+  },
+  {
+    "field_id": "txtl_brkaddr",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      308.9953,
+      588.0031,
+      421.9936,
+      598.6696
+    ]
+  },
+  {
+    "field_id": "txtl_brkcity",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      421.9936,
+      588.0031,
+      501.9923,
+      598.6696
+    ]
+  },
+  {
+    "field_id": "txtl_brkstate",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      501.9923,
+      588.0031,
+      526.3253,
+      598.6696
+    ]
+  },
+  {
+    "field_id": "txtl_brkzipcode",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      526.3253,
+      588.0031,
+      568.3246,
+      598.6696
+    ]
+  },
+  {
+    "field_id": "txts_brkphone",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      56.6658,
+      566.6701,
+      157.3309,
+      578.3366
+    ]
+  },
+  {
+    "field_id": "txts_brkfax",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      177.664,
+      566.6701,
+      295.3288,
+      578.3366
+    ]
+  },
+  {
+    "field_id": "txtl_brkphone",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      324.995,
+      566.6701,
+      426.3268,
+      578.3366
+    ]
+  },
+  {
+    "field_id": "txtl_brkfax",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      446.3265,
+      566.6701,
+      565.3247,
+      578.3366
+    ]
+  },
+  {
+    "field_id": "txtSellSign",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      39.99939,
+      545.6704,
+      296.9955,
+      557.6702
+    ]
+  },
+  {
+    "field_id": "txtBuySign",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      309.3286,
+      545.6704,
+      565.9913,
+      557.6702
+    ]
+  },
+  {
+    "field_id": "txts_brkagent",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      40.33272,
+      500.6711,
+      296.3288,
+      512.671
+    ]
+  },
+  {
+    "field_id": "txtl_brkagent",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      309.6619,
+      500.6711,
+      564.658,
+      512.671
+    ]
+  },
+  {
+    "field_id": "txtsellersig1",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      404.3271,
+      318.0072,
+      468.9928,
+      329.007
+    ]
+  },
+  {
+    "field_id": "txtbuyersig1",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      103.6651,
+      317.6739,
+      188.3305,
+      329.007
+    ]
+  },
+  {
+    "field_id": "txtbuyersig2",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      103.6651,
+      294.6743,
+      188.3305,
+      306.0074
+    ]
+  },
+  {
+    "field_id": "txtsellersig2",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      404.3271,
+      294.6743,
+      468.9928,
+      306.0074
+    ]
+  }
+]

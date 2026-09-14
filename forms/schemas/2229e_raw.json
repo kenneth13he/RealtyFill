@@ -1,0 +1,1378 @@
+[
+  {
+    "field_id": "txtseller1",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      17.73616,
+      448.5977,
+      596.2369,
+      461.0508
+    ]
+  },
+  {
+    "field_id": "txtseller2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      17.73616,
+      421.4275,
+      596.2369,
+      433.8805
+    ]
+  },
+  {
+    "field_id": "txtseller3",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      17.73616,
+      394.2572,
+      596.2369,
+      406.7102
+    ]
+  },
+  {
+    "field_id": "txtseller4",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      17.73616,
+      367.4643,
+      596.2369,
+      379.9173
+    ]
+  },
+  {
+    "field_id": "txtLandlord5",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      17.73616,
+      340.6713,
+      594.35,
+      353.1244
+    ]
+  },
+  {
+    "field_id": "txtbuyer1LName",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      17.73616,
+      235.3865,
+      360.0063,
+      247.8395
+    ]
+  },
+  {
+    "field_id": "txtbuyer1FName",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      360.3837,
+      235.3865,
+      594.7274,
+      247.8395
+    ]
+  },
+  {
+    "field_id": "txtbuyer2LName",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      17.73616,
+      208.2162,
+      360.0063,
+      220.6692
+    ]
+  },
+  {
+    "field_id": "txtbuyer2FName",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      360.3837,
+      208.2162,
+      594.7274,
+      220.6692
+    ]
+  },
+  {
+    "field_id": "txtbuyer3LName",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      17.73616,
+      181.4232,
+      360.0063,
+      193.8763
+    ]
+  },
+  {
+    "field_id": "txtbuyer3FName",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      360.3837,
+      181.4232,
+      594.7274,
+      193.8763
+    ]
+  },
+  {
+    "field_id": "txtbuyer4LName",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      17.73616,
+      154.253,
+      360.0063,
+      166.706
+    ]
+  },
+  {
+    "field_id": "txtbuyer4FName",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      360.3837,
+      154.253,
+      594.7274,
+      166.706
+    ]
+  },
+  {
+    "field_id": "txtTenant5LName",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      17.73616,
+      127.46,
+      360.0063,
+      139.9131
+    ]
+  },
+  {
+    "field_id": "txtTenant5FName",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      360.3837,
+      127.46,
+      594.7274,
+      139.9131
+    ]
+  },
+  {
+    "field_id": "txtp_unitNumber",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      17.73616,
+      33.87349,
+      215.8528,
+      46.32654
+    ]
+  },
+  {
+    "field_id": "txtp_streetnum",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      216.2302,
+      33.87349,
+      305.6657,
+      46.32654
+    ]
+  },
+  {
+    "field_id": "txtp_street",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      306.0431,
+      33.87349,
+      594.35,
+      46.32654
+    ]
+  },
+  {
+    "field_id": "txtp_city",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      17.73616,
+      743.3199,
+      305.6657,
+      755.7729
+    ]
+  },
+  {
+    "field_id": "txtp_zipcode",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      504.1598,
+      743.3199,
+      594.7274,
+      755.7729
+    ]
+  },
+  {
+    "field_id": "txtParkingInfo",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      17.73616,
+      699.5455,
+      593.218,
+      711.9986
+    ]
+  },
+  {
+    "field_id": "chkOpt_Condo",
+    "type": "radio_group",
+    "page": 2,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          19.62299,
+          662.5638,
+          33.58549,
+          676.5263
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          69.43518,
+          662.5638,
+          83.39769,
+          676.5263
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtSellUnit",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      17.73616,
+      568.9772,
+      107.9264,
+      581.4303
+    ]
+  },
+  {
+    "field_id": "txtS_streetnum",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      108.3038,
+      568.9772,
+      197.7393,
+      581.4303
+    ]
+  },
+  {
+    "field_id": "txtS_street",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      198.1167,
+      568.9772,
+      521.8959,
+      581.4303
+    ]
+  },
+  {
+    "field_id": "txts_POBox",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      522.2733,
+      568.9772,
+      594.35,
+      581.4303
+    ]
+  },
+  {
+    "field_id": "txtS_city",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      17.73616,
+      541.8069,
+      269.8161,
+      554.26
+    ]
+  },
+  {
+    "field_id": "txtS_state",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      270.1934,
+      541.8069,
+      467.9327,
+      554.26
+    ]
+  },
+  {
+    "field_id": "txtS_zipcode",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      467.9327,
+      541.8069,
+      593.9727,
+      554.26
+    ]
+  },
+  {
+    "field_id": "chkOpt_Docs",
+    "type": "radio_group",
+    "page": 2,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          19.62299,
+          491.6174,
+          33.58549,
+          505.5799
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          69.81255,
+          491.6174,
+          83.77505,
+          505.5799
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtDocEmail",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      16.98143,
+      450.1072,
+      597.7463,
+      474.6359
+    ]
+  },
+  {
+    "field_id": "chkOpt_EmergInfo",
+    "type": "radio_group",
+    "page": 2,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          19.62299,
+          420.6727,
+          33.58549,
+          434.6353
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          69.81255,
+          420.6727,
+          83.77505,
+          434.6353
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtEmergencyInfo",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      16.60406,
+      384.0683,
+      594.35,
+      405.9555
+    ]
+  },
+  {
+    "field_id": "txtLeaseStartDate",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      135.8514,
+      304.0669,
+      219.6265,
+      316.52
+    ]
+  },
+  {
+    "field_id": "chkOpt_Tenancy",
+    "type": "radio_group",
+    "page": 2,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          19.62299,
+          257.651,
+          33.58549,
+          271.6135
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          19.62299,
+          231.2354,
+          33.58549,
+          245.198
+        ]
+      },
+      {
+        "value": "/3",
+        "rect": [
+          19.62299,
+          209.7256,
+          33.58549,
+          223.6881
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtLeaseEndDate",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      192.0788,
+      257.2737,
+      274.7218,
+      269.7267
+    ]
+  },
+  {
+    "field_id": "txtTenancyOther",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      236.9853,
+      209.7256,
+      585.2933,
+      222.1787
+    ]
+  },
+  {
+    "field_id": "txtRentPaidOn",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      150.1913,
+      121.4222,
+      256.6083,
+      133.8752
+    ]
+  },
+  {
+    "field_id": "chkOpt_RentPaid",
+    "type": "radio_group",
+    "page": 2,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          38.11388,
+          100.2897,
+          52.07639,
+          114.2523
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          38.11388,
+          80.2894,
+          52.07639,
+          94.25191
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtRentOther",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      152.8329,
+      78.77994,
+      504.1598,
+      91.23299
+    ]
+  },
+  {
+    "field_id": "txtp_MonthlyRentAmount",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      359.6289,
+      35.76031,
+      509.8203,
+      47.45863
+    ]
+  },
+  {
+    "field_id": "txtMonthlyParking",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      359.6289,
+      752.754,
+      509.8203,
+      764.4523
+    ]
+  },
+  {
+    "field_id": "txtOthServ1",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      73.96356,
+      712.7534,
+      353.2137,
+      725.2064
+    ]
+  },
+  {
+    "field_id": "txtOthServiceCost1",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      359.6289,
+      712.7534,
+      509.8203,
+      724.4517
+    ]
+  },
+  {
+    "field_id": "txtOthServ2",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      73.96356,
+      690.4888,
+      353.2137,
+      702.9418
+    ]
+  },
+  {
+    "field_id": "txtOthServiceCost2",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      359.6289,
+      690.4888,
+      509.8203,
+      702.1871
+    ]
+  },
+  {
+    "field_id": "txtOthServ3",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      73.96356,
+      668.6016,
+      353.2137,
+      681.0547
+    ]
+  },
+  {
+    "field_id": "txtOthServiceCost3",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      359.6289,
+      668.6016,
+      509.8203,
+      680.2999
+    ]
+  },
+  {
+    "field_id": "txtRentTotal",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      359.6289,
+      650.4881,
+      509.8203,
+      662.1864
+    ]
+  },
+  {
+    "field_id": "txtRentPayable",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      16.60406,
+      542.939,
+      592.8406,
+      573.883
+    ]
+  },
+  {
+    "field_id": "txtRentMethod",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      17.73616,
+      507.8441,
+      590.199,
+      520.2971
+    ]
+  },
+  {
+    "field_id": "txtPartRent",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      444.5361,
+      441.8052,
+      553.2172,
+      454.2582
+    ]
+  },
+  {
+    "field_id": "txtPartRentPayOnDate",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      42.26489,
+      419.5406,
+      123.7758,
+      431.9937
+    ]
+  },
+  {
+    "field_id": "txtPartRentStartDate",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      360.761,
+      417.2764,
+      436.9888,
+      429.7295
+    ]
+  },
+  {
+    "field_id": "txtPartRentEndDate",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      464.5364,
+      417.2764,
+      542.2737,
+      429.7295
+    ]
+  },
+  {
+    "field_id": "txtAddFee",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      157.3613,
+      361.8038,
+      266.4198,
+      374.2568
+    ]
+  },
+  {
+    "field_id": "chkOpt_Gas",
+    "type": "radio_group",
+    "page": 3,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          340.3833,
+          248.5942,
+          354.3458,
+          262.5568
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          383.403,
+          248.5942,
+          397.7428,
+          262.5568
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "chkOpt_AC",
+    "type": "radio_group",
+    "page": 3,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          340.3833,
+          227.0844,
+          354.3458,
+          241.0469
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          383.403,
+          227.0844,
+          397.7428,
+          241.0469
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "chkOpt_AddStorage",
+    "type": "radio_group",
+    "page": 3,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          340.3833,
+          205.5746,
+          354.3458,
+          219.5371
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          383.403,
+          205.5746,
+          397.7428,
+          219.5371
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "chkOpt_OnSiteLaund",
+    "type": "radio_group",
+    "page": 3,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          340.3833,
+          183.6874,
+          354.3458,
+          197.6499
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          383.403,
+          183.6874,
+          397.7428,
+          197.6499
+        ]
+      },
+      {
+        "value": "/3",
+        "rect": [
+          419.63,
+          183.6874,
+          433.5925,
+          197.6499
+        ]
+      },
+      {
+        "value": "/4",
+        "rect": [
+          491.7067,
+          183.6874,
+          506.0466,
+          197.6499
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "chkOpt_GuestPark",
+    "type": "radio_group",
+    "page": 3,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          340.3833,
+          162.1776,
+          354.3458,
+          176.1401
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          383.403,
+          162.1776,
+          397.7428,
+          176.1401
+        ]
+      },
+      {
+        "value": "/3",
+        "rect": [
+          419.63,
+          162.1776,
+          433.5925,
+          176.1401
+        ]
+      },
+      {
+        "value": "/4",
+        "rect": [
+          491.7067,
+          162.1776,
+          506.0466,
+          176.1401
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtUtilitiesOther1",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      67.92572,
+      142.932,
+      321.8924,
+      155.3851
+    ]
+  },
+  {
+    "field_id": "chkOpt_UtilOth1",
+    "type": "radio_group",
+    "page": 3,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          340.3833,
+          140.6678,
+          354.3458,
+          154.6303
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          383.403,
+          140.6678,
+          397.7428,
+          154.6303
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtUtilitiesOther2",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      67.92572,
+      121.4222,
+      321.8924,
+      133.8752
+    ]
+  },
+  {
+    "field_id": "chkOpt_UtilOth2",
+    "type": "radio_group",
+    "page": 3,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          340.3833,
+          119.158,
+          354.3458,
+          133.1205
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          383.403,
+          119.158,
+          397.7428,
+          133.1205
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtUtilitiesOther3",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      67.92572,
+      99.53502,
+      321.8924,
+      111.9881
+    ]
+  },
+  {
+    "field_id": "chkOpt_UtilOth3",
+    "type": "radio_group",
+    "page": 3,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          340.3833,
+          97.27083,
+          354.3458,
+          111.2333
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          383.403,
+          97.27083,
+          397.7428,
+          111.2333
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtUtilAddDetails",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      17.73616,
+      665.96,
+      592.8406,
+      787.849
+    ]
+  },
+  {
+    "field_id": "chkOpt_Elec",
+    "type": "radio_group",
+    "page": 4,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          73.20883,
+          620.6763,
+          87.17134,
+          634.6387
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          145.6629,
+          620.6763,
+          159.6254,
+          634.6387
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "chkOpt_Heat",
+    "type": "radio_group",
+    "page": 4,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          73.20883,
+          598.7891,
+          87.17134,
+          613.129
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          145.6629,
+          598.7891,
+          159.6254,
+          613.129
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "chkOpt_Water",
+    "type": "radio_group",
+    "page": 4,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          73.20883,
+          577.2792,
+          87.17134,
+          591.2418
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          145.6629,
+          577.2792,
+          159.6254,
+          591.2418
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtUtilAddDetails2",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      20.00035,
+      425.9558,
+      593.218,
+      544.0711
+    ]
+  },
+  {
+    "field_id": "chkOpt_RentDisc",
+    "type": "radio_group",
+    "page": 4,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          19.62299,
+          363.3132,
+          33.58549,
+          376.8984
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          19.62299,
+          323.3125,
+          33.58549,
+          337.6524
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtRentDiscAddDetails",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      19.24562,
+      232.3675,
+      592.4633,
+      307.8405
+    ]
+  },
+  {
+    "field_id": "chkOpt_RentDeposit",
+    "type": "radio_group",
+    "page": 4,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          19.62299,
+          124.8185,
+          33.58549,
+          138.781
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          19.62299,
+          85.94987,
+          33.58549,
+          100.2897
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtrentDeposit",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      205.2866,
+      85.57251,
+      301.8921,
+      98.02556
+    ]
+  },
+  {
+    "field_id": "chkOpt_KeyDeposit",
+    "type": "radio_group",
+    "page": 5,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          19.62299,
+          642.9408,
+          33.58549,
+          656.9033
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          19.62299,
+          607.4684,
+          33.58549,
+          621.431
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtKeyDeposit",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      252.8346,
+      607.4684,
+      350.9496,
+      619.9215
+    ]
+  },
+  {
+    "field_id": "txtKeyDepositAddDetails",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      19.62299,
+      497.6552,
+      592.8406,
+      571.2414
+    ]
+  },
+  {
+    "field_id": "chkOpt_Smoking",
+    "type": "radio_group",
+    "page": 5,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          19.24562,
+          359.917,
+          33.20813,
+          373.8795
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          19.24562,
+          324.0673,
+          33.20813,
+          338.0298
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtSmokingAddDetails",
+    "type": "text",
+    "page": 5,
+    "rect": [
+      19.24562,
+      233.4996,
+      592.4633,
+      304.8216
+    ]
+  },
+  {
+    "field_id": "chkOpt_Insurance",
+    "type": "radio_group",
+    "page": 5,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          19.62299,
+          110.856,
+          33.58549,
+          124.8185
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          19.62299,
+          75.38365,
+          33.58549,
+          89.72353
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "chkOpt_Terms",
+    "type": "radio_group",
+    "page": 6,
+    "radio_options": [
+      {
+        "value": "/1",
+        "rect": [
+          19.62299,
+          108.9691,
+          33.58549,
+          123.309
+        ]
+      },
+      {
+        "value": "/2",
+        "rect": [
+          19.62299,
+          66.70425,
+          33.58549,
+          81.04413
+        ]
+      }
+    ]
+  },
+  {
+    "field_id": "txtsellersig1",
+    "type": "text",
+    "page": 7,
+    "rect": [
+      17.73616,
+      519.165,
+      251.7025,
+      530.8633
+    ]
+  },
+  {
+    "field_id": "txtsellersig2",
+    "type": "text",
+    "page": 7,
+    "rect": [
+      17.73616,
+      479.5417,
+      251.7025,
+      491.24
+    ]
+  },
+  {
+    "field_id": "txtsellersig3",
+    "type": "text",
+    "page": 7,
+    "rect": [
+      17.73616,
+      439.9183,
+      251.7025,
+      451.6167
+    ]
+  },
+  {
+    "field_id": "txtsellersig4",
+    "type": "text",
+    "page": 7,
+    "rect": [
+      17.73616,
+      400.295,
+      251.7025,
+      411.9933
+    ]
+  },
+  {
+    "field_id": "txtbuyersig1",
+    "type": "text",
+    "page": 7,
+    "rect": [
+      17.73616,
+      313.501,
+      251.7025,
+      325.1994
+    ]
+  },
+  {
+    "field_id": "txtbuyersig2",
+    "type": "text",
+    "page": 7,
+    "rect": [
+      17.73616,
+      273.8777,
+      251.7025,
+      285.576
+    ]
+  },
+  {
+    "field_id": "txtbuyersig3",
+    "type": "text",
+    "page": 7,
+    "rect": [
+      17.73616,
+      234.2544,
+      251.7025,
+      245.9527
+    ]
+  },
+  {
+    "field_id": "txtbuyersig4",
+    "type": "text",
+    "page": 7,
+    "rect": [
+      17.73616,
+      194.631,
+      251.7025,
+      206.3293
+    ]
+  },
+  {
+    "field_id": "txtTenant5Sig",
+    "type": "text",
+    "page": 7,
+    "rect": [
+      17.73616,
+      155.0077,
+      251.7025,
+      166.706
+    ]
+  },
+  {
+    "field_id": "txtTenant6Sig",
+    "type": "text",
+    "page": 7,
+    "rect": [
+      17.73616,
+      115.7617,
+      251.7025,
+      127.46
+    ]
+  }
+]
