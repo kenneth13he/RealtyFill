@@ -7,7 +7,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 function safeRedirectTarget(raw: FormDataEntryValue | null): string {
   const value = typeof raw === "string" ? raw : "";
@@ -15,10 +17,24 @@ function safeRedirectTarget(raw: FormDataEntryValue | null): string {
   return value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
 }
 
+// Best-effort client IP: trusts the first hop's x-forwarded-for, which is
+// fine once Step 9 puts a real reverse proxy/host in front of this (it sets
+// that header itself) — in local dev without one, everything just shares a
+// single "unknown" bucket, which is an acceptable dev-only limitation.
+async function clientIp(): Promise<string> {
+  const h = await headers();
+  return h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+}
+
 export async function signIn(formData: FormData) {
+  const redirectTo = safeRedirectTarget(formData.get("redirectTo"));
+
+  if (!checkRateLimit(`signin:${await clientIp()}`, 10, 5 * 60 * 1000)) {
+    redirect(`/login?error=${encodeURIComponent("Too many sign-in attempts — please wait a few minutes and try again.")}&redirectTo=${encodeURIComponent(redirectTo)}`);
+  }
+
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
-  const redirectTo = safeRedirectTarget(formData.get("redirectTo"));
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -29,9 +45,14 @@ export async function signIn(formData: FormData) {
 }
 
 export async function signUp(formData: FormData) {
+  const redirectTo = safeRedirectTarget(formData.get("redirectTo"));
+
+  if (!checkRateLimit(`signup:${await clientIp()}`, 5, 15 * 60 * 1000)) {
+    redirect(`/login?mode=signup&error=${encodeURIComponent("Too many sign-up attempts — please wait a while and try again.")}&redirectTo=${encodeURIComponent(redirectTo)}`);
+  }
+
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
-  const redirectTo = safeRedirectTarget(formData.get("redirectTo"));
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({

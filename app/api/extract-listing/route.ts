@@ -36,6 +36,7 @@ import { NextResponse } from "next/server";
 import { claudeExtractWithTool } from "@/lib/claude";
 import { splitFullName } from "@/lib/splitFullName";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/rateLimit";
 import type Anthropic from "@anthropic-ai/sdk";
 
 const SYSTEM_PROMPT = `You are extracting structured data from a real-estate listing export (e.g. a REALM/MLS printout) for an Ontario rental deal. Accuracy matters more than completeness — this feeds real legal/transactional forms.
@@ -152,6 +153,14 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  // This is the one endpoint in the app that costs real money per call
+  // (Claude API). Per-user rather than per-IP, since it's already
+  // authenticated — a generous cap meant to catch a runaway client/bug or
+  // abuse, not to constrain normal usage (a realtor pasting updates all day
+  // won't come close to 60/hour).
+  if (!checkRateLimit(`extract:${user.id}`, 60, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Rate limit exceeded — please wait a while before trying again." }, { status: 429 });
   }
 
   let userContent: Anthropic.MessageParam["content"];
