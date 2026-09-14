@@ -25,6 +25,20 @@ export interface FillableField {
 // product/legal boundary — matched by common naming patterns across all five forms.
 const SIGNATURE_FIELD_PATTERN = /sig|Signature/i;
 
+// Exception: txtbuyersig#/txtsellersig#/txtTenantNSig are the printed-NAME
+// column of each landlord/tenant signature row, not the signature itself,
+// despite the misleading "sig" in their field ID — confirmed by inspecting
+// the actual PDF layout (2229E page 7: each row prints "Name | Signature |
+// Date" as three columns, but only ONE fillable field exists per row, and
+// its rect (x: 17.7-251.7 of a ~612pt page) lines up with the leftmost
+// "Name" column only — the real Signature/Date columns have no fillable
+// field at all, so there's nothing for this exception to accidentally
+// collide with). This file's own header comment already documented these
+// exact fields as intended fill targets before the blanket pattern above
+// was added and silently broke that — this restores it precisely rather
+// than loosening the rule for every "sig"-named field on every form.
+const NAME_FIELD_EXCEPTION = /^txt(?:buyer|seller)sig\d+$|^txtTenant\dSig$/;
+
 export function mapIntakeToFormFields(
   intakeAnswers: Record<string, string>,
   formId: FormId,
@@ -43,7 +57,7 @@ export function mapIntakeToFormFields(
       if (answer === undefined || answer === null || answer === "") continue;
 
       for (const fieldId of targetIds) {
-        if (SIGNATURE_FIELD_PATTERN.test(fieldId)) continue;
+        if (SIGNATURE_FIELD_PATTERN.test(fieldId) && !NAME_FIELD_EXCEPTION.test(fieldId)) continue;
         const page = pageByFieldId.get(fieldId);
         if (page === undefined) continue; // field not present on this form/page — skip rather than error
         out.push({ field_id: fieldId, page, value: answer });
