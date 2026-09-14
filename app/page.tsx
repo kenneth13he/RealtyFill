@@ -1,25 +1,24 @@
 // app/page.tsx
-// Home page. Phase 1: single entry point into the intake -> review -> generate
-// flow. Phase 2 replaces this with a realtor's deal dashboard (list of their
-// deals via Supabase, behind auth) — see docs/PROJECT_STRUCTURE.md.
+// Logged-out landing page. Phase 2: a signed-in visit redirects straight to
+// /dashboard (the multi-deal list) — this page is only ever the pitch +
+// sign-in/sign-up entry point now, replacing the old single-deal
+// "Start a new deal" button that only ever made sense when there was one
+// deal, singular, for the whole app.
 
-import fs from "fs/promises";
-import path from "path";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
-import StartNewDealButton from "@/components/StartNewDealButton";
-
-async function hasExistingDeal(): Promise<boolean> {
-  try {
-    const raw = await fs.readFile(path.join(process.cwd(), "data", "deal.json"), "utf-8");
-    return Object.keys(JSON.parse(raw)).length > 0;
-  } catch {
-    return false;
-  }
-}
+import { createClient } from "@/lib/supabase/server";
 
 export default async function HomePage() {
-  const existingDeal = await hasExistingDeal();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    redirect("/dashboard");
+  }
+
   return (
     <>
       <Header />
@@ -30,12 +29,16 @@ export default async function HomePage() {
           paperwork it feeds. Enter it once, not five times.
         </p>
         <div className="mt-8 flex items-center gap-4">
-          <StartNewDealButton hasExistingDeal={existingDeal} />
-          {existingDeal && (
-            <Link href="/review" className="text-sm font-medium text-[var(--color-accent)] hover:underline">
-              Continue current deal →
-            </Link>
-          )}
+          <Link
+            href="/login?mode=signup"
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)]"
+          >
+            Sign up
+            <span aria-hidden>→</span>
+          </Link>
+          <Link href="/login" className="text-sm font-medium text-[var(--color-accent)] hover:underline">
+            Sign in
+          </Link>
         </div>
 
         <dl className="mt-16 grid grid-cols-1 gap-6 text-left sm:grid-cols-2">
