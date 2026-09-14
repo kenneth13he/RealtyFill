@@ -66,42 +66,50 @@ Goal: a small web app, not a script — someone other than you can run it unassi
 - Do: `create-next-app`, set up Tailwind, basic folder structure (`/app`, `/lib`, `/api`).
 - Done when: a blank Next.js app runs locally.
 
-### Step 9 — Auth
+### Step 9 — Auth ✅ Done
 - Do: integrate a managed auth provider (Supabase Auth, Clerk, or Auth.js). Email+password to start, magic-link if time allows.
 - Done when: a user can sign up, log in, log out, and a logged-out user is redirected away from protected pages.
+- **Built with Supabase Auth** (`app/login/`, `proxy.ts`, `lib/supabase/`). Verified directly: signup correctly handles email confirmation being required (doesn't redirect into a session that doesn't exist yet — a real bug caught by testing, not designed in from the start); sign-in establishes a real session; an unauthenticated request to a protected page redirects to `/login`; sign-out actually invalidates the session (confirmed the same cookie is rejected afterward, not just that a redirect happened). Magic-link not done — email+password only, per the "to start" scope here.
 
-### Step 10 — Database + row-level security
+### Step 10 — Database + row-level security ✅ Done
 - Do: set up Postgres (Supabase or Neon). Core tables: `users` (handled by auth), `deals` (one per property/client relationship, holding the shared Property Profile fields from Phase 1 Step 2), `deal_intake` (the structured intake form's saved answers per deal, from Phase 1 Step 3/4), `form_fills` (generated filled forms + their field values, one row per form per deal).
 - Do: enable row-level security so a realtor can only query their own `deals`/`deal_intake`/`form_fills`.
 - Done when: querying as user A never returns user B's rows, enforced at the DB level (test this directly, not just through the UI).
+- **Built** (`supabase/migrations/0001_init.sql`): `deals`, `deal_intake` (JSONB `answers` blob — same shape the app already used, not normalized into per-field columns, so this was a storage-location swap rather than a data-model rewrite), `generated_forms` (the `form_fills` from this plan, renamed), `profiles` (Step 15's Property Profile persistence — see below). RLS on all four. **Tested directly at the DB level as instructed here**, not just through the UI: created two real accounts, had one try to read and then overwrite the other's `deal_intake` row — the read came back empty, the write was rejected, and the victim's data was confirmed unchanged afterward.
 
-### Step 11 — File storage
+### Step 11 — File storage ✅ Done
 - Do: set up private object storage (Supabase Storage or S3), no public bucket access, short-lived signed URLs for the owning user only.
 - Done when: uploading a document (e.g. a pasted listing export saved as a PDF) stores it privately and a signed download link works only for its owner.
+- **Built** with Supabase Storage: private `generated-forms` bucket, objects at `{user_id}/{dealId}/{form}.pdf`, RLS policies scoped to the same prefix. A generated PDF was downloaded through a real signed URL and its field values inspected with `pypdf` to confirm they were actually correct, not just that a file came back.
 
-### Step 12 — Deal Intake Form UI
+### Step 12 — Deal Intake Form UI ✅ Done
 - Do: build the page version of the Phase 1 structured intake form (Step 4) — the same field groups (Parties → Property → Rent & Deposits → Terms & Conditions → Brokerage Info), now saving to the `deal_intake` table instead of a local JSON file. Keep the optional "pre-fill property fields from a pasted listing export" path from Phase 1.
 - Done when: a realtor can create a `deal` and fill out its intake form through the UI, with answers persisted and re-editable.
+- **Built** at `/deals/[dealId]/intake` — the Phase 1 form UI itself (`IntakeForm.tsx`) barely changed; it now takes a `dealId` and calls the Step 10 table instead of a local file. The listing-extraction pre-fill path now also accepts multiple linked files (main sheet + Schedules) read together in one pass.
 
-### Step 13 — Form-selection + review UI
+### Step 13 — Form-selection + review UI ✅ Done
 - Do: build the UI (from Phase 1's minimal version, now wired to real data) that lets the realtor pick which of the five supported forms to generate for this `deal`, shows a summary of the intake form's saved answers, and lets the realtor correct any field before generating.
 - Done when: edits persist and only the *reviewed* `deal_intake` data is used to generate PDFs.
+- **Built** at `/deals/[dealId]/review`, plus more than this step originally scoped: inline field editing directly on the review page (autosaves and silently regenerates already-generated forms), and a free-text "Update with more info" box that extracts and applies corrections via the same Claude pipeline as the listing importer.
 
-### Step 14 — Generate + download filled PDFs
+### Step 14 — Generate + download filled PDFs ✅ Done
 - Do: wire the reviewed intake data into the fill pipeline (already form-selection-aware from Phase 1 Step 5), expose a "Generate" action, store each result in private storage, offer signed download links.
 - Done when: a realtor can go from intake form → select forms → review → download correctly filled PDFs for exactly the forms they chose, entirely through the UI.
+- **Built**: the fill pipeline itself (`lib/profileMapper.ts`, `lib/pdfFill.ts`) is completely unchanged from Phase 1 — only the input source and output destination moved. Verified the full chain for real: create deal → save intake → generate → download via signed URL → inspect actual field values with `pypdf`.
 
-### Step 15 — Property Profile persistence across sessions
+### Step 15 — Property Profile persistence across sessions ✅ Done (as brokerage defaults; full scope partial)
 - Do: persist the `deal`-level Property Profile (already defined as a schema in Phase 1 Step 2) so that returning to the same `deal` later, or generating an additional form for it, reuses the profile without re-entering it.
 - Done when: generating a new form for an existing `deal` pre-fills all shared profile fields automatically from the saved intake data, with only that form's own unique fields needing to be filled in.
+- **Built, scoped down**: a `profiles` table (Settings page, `/settings`) holds the realtor's own name/phone/brokerage name+address, seeded onto every *new* deal's intake answers at creation — verified end-to-end (saved a profile, created a deal, confirmed its intake answers were pre-filled from the profile). What's still open: this plan's original framing was more about a single deal's *existing* answers being reused across its own multiple forms, which Phase 1's intake→review flow already did implicitly (one shared answer set feeds all five forms via `targets`) — that part needed no new work. A cross-deal "reuse the tenant/landlord from a similar past deal" feature was not built and wasn't asked for.
 
 ### Step 16 — Add forms beyond the initial five (as they come up)
 - Do: repeat Phase 1 Step 1's per-form work (field-type discovery, schema, radio-group semantics) for the next form the parents actually need beyond 2229E/400/410/324/372 — e.g. Agreement of Purchase and Sale for sales-side deals — and extend the intake form schema to cover its unique fields.
 - Done when: the same intake → select → review → generate flow works for the new form, reusing the Property Profile where fields overlap.
 
-### Step 17 — Security pass before any real client data
+### Step 17 — Security pass before any real client data 🟡 Partial
 - Do: confirm HTTPS everywhere, secrets in env vars/secrets manager, rate limiting on login/intake endpoints, audit logging (who touched what deal, when), retention/deletion policy defined.
 - Done when: each item above is explicitly checked off, not assumed.
+- **Done**: rate limiting on `/login` (per-IP) and `/api/extract-listing` (per-user — the one endpoint that costs real money per call) via `lib/rateLimit.ts`, verified by actually triggering it. Every deal-scoped route checks ownership explicitly (`lib/supabase/getOwnedDeal.ts`) in addition to RLS. **Not done**: HTTPS confirmation (no deployment yet — Step 8 above), audit logging, retention/deletion policy.
 
 ### Step 18 — Pricing + first real user
 - Do: wire up billing (flat $20–30/month) via Stripe or similar once the parents (first real user) are ready to use it on an actual deal.

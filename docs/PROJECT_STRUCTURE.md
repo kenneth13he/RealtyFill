@@ -9,15 +9,28 @@ Status legend: 🔲 not started · 🟡 stubbed (header comment + TODOs, no logi
 ## `app/` — frontend (Next.js App Router)
 
 ### `app/layout.tsx` ✅
-Root layout wrapping every page. No CSS/theming yet (fine for Phase 1).
-- [ ] Phase 2: wrap `{children}` with an auth/session provider (Step 9)
+Root layout wrapping every page. No CSS/theming yet.
 
-### `app/page.tsx` ✅
-Home page — single CTA into `/intake`.
-- [ ] Phase 2: realtor's deal dashboard (list deals, behind auth)
+### `app/page.tsx` ✅ (Phase 2)
+Logged-out landing page. A signed-in visit redirects straight to `/dashboard`; signed-out sees the pitch + Sign in/Sign up links. Auth check via `lib/supabase/server.ts`.
 
-### `app/intake/page.tsx` ✅ + `app/intake/IntakeForm.tsx` ✅
-The Deal Intake Form. Server component (`page.tsx`) loads `intake_form_schema.json` via `lib/schemas.ts`; client component (`IntakeForm.tsx`) renders it grouped by section and owns all form state.
+### `proxy.ts` ✅ (Phase 2)
+Next 16 renamed `middleware.ts` → `proxy.ts` (same mechanism). Refreshes the Supabase session cookie on every request and redirects an unauthenticated visitor away from `/deals/*`, `/dashboard`, `/settings` to `/login`. API routes are excluded from its matcher and check auth themselves (per Next's own guidance not to rely on proxy alone for that).
+
+### `app/login/page.tsx` ✅ + `app/login/actions.ts` ✅ (Phase 2)
+Combined sign-in/sign-up form. Server Actions handle `signIn`/`signUp`/`signOut` against Supabase Auth, rate-limited per-IP (`lib/rateLimit.ts`). `signUp` correctly detects when email confirmation is required (`data.session` is null) and shows a "check your email" message instead of redirecting into a session that doesn't exist yet — found by testing, not designed in from the start.
+
+### `app/auth/callback/route.ts` ✅ (Phase 2)
+Where Supabase's email-confirmation link points; exchanges the one-time code for a real session.
+
+### `app/dashboard/page.tsx` ✅ + `app/dashboard/DealsList.tsx` ✅ (Phase 2)
+The multi-deal dashboard — create a deal, filter by status (Active/Closed/Archived — this is "history" for now, not a field-level audit log), Close/Reopen/Archive actions.
+
+### `app/settings/page.tsx` ✅ + `app/settings/SettingsForm.tsx` ✅ (Phase 2)
+Profile + brokerage defaults (`profiles` table), seeded onto every new deal's intake answers on creation.
+
+### `app/deals/[dealId]/intake/page.tsx` ✅ + `IntakeForm.tsx` ✅ (Phase 2 — was `app/intake/`)
+The Deal Intake Form for one deal, scoped by `dealId` in the URL. Server component (`page.tsx`) reads `deal_intake.answers` from Postgres (RLS-scoped) instead of the old `data/deal.json`; client component (`IntakeForm.tsx`) is otherwise unchanged from Phase 1.
 - [x] Render each group from the schema
 - [x] Field-level input types (`text`, `currency`, `date`, `radio` → `<select>`, `checkbox`, `long_text`)
 - [x] Conditional fields (e.g. deposit amount only shown if `rent_deposit_required == '/2'`)
@@ -28,35 +41,39 @@ The Deal Intake Form. Server component (`page.tsx`) loads `intake_form_schema.js
 - [ ] Client-side validation (currently relies on native HTML input types only — an empty required field can be submitted)
 - [ ] Human-readable per-field labels are used, but there's no "required" visual indicator yet
 
-### `app/review/page.tsx` ✅ + `app/review/ReviewForm.tsx` ✅
-Review + form-selection screen, shown before any PDF is generated. Server component reads `data/deal.json`; client component owns selection + generation.
+### `app/deals/[dealId]/review/page.tsx` ✅ + `ReviewForm.tsx` ✅ (Phase 2 — was `app/review/`)
+Review + form-selection screen for one deal. Server component reads `deal_intake.answers` and `generated_forms` from Postgres instead of `data/deal.json` — also means revisiting a deal now shows its previously-generated PDFs instead of looking freshly empty, since output actually persists in Storage now (Phase 1 output was ephemeral local files scoped to one demo deal, so this case couldn't previously arise).
 - [x] Summary of intake answers grouped and labeled via the schema (not raw keys)
 - [x] Checkboxes for the five target forms
-- [x] Submit handler → `POST /api/generate`
-- [x] Generated forms are clickable rows, not plain download links — clicking one expands an inline `<iframe>` preview (`?inline=1` on the download route) using the browser's own native PDF viewer. Since these are real fillable AcroForms, the native viewer lets the realtor edit any field directly and save via its own toolbar — no custom PDF editor was built; the browser already does this for a real fillable form. No separate "Download" button is shown alongside the preview, since that would silently discard whatever the realtor just edited (we have no way to read edits made in the browser's native viewer back onto our server) — the native toolbar's own save/download is the only correct path once someone's edited it.
-- [ ] Per-field edit affordance beyond "go back to /intake" (currently just a link back, no inline edit)
+- [x] Submit handler → `POST /api/deals/[dealId]/generate`
+- [x] Generated forms are clickable rows, not plain download links — clicking one expands an inline `<iframe>` preview (`?inline=1` on the download route, now redirecting to a signed Storage URL) using the browser's own native PDF viewer.
+- [x] Inline "Edit answers" toggle on the review page itself (`components/IntakeFieldsEditor.tsx`, shared with the intake page) — edits autosave and, if forms were already generated, silently regenerate them
+- [x] "Update with more info" — paste free text (an email, a correction, a Schedule PDF) and matching fields update via `/api/extract-listing`, regenerating affected forms automatically
 - [ ] Only show/require fields relevant to the *currently checked* forms
 
 ---
 
 ## `app/api/` — backend (Next.js Route Handlers)
 
-### `app/api/intake/route.ts` ✅
-Persists Deal Intake Form answers to `data/deal.json` (Phase 1 local storage).
-- [x] `POST` saves the full answer map; `GET` returns it
-- [ ] Phase 2: persist to `deal_intake` table (Postgres, row-level security scoped to auth'd user) instead of a local file
+### `app/api/deals/route.ts` ✅ (Phase 2) + `app/api/deals/[dealId]/route.ts` ✅
+List/create deals (`GET`/`POST /api/deals`); update label/status (`PATCH /api/deals/[dealId]`). Creating a deal seeds its intake answers from the user's `profiles` row (brokerage defaults) and inserts an empty `deal_intake` row.
+
+### `app/api/deals/[dealId]/intake/route.ts` ✅ (Phase 2 — was `app/api/intake/`)
+Persists one deal's intake answers to the `deal_intake` table (Postgres, RLS-scoped to the signed-in user) instead of `data/deal.json`.
+- [x] `POST` upserts the full answer map; `GET` returns it
+- [x] Every route under `app/api/deals/[dealId]/*` checks ownership explicitly via `lib/supabase/getOwnedDeal.ts` before touching anything, on top of RLS enforcing it at the DB level regardless — verified with two real accounts (one attempting to overwrite the other's data gets a clean 404, not a raw Postgres RLS error, and the victim's data is confirmed untouched afterward)
 - [ ] Validate body against `intake_form_schema.json` / reject unknown keys (currently accepts anything)
 
-### `app/api/generate/route.ts` ✅
-Fill pipeline endpoint — turns reviewed intake answers into filled PDFs. Verified working end-to-end against real blank templates.
-- [x] Loads `data/deal.json`, maps each selected form via `lib/profileMapper.ts`, fills via `lib/pdfFill.ts`
+### `app/api/deals/[dealId]/generate/route.ts` ✅ (Phase 2 — was `app/api/generate/`)
+Fill pipeline endpoint — turns one deal's reviewed intake answers into filled PDFs. The fill pipeline itself (`lib/profileMapper.ts`, `lib/pdfFill.ts`) is untouched; only where the input comes from and the output goes changed.
+- [x] Loads `deal_intake.answers`, maps each selected form via `lib/profileMapper.ts`, fills via `lib/pdfFill.ts` to a temp file, uploads the bytes to Supabase Storage (`generated-forms` bucket, path `{user_id}/{dealId}/{form}.pdf`), records the result in `generated_forms`
 - [x] Returns `{ form, downloadUrl }[]`
 - [x] **Hard rule enforced**: `lib/profileMapper.ts` strips any field_id matching a signature-field naming pattern before it ever reaches the fill step
-- [ ] Phase 2: private object storage + signed URLs instead of local `data/output/`
+- [x] Verified end-to-end including the actual filled values (`pypdf` inspection of a real downloaded PDF, not just "the request succeeded")
 
-### `app/api/download/[form]/route.ts` ✅
-Serves a generated PDF from `data/output/`. Phase 1 only (unauthenticated local file read) — Phase 2 replaces with a signed URL.
-- [x] `?inline=1` serves with `Content-Disposition: inline` instead of `attachment`, so the PDF renders inside `app/review/ReviewForm.tsx`'s preview `<iframe>` instead of forcing a download. Verified the header actually switches (`curl -sI`) and, more importantly, verified in a real (non-headless-shell) Chromium browser that clicking a form opens the native PDF viewer inline with **no download event fired** — an earlier test using Playwright's stripped-down `chrome-headless-shell` build falsely showed a download firing, since that build has no PDF viewer extension; real Chrome does, and that's what matters here.
+### `app/api/deals/[dealId]/download/[form]/route.ts` ✅ (Phase 2 — was `app/api/download/[form]/`)
+Looks up the deal's `generated_forms` row and redirects to a short-lived Supabase Storage signed URL, instead of reading local `data/output/`.
+- [x] `?inline=1` omits the signed URL's `download` option so the PDF renders inline in the browser's native viewer; without it, `download` is set to the form's real filename, forcing a save-as.
 
 ### `app/api/extract-listing/route.ts` ✅
 The one AI-assisted endpoint in the app. Accepts either pasted listing text (JSON `{text}`) or an uploaded listing PDF (`multipart/form-data`). A PDF is sent to Claude **natively as a `document` content block** (base64) — not pre-flattened to text — so the model reads the real page layout (e.g. REALM's two-column property-info table) instead of a linearized wall of text. Both input paths converge on the same Claude call (`lib/claude.ts`, forced tool use).
@@ -75,6 +92,10 @@ This replaced an earlier version that force-guessed the six utility fields with 
 - [x] Explicit brokerage disambiguation instruction in the prompt — an earlier version swapped listing vs. co-op brokerage because it read the "Prepared By" header (whoever printed the report) as signal for which side is which; found by checking output against a real filled Form 400, fixed by telling the model to key off the "LISTING CONTRACTED WITH" / "CO-OP" headings instead and ignore "Prepared By" entirely
 - [ ] No retry/fallback on API errors — currently just surfaces the error to the UI
 - [ ] No file-size limit on the upload yet
+- [x] Phase 2: requires auth (401 if not signed in) and is rate-limited per-user (60/hour, `lib/rateLimit.ts`) — the one endpoint in the app that costs real money per call
+- [x] Accepts multiple linked files at once (main listing sheet + Schedule/Addendum attachments), sent to Claude together as separate document blocks in one message, since a fact (e.g. rent payment method) is often only stated on a Schedule
+- [x] Receives the deal's already-saved answers as context so it can resolve references (a name/brokerage matching one on file) instead of flagging them as ambiguous, and treats phrasing like "change X's last name to Y" as a direct instruction to execute rather than a fact to second-guess
+- [x] Response is validated as a real object before use, with one automatic retry — the model's forced tool-use response was observed to occasionally (rare, non-deterministic) return malformed data, which would otherwise silently corrupt `deal_intake` via the autosave path
 
 ---
 
@@ -107,6 +128,18 @@ Wrapper around the Anthropic API for the listing-extraction feature. Model `clau
 
 ### `lib/ollama.ts` 🟡 (kept for reference / offline use)
 The original local-model path. No longer called by `app/api/extract-listing/route.ts`, but left in place — useful if the app ever needs to run fully offline/free, at the cost of the speed/accuracy tradeoffs documented in `lib/claude.ts`'s header.
+
+### `lib/supabase/{server,client,admin}.ts` ✅ (Phase 2)
+Supabase clients: `server.ts` for Server Components/Route Handlers/Server Actions (session via cookies, `@supabase/ssr`), `client.ts` for the few places that need the browser client directly, `admin.ts` for the service-role key (bypasses RLS — server-only, used sparingly and never as a substitute for an ownership check).
+
+### `lib/supabase/getOwnedDeal.ts` ✅ (Phase 2)
+Explicit "does this deal belong to the signed-in user" check, used at the top of every `/api/deals/[dealId]/*` route before anything else. RLS already blocks a non-owner's write regardless (verified directly), but checking first avoids leaking a raw Postgres RLS error message and gives every route the same clean 404 either way (doesn't exist vs. not yours look identical to the caller).
+
+### `lib/rateLimit.ts` ✅ (Phase 2)
+Minimal in-memory sliding-window limiter — deliberately not Redis-backed, since Step 9 already commits to a single persistent Node host rather than serverless/multi-instance. Used by `app/login/actions.ts` (per-IP) and `app/api/extract-listing/route.ts` (per-user).
+
+### `lib/splitFullName.ts` ✅ + `lib/useDerivedIntakeAnswers.ts` ✅
+Splits "First Last" for fields that need separate first/last name boxes (2229E), and the shared hook that keeps `monthly_rent_words`/tenant first-last-name fields in sync with their source field — used by both the intake and review pages so they can't drift apart.
 
 ### `lib/numberToWords.ts` ✅
 Converts a numeric string to Title Case words for the `monthly_rent_words` field on Form 400 (`txtp_rentwords`), which expects the rent written out (e.g. "Three Thousand Nine Hundred"), not digits. Used by `app/intake/IntakeForm.tsx` to auto-derive that field from `monthly_rent_amount` instead of asking the realtor to type it twice.
@@ -141,20 +174,21 @@ Clears every field's value from a filled PDF to produce a true blank template, s
 
 ---
 
-## MVP status: working end-to-end
+## MVP status: Phase 2 (accounts + multi-deal) working end-to-end
 
-Verified flow: `/intake` (optionally pre-filled via a pasted listing export + Ollama) → `POST /api/intake` → `/review` → select forms → `POST /api/generate` → real filled PDFs via `/api/download/[form]`. Tested with fictional data across all five forms; actual output field values inspected with `pypdf` after generation, not just "the request succeeded."
+Verified flow: sign up (email confirmation handled correctly) → `/dashboard` → create a deal → `/deals/[dealId]/intake` (optionally pre-filled from a pasted listing or uploaded PDF(s)) → `POST /api/deals/[dealId]/intake` → `/deals/[dealId]/review` → select forms → `POST /api/deals/[dealId]/generate` → real filled PDFs via a signed Storage URL. Tested with real accounts created through the Supabase admin API (no browser available in that session) — actual output field values inspected with `pypdf` after generation, not just "the request succeeded," and cross-user isolation confirmed directly (a second account cannot read or overwrite the first account's deal; RLS + an explicit ownership check both verified independently).
 
-Quick start: `npm install && npm run dev`, then visit `http://localhost:3000` → "Start a new deal". The listing-extraction feature additionally requires `ollama serve` running locally with `gpt-oss:20b` pulled.
+Quick start: `npm install && npm run dev`, visit `http://localhost:3000`, sign up, create a deal. Requires a Supabase project (`.env.local` — see `.env.example`) with `supabase/migrations/0001_init.sql` run against it, and `ANTHROPIC_API_KEY` for the listing-extraction feature.
 
-### Known gaps (not blocking the demo)
-- No client-side validation — a realtor could submit an empty required field.
-- `/review` shows raw intake keys, not human-readable labels.
-- Single-deal local storage (`data/deal.json`) — a new intake submission overwrites the previous one; no multi-deal concept until Phase 2's database work.
-- No automated tests — all verification so far has been manual (build, type-check, live requests, `pypdf` inspection of output).
-- `deal_profile_schema.json`'s relationship to `intake_form_schema.json` needs a decision (keep as reference doc, or retire it).
+### Known gaps (not blocking)
+- No client-side validation — an empty required field can be submitted (though the review page now visually flags missing non-optional fields with a `*`).
+- No automated tests — all verification so far has been manual (type-check, live HTTP requests against a real Supabase project, `pypdf` inspection of output).
+- `deal_profile_schema.json`'s relationship to `intake_form_schema.json` still needs a decision (keep as reference doc, or retire it).
+- `lib/pdfFill.ts` still shells out to a local Python script — fine on a persistent Node host (the plan's Step 9 choice), a real blocker on typical serverless hosts (Vercel's default functions don't have Python at runtime). Deliberately not ported to a JS PDF library; see that file's header for the reasoning.
 
 ## Not yet started
 
-- Auth, database, and file-storage config (Phase 2 Steps 9–11).
+- Step 9: choosing/deploying to a real host (needs a decision only the project owner can make — which host, budget).
+- Step 10 remainder: confirming HTTPS is actually on once deployed (rate limiting on `/login` and `/api/extract-listing` is done — see `lib/rateLimit.ts`).
+- Billing (Stripe) — explicitly deferred out of this pass by design.
 - Any LLM use beyond the one scoped listing-extraction endpoint — deal-specific fields remain direct realtor entry by design (see `mvp-build-plan.md`'s Phase 1 "Design decision" note).
