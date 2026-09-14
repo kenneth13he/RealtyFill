@@ -1,0 +1,35 @@
+// app/settings/page.tsx
+// Settings: profile + brokerage defaults (Phase 2 Step 7).
+
+import Header from "@/components/Header";
+import { createClient } from "@/lib/supabase/server";
+import SettingsForm, { type Profile } from "./SettingsForm";
+
+export default async function SettingsPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data } = user
+    ? await supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle()
+    : { data: null };
+
+  const initialProfile: Profile = {
+    full_name: data?.full_name ?? "",
+    phone: data?.phone ?? "",
+    brokerage_name: data?.brokerage_name ?? "",
+    brokerage_address: data?.brokerage_address ?? "",
+  };
+
+  return (
+    <>
+      <Header />
+      <main className="mx-auto max-w-3xl px-6 py-10">
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">Settings</h1>
+        <div className="mt-8">
+          <SettingsForm initialProfile={initialProfile} />
+        </div>
+      </main>
+    </>
+  );
+}
