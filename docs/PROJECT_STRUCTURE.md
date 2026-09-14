@@ -30,10 +30,10 @@ The Deal Intake Form. Server component (`page.tsx`) loads `intake_form_schema.js
 
 ### `app/review/page.tsx` ✅ + `app/review/ReviewForm.tsx` ✅
 Review + form-selection screen, shown before any PDF is generated. Server component reads `data/deal.json`; client component owns selection + generation.
-- [x] Summary of intake answers (currently raw keys, not schema labels — see gaps below)
+- [x] Summary of intake answers grouped and labeled via the schema (not raw keys)
 - [x] Checkboxes for the five target forms
-- [x] Submit handler → `POST /api/generate`, then lists real download links
-- [ ] Show schema labels instead of raw intake keys
+- [x] Submit handler → `POST /api/generate`
+- [x] Generated forms are clickable rows, not plain download links — clicking one expands an inline `<iframe>` preview (`?inline=1` on the download route) using the browser's own native PDF viewer. Since these are real fillable AcroForms, the native viewer lets the realtor edit any field directly and save via its own toolbar — no custom PDF editor was built; the browser already does this for a real fillable form. No separate "Download" button is shown alongside the preview, since that would silently discard whatever the realtor just edited (we have no way to read edits made in the browser's native viewer back onto our server) — the native toolbar's own save/download is the only correct path once someone's edited it.
 - [ ] Per-field edit affordance beyond "go back to /intake" (currently just a link back, no inline edit)
 - [ ] Only show/require fields relevant to the *currently checked* forms
 
@@ -55,7 +55,8 @@ Fill pipeline endpoint — turns reviewed intake answers into filled PDFs. Verif
 - [ ] Phase 2: private object storage + signed URLs instead of local `data/output/`
 
 ### `app/api/download/[form]/route.ts` ✅
-Serves a generated PDF from `data/output/` as an attachment download. Phase 1 only (unauthenticated local file read) — Phase 2 replaces with a signed URL.
+Serves a generated PDF from `data/output/`. Phase 1 only (unauthenticated local file read) — Phase 2 replaces with a signed URL.
+- [x] `?inline=1` serves with `Content-Disposition: inline` instead of `attachment`, so the PDF renders inside `app/review/ReviewForm.tsx`'s preview `<iframe>` instead of forcing a download. Verified the header actually switches (`curl -sI`) and, more importantly, verified in a real (non-headless-shell) Chromium browser that clicking a form opens the native PDF viewer inline with **no download event fired** — an earlier test using Playwright's stripped-down `chrome-headless-shell` build falsely showed a download firing, since that build has no PDF viewer extension; real Chrome does, and that's what matters here.
 
 ### `app/api/extract-listing/route.ts` ✅
 The one AI-assisted endpoint in the app. Accepts either pasted listing text (JSON `{text}`) or an uploaded listing PDF (`multipart/form-data`). A PDF is sent to Claude **natively as a `document` content block** (base64) — not pre-flattened to text — so the model reads the real page layout (e.g. REALM's two-column property-info table) instead of a linearized wall of text. Both input paths converge on the same Claude call (`lib/claude.ts`, forced tool use).

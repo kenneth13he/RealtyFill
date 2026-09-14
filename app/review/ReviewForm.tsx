@@ -23,6 +23,7 @@ export default function ReviewForm({
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<{ form: FormId; downloadUrl: string }[]>([]);
+  const [previewing, setPreviewing] = useState<FormId | null>(null);
 
   function toggle(formId: FormId) {
     setSelected((prev) => {
@@ -151,18 +152,35 @@ export default function ReviewForm({
       {results.length > 0 && (
         <div className="rounded-xl border border-green-200 bg-green-50 p-5">
           <h2 className="text-base font-semibold text-green-900">Generated PDFs</h2>
+          <p className="mt-1 text-sm text-green-800">
+            Click a form to preview it. You can edit fields directly in the viewer below — use its own toolbar
+            (not a button here) to save, since that&apos;s what actually captures your edits.
+          </p>
           <ul className="mt-3 flex flex-col gap-2">
-            {results.map((r) => (
-              <li key={r.form}>
-                <a
-                  href={r.downloadUrl}
-                  className="flex items-center gap-2 rounded-lg border border-green-200 bg-white px-3 py-2.5 text-sm font-medium text-green-900 transition-colors hover:border-green-400"
-                >
-                  <span aria-hidden>↓</span>
-                  {FORM_LABELS[r.form]}
-                </a>
-              </li>
-            ))}
+            {results.map((r) => {
+              const isOpen = previewing === r.form;
+              return (
+                <li key={r.form} className="rounded-lg border border-green-200 bg-white">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewing((prev) => (prev === r.form ? null : r.form))}
+                    className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left"
+                  >
+                    <span className="text-sm font-medium text-green-900">{FORM_LABELS[r.form]}</span>
+                    <span aria-hidden className="text-green-700">
+                      {isOpen ? "▲" : "▼"}
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <iframe
+                      title={`Preview of ${FORM_LABELS[r.form]}`}
+                      src={`${r.downloadUrl}?inline=1`}
+                      className="h-[80vh] w-full border-t border-green-200"
+                    />
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
