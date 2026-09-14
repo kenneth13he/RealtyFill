@@ -1,11 +1,9 @@
-// app/intake/IntakeForm.tsx
-// Client-side renderer for the Deal Intake Form. Takes the parsed
-// intake_form_schema.json (via props, loaded server-side by page.tsx) and
-// renders the grouped fields via components/IntakeFieldsEditor.tsx (shared
-// with app/review/ReviewForm.tsx's inline editor so both stay in sync).
-//
-// On submit, POSTs the full answer map to /api/intake, then navigates to
-// /review — the human-reviews-before-anything-is-generated step.
+// app/deals/[dealId]/intake/IntakeForm.tsx
+// Client-side renderer for one deal's Deal Intake Form. Phase 2: takes
+// `dealId` from the URL (via the page) and reads/writes
+// /api/deals/[dealId]/intake instead of the old Phase 1 singleton
+// /api/intake. Field rendering is unchanged — still the shared
+// components/IntakeFieldsEditor.tsx used by the review page's inline editor.
 
 "use client";
 
@@ -16,9 +14,11 @@ import { useDerivedIntakeAnswers } from "@/lib/useDerivedIntakeAnswers";
 import IntakeFieldsEditor, { intakeInputClasses } from "@/components/IntakeFieldsEditor";
 
 export default function IntakeForm({
+  dealId,
   schema,
   initialAnswers = {},
 }: {
+  dealId: string;
   schema: IntakeFormSchema;
   initialAnswers?: Record<string, string>;
 }) {
@@ -85,13 +85,13 @@ export default function IntakeForm({
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch("/api/intake", {
+      const res = await fetch(`/api/deals/${dealId}/intake`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(answers),
       });
       if (!res.ok) throw new Error("Failed to save intake answers");
-      router.push("/review");
+      router.push(`/deals/${dealId}/review`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

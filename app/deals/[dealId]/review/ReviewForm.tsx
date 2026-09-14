@@ -1,13 +1,13 @@
-// app/review/ReviewForm.tsx
-// Client-side review + form-selection + generate UI. Shows the saved intake
-// answers read-only, grouped and labeled the same way the intake form was,
-// with an inline editor (shared with app/intake/IntakeForm.tsx via
-// components/IntakeFieldsEditor.tsx) instead of a link back to /intake —
-// edits autosave to data/deal.json and, once forms have been generated at
-// least once, silently regenerate them so the PDFs stay in sync without a
-// manual "Generate" click every time. Lets the realtor check which of the
-// five forms to generate, and on submit calls /api/generate, then lists
-// download links for whatever came back.
+// app/deals/[dealId]/review/ReviewForm.tsx
+// Client-side review + form-selection + generate UI for one deal. Phase 2:
+// reads/writes /api/deals/[dealId]/intake and /api/deals/[dealId]/generate
+// instead of the old Phase 1 singleton /api/intake and /api/generate.
+//
+// `initialResults`/`initialSelected` let the page show forms that were
+// already generated on a previous visit — Phase 1 never needed this since
+// output was ephemeral and scoped to one demo deal, but now that a deal's
+// generated PDFs actually persist in Storage, revisiting it should show what
+// was already made rather than looking freshly empty every time.
 
 "use client";
 
@@ -17,20 +17,24 @@ import { useDerivedIntakeAnswers } from "@/lib/useDerivedIntakeAnswers";
 import IntakeFieldsEditor from "@/components/IntakeFieldsEditor";
 
 export default function ReviewForm({
+  dealId,
   answers: initialAnswers,
   schema,
+  initialResults = [],
 }: {
+  dealId: string;
   answers: Record<string, string>;
   schema: IntakeFormSchema;
+  initialResults?: { form: FormId; downloadUrl: string }[];
 }) {
   const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers);
   const [editing, setEditing] = useState(false);
   const [autosaving, setAutosaving] = useState(false);
-  const [selected, setSelected] = useState<Set<FormId>>(new Set());
+  const [selected, setSelected] = useState<Set<FormId>>(new Set(initialResults.map((r) => r.form)));
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [results, setResults] = useState<{ form: FormId; downloadUrl: string }[]>([]);
-  const [hasGenerated, setHasGenerated] = useState(false);
+  const [results, setResults] = useState<{ form: FormId; downloadUrl: string }[]>(initialResults);
+  const [hasGenerated, setHasGenerated] = useState(initialResults.length > 0);
   const [previewing, setPreviewing] = useState<FormId | null>(null);
   const [updateText, setUpdateText] = useState("");
   const [updating, setUpdating] = useState(false);
@@ -69,7 +73,7 @@ export default function ReviewForm({
     setError(null);
     setResults([]);
     try {
-      const res = await fetch("/api/generate", {
+      const res = await fetch(`/api/deals/${dealId}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ selectedForms: Array.from(selectedRef.current) }),
@@ -100,7 +104,7 @@ export default function ReviewForm({
   async function autosaveAndMaybeRegenerate() {
     setAutosaving(true);
     try {
-      const res = await fetch("/api/intake", {
+      const res = await fetch(`/api/deals/${dealId}/intake`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(answersRef.current),
@@ -134,7 +138,7 @@ export default function ReviewForm({
       setUpdateFlagged(extractBody.flagged ?? {});
       setChangedKeys((prev) => new Set([...prev, ...Object.keys(extractBody.answers ?? {})]));
 
-      const saveRes = await fetch("/api/intake", {
+      const saveRes = await fetch(`/api/deals/${dealId}/intake`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(mergedAnswers),
