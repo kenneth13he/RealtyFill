@@ -4,12 +4,22 @@
 // project-context.md section 5) — reverse-engineered radio-group value
 // semantics, verified visually across every page.
 //
-// Implementation choice made: shells out to scripts/fill_fillable_fields.py
-// (Python/pypdf) rather than porting to a JS PDF library. Reasoning: that
-// script is already proven correct against real forms; porting risked
-// re-introducing bugs (like the multi-page field-clearing bug caught while
-// building forms/blank_templates/*_blank.pdf) for no functional gain at this
-// stage. Revisit only if Python becomes a real deployment constraint.
+// Two deployment modes, same underlying Python/pypdf fill logic:
+//   - Local dev / Render+Docker (Dockerfile puts Node and Python in the same
+//     container): shells out to scripts/fill_fillable_fields.py directly —
+//     the original approach, unchanged.
+//   - Vercel (its Node functions have no Python at runtime at all — porting
+//     to a JS PDF library was ruled out for the same reason as always: that
+//     Python script is already proven correct against real forms, and
+//     porting risks re-introducing bugs like the multi-page field-clearing
+//     bug caught while building forms/blank_templates/*_blank.pdf): calls
+//     pdf-service/, a separate Vercel Service running the *same* fill logic
+//     (pdf-service/fill_fillable_fields.py is a byte-in/byte-out port of
+//     scripts/fill_fillable_fields.py — keep them in sync) over HTTP via the
+//     PDF_SERVICE_URL binding declared in vercel.json. Mode is selected by
+//     whether PDF_SERVICE_URL is set, so this file's exported signature
+//     doesn't change and neither does its one caller
+//     (app/api/deals/[dealId]/generate/route.ts).
 
 import { execFile } from "child_process";
 import { promisify } from "util";
@@ -52,6 +62,13 @@ export async function fillPdf(
   fields: FillableField[],
   outputPath: string
 ): Promise<void> {
+  if (process.env.PDF_SERVICE_URL) {
+    return fillPdfViaService(blankTemplatePath, fields, outputPath);
+  }
+  return fillPdfViaSubprocess(blankTemplatePath, fields, outputPath);
+}
+
+async function fillPdfViaSubprocess(blankTemplatePath: string, fields: FillableField[], outputPath: string): Promise<void> {
   const tmpJsonPath = path.join(os.tmpdir(), `field_values_${Date.now()}_${Math.random().toString(36).slice(2)}.json`);
   await fs.writeFile(tmpJsonPath, JSON.stringify(fields, null, 2));
 
@@ -64,4 +81,23 @@ export async function fillPdf(
   } finally {
     await fs.unlink(tmpJsonPath).catch(() => {});
   }
+}
+
+async function fillPdfViaService(blankTemplatePath: string, fields: FillableField[], outputPath: string): Promise<void> {
+  const blankBytes = await fs.readFile(blankTemplatePath);
+  const res = await fetch(new URL("/fill", process.env.PDF_SERVICE_URL), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ blank_pdf_base64: blankBytes.toString("base64"), fields }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    const detail = body?.detail;
+    const message = Array.isArray(detail) ? detail.join("; ") : (detail ?? (await res.text().catch(() => res.statusText)));
+    throw new Error(`pdf-service /fill failed (${res.status}): ${message}`);
+  }
+
+  const { filled_pdf_base64: filledBase64 } = (await res.json()) as { filled_pdf_base64: string };
+  await fs.writeFile(outputPath, Buffer.from(filledBase64, "base64"));
 }
