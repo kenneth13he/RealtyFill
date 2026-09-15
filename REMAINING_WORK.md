@@ -373,105 +373,89 @@ it needs to be you, in the dashboard.
 
 ## Front-end / design
 
-Current state, for context: Tailwind v4, a handful of CSS variables in
-`app/globals.css` (slate neutrals + default-indigo `#4f46e5`), the system
-font stack, no dark mode, no logo, no favicon. Everything is functional and
-clean but visually generic — it reads as "unstyled developer app," which
-matters when the audience is realtors deciding whether to trust it with
-client paperwork.
+Current state: Tailwind v4, a real brand palette in `app/globals.css`
+(`--brand-deep #14124a`, `--lime #c9f73d`, indigo `--brand #2d28d9`), Outfit
+via `next/font`, a wordmark, a favicon and a generated OG image. The "unstyled
+developer app" problem this section was written about is fixed.
 
-### 18. ❌ Landing page (`app/page.tsx`)
-Right now a logged-out visitor gets a centered heading, one paragraph, two
-links, and a grid of five form names. It explains nothing about *how* it
-works or why it's worth trusting. Suggested structure:
+### 18. ✅ Landing page (`app/page.tsx`)
+Built: nav, hero, visual proof (`components/landing/VisualProof.tsx`), the
+form-set grid, a trust row and a footer, with `Tower`/`Marquee`/`ScrollStage`
+carrying the motion.
 
-1. **Nav bar** — logo left, "Sign in" + "Get started" right.
-2. **Hero** — a concrete headline over an abstract one. "Five Ontario lease
-   forms. One intake form. Two minutes." beats "Fill out one deal intake
-   form." Sub-line explains the pain: entering the same tenant/landlord/rent
-   details five times. Primary CTA "Get started free," secondary "Sign in."
-3. **Visual proof** — the single highest-value addition: a screenshot or
-   short looping video of a filled PDF appearing. Realtors believe a picture
-   of their own paperwork far more than a description of it.
-4. **How it works, 3 steps** — Paste the listing → Review what we extracted →
-   Download all five filled forms. Icons + one line each.
-5. **The forms** — keep the existing five-card grid, it's genuinely
-   reassuring. Add the real form names/numbers realtors recognize.
-6. **Trust row** — "Your data stays private," "We never fill signature
-   fields," "Review everything before anything is generated." All three are
-   true and all three are things a realtor will worry about.
-7. **Footer** — Terms, Privacy (see item 5), contact.
+### 19. ✅ Logo + brand identity
+`components/Wordmark.tsx` is the single definition (four call sites used to
+re-type it). `app/icon.svg` is the favicon and `app/opengraph-image.tsx`
+generates the 1200×630 link-preview card via `next/og` — verified rendering
+as a real PNG, not just building.
 
-### 19. ❌ Logo + brand identity
-There's no logo, no favicon (browser tab shows the default), and no social
-preview image. Concrete asks:
-- A wordmark or simple icon — a document/form motif with a checkmark or a
-  key/house element reads immediately for real estate paperwork.
-- `app/icon.png` (Next.js App Router picks this up as the favicon
-  automatically) and `app/opengraph-image.png` for link previews.
-- Pick a real accent color instead of default Tailwind indigo. Indigo says
-  "developer template"; a deeper navy/green reads more like professional
-  services software, which is the right signal here.
+Known cosmetic limit on the OG image: satori falls back to its built-in font,
+so word spacing is wider than the app's Outfit. `next/font` emits woff2,
+which satori can't parse. See the note in that file.
 
-### 20. ❌ Typography
-System font stack is a safe default but it's the single biggest "this looks
-unfinished" signal. One good typeface via `next/font` (Inter, Geist, or a
-serif for headings paired with a neutral sans for body) would lift the whole
-app in an afternoon. Also add a real type scale — headings are currently
-`text-2xl`/`text-4xl` with nothing in between.
+### 20. ✅ Typography
+Outfit via `next/font`, self-hosted at build time.
 
-### 21. ❌ The intake form is long and unguided (`components/IntakeFieldsEditor.tsx`)
-It renders every group stacked vertically — dozens of fields in one endless
-scroll with no sense of progress or position. Options, cheapest first:
-- Sticky section nav (Parties / Property / Rent & Deposits / Terms /
-  Brokerage) that scrolls to each group
-- A progress indicator ("12 of 34 fields filled")
-- Collapsible sections, completed ones auto-collapsed
-- Or a real multi-step wizard, one group per step — biggest change, best UX
+### 21. 🟡 Intake form navigation — nav + counts done, wizard not
+`components/IntakeFieldsEditor.tsx` now has a sticky section nav with a
+per-section empty-field count and a running total ("7 fields still empty"),
+plus jump links with `scroll-mt` so headings clear the sticky bar. The
+"missing" rule lives in one `isMissingValue` helper shared by the nav counts
+and the per-field red asterisk, so they can't disagree.
 
-Also: the missing-field `*` markers exist, but there's no summary of what's
-still missing. A "3 required fields left" chip near the submit button would
-help a lot.
+Not done, and still open as product decisions: collapsible sections,
+auto-collapsing completed ones, and the full multi-step wizard.
 
-### 22. ❌ Loading and feedback states
-Generation takes several seconds (it calls a Python service and uploads to
-storage) and the only feedback is a button label changing to "Generating…".
-Needs: a spinner, a disabled/greyed state, and ideally per-form progress
-since multiple forms generate sequentially. Same for the autosave indicator
-on the review page, which is a tiny grey "Saving…" that's easy to miss.
+### 22. 🟡 Loading and feedback — spinners + live regions done, toasts not
+`components/Spinner.tsx` is the one spinner (`motion-reduce` aware). It's on
+create-deal, generate, update-and-regenerate, autosave and delete. Each page
+with slow work has one `aria-live="polite"` region.
 
-Errors are currently plain inline text. Toasts would read better for
-transient things (saved, generated, failed) while keeping inline text for
-validation.
+**Per-form progress is deliberately not built.** The generate route fills
+every selected form in one server-side loop and responds once, so the browser
+cannot know which form is in flight — a per-form bar would be animating
+invented progress. What's shown instead is the true statement: how many forms
+are running, which ones, and roughly how long that takes. Real per-form
+progress needs the route to stream (backend change).
 
-### 23. ❌ Dashboard empty state (`app/dashboard/DealsList.tsx`)
-A brand-new user's first screen after signing up says "No active deals." —
-a dead end at the most important moment. Should be an illustrated empty
-state that explains the flow and points at the create-deal field.
+Toasts: still not built; errors remain inline text.
 
-### 24. ❌ PDF preview UX (`app/deals/[dealId]/review/ReviewForm.tsx`)
-The preview is an 80vh `<iframe>` inside an accordion. Works on desktop,
-likely poor on mobile (nested scrolling, tiny text). Consider: open in a new
-tab on small screens, or a modal/full-screen preview with an explicit
-"Download" and "Open in new tab" alongside it.
+### 23. 🟡 Dashboard empty state
+Exists and is filter-aware ("No active deals" → "Pick a form set above and
+create your first deal"). The illustrated version this item asked for is not
+built.
 
-### 25. ❌ Mobile
-Never tested at any width (see item 11). The riskiest spots: the long intake
-form, the review page's two-column `dl` grid, the PDF iframe, and the
-dashboard's row layout with action buttons on the right.
+### 24. ✅ PDF preview UX
+Every generated form now has an always-visible "Open in new tab" link. The
+`80vh` iframe renders on `sm:` and up only; below that a line explains why and
+points at the new tab. This removes the three-nested-scroll-contexts problem
+(page → accordion → iframe) on phones.
 
-### 26. ❌ Accessibility basics
-Worth a pass before real users: visible focus rings on all interactive
-elements, `aria-live` on the autosave/generation status so screen readers
-announce changes, colour contrast on `--color-text-muted` against
-`--color-bg` (currently borderline), and making sure every icon-only control
-has a label.
+### 25. 🟡 Mobile — layouts fixed, still unverified in a real browser
+Fixed: dashboard rows stack (`flex-col sm:flex-row`) instead of squeezing
+action buttons beside a truncating label, action clusters wrap, the PDF
+iframe is desktop-only. Still **not opened on a real phone** — see item 11.
+
+### 26. 🟡 Accessibility — focus + live regions done, contrast not audited
+Done: `focus-visible` rings on the dashboard's links, filters, status and
+delete buttons, the review page's controls and the intake jump links;
+`aria-live` on dashboard mutations and review-page progress; `aria-expanded`
+on the preview accordion; `aria-label` on the delete button so it reads as
+"Delete 203 College St" rather than "Delete".
+
+Not done: the `--color-text-muted` on `--color-bg` contrast check, and a
+keyboard pass through every page.
 
 ### 27. ❌ Dark mode (optional)
-Not required, but the CSS is already fully tokenised in `app/globals.css`,
-so it's mostly a matter of adding a `prefers-color-scheme` block and
-auditing the hardcoded `bg-white` / `text-green-900` classes scattered
-through the review page.
+Unchanged. Tokens are in place in `app/globals.css`; needs a
+`prefers-color-scheme` block plus an audit of the hardcoded `bg-white` /
+`text-green-900` classes on the review page.
+
+### 28. ✅ Deal deletion has a UI
+`DealsList` has a Delete action behind an inline confirm, calling the
+`DELETE /api/deals/[dealId]` route (which clears Storage before the row).
+Archive hides a deal; this erases it and its PDFs. A realtor needs the second
+one to honour a client's deletion request.
 
 ---
 
@@ -480,9 +464,14 @@ through the review page.
 **Person A — infrastructure, backend, correctness:** items 1, 2, 3, 4, 8, 9,
 10, 13, 14, 15, 16, 17
 
-**Person B (Kenneth) — front-end and design:** items 18–27, plus 5 (Terms/
+**Person B (Kenneth) — front-end and design:** items 18–28, plus 5 (Terms/
 Privacy pages), 6 (forgot-password UI), 7 (delete-account UI), and 11
 (browser/mobile testing — a natural fit while working on the UI anyway)
+
+Of those, 5, 6, 7, 18, 19, 20, 24 and 28 are done. 21, 22, 23, 25 and 26 are
+partly done — see each item for exactly which half. **11 is the one that
+blocks others**: it gates enforcing the CSP (15c) and is the only way the
+mobile fixes in 25 get confirmed.
 
 These two tracks touch almost entirely separate files: Person A lives in
 `app/api/`, `lib/`, `supabase/`, and config; Person B lives in `app/page.tsx`,

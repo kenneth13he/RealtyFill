@@ -12,6 +12,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Spinner from "@/components/Spinner";
 import { FORM_LABELS, FormId, IntakeFormSchema } from "@/lib/formTypes";
 import { useDerivedIntakeAnswers } from "@/lib/useDerivedIntakeAnswers";
 import IntakeFieldsEditor from "@/components/IntakeFieldsEditor";
@@ -230,17 +231,40 @@ export default function ReviewForm({
     }
   }
 
+  // Everything slow on this page (autosave, generate, "update with more info")
+  // reports itself with a text swap somewhere on screen and no focus change.
+  // This is the same information routed to a screen reader. One region rather
+  // than three, because only one of these runs at a time.
+  const liveStatus = generating
+    ? `Generating ${selected.size} ${selected.size === 1 ? "form" : "forms"}.`
+    : updating
+      ? "Reading your update."
+      : autosaving
+        ? "Saving your answers."
+        : results.length > 0
+          ? `${results.length} ${results.length === 1 ? "form is" : "forms are"} ready.`
+          : "";
+
   return (
     <div className="flex flex-col gap-6 pb-16">
+      <p aria-live="polite" className="sr-only">
+        {liveStatus}
+      </p>
+
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-[var(--color-text)]">Answers on file</h2>
           <div className="flex items-center gap-3">
-            {editing && autosaving && <span className="text-xs text-[var(--color-text-muted)]">Saving…</span>}
+            {editing && autosaving && (
+              <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
+                <Spinner className="h-3 w-3" />
+                Saving…
+              </span>
+            )}
             <button
               type="button"
               onClick={() => setEditing((prev) => !prev)}
-              className="text-sm font-medium text-[var(--color-accent)] hover:underline"
+              className="rounded text-sm font-medium text-[var(--color-accent)] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
             >
               {editing ? "Done editing" : "Edit answers"}
             </button>
@@ -328,10 +352,31 @@ export default function ReviewForm({
         <button
           onClick={handleGenerate}
           disabled={generating || selected.size === 0 || !hasAnswers}
-          className="mt-4 w-full rounded-lg bg-[var(--color-accent)] px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-3 text-base font-semibold text-white outline-none transition-colors hover:bg-[var(--color-accent-hover)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
+          {generating && <Spinner className="h-5 w-5" />}
           {generating ? "Generating…" : "Generate selected forms"}
         </button>
+
+        {/* Deliberately NOT a per-form progress bar. The generate route fills
+            every selected form in one server-side loop and responds once
+            (app/api/deals/[dealId]/generate/route.ts), so the browser cannot
+            know which form is in flight — animating through them one by one
+            would be inventing progress we can't observe. This says what is
+            actually true: the whole set is running, and here's how long that
+            normally takes. Real per-form progress needs the route to stream. */}
+        {generating && (
+          <div className="mt-3 flex flex-col gap-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-3">
+            <p className="text-sm font-medium text-[var(--color-text)]">
+              Filling {selected.size} {selected.size === 1 ? "form" : "forms"} — usually a few seconds.
+            </p>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {Array.from(selected)
+                .map((formId) => FORM_LABELS[formId])
+                .join(" · ")}
+            </p>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -361,8 +406,9 @@ export default function ReviewForm({
             type="button"
             onClick={handleUpdateAndRegenerate}
             disabled={updating || generating || !updateText.trim()}
-            className="mt-3 w-full rounded-lg bg-[var(--color-accent)] px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-3 text-base font-semibold text-white outline-none transition-colors hover:bg-[var(--color-accent-hover)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
           >
+            {updating && <Spinner className="h-5 w-5" />}
             {updating ? "Updating…" : hasGenerated ? "Update & regenerate forms" : "Add this info"}
           </button>
           {updateError && (
@@ -424,29 +470,51 @@ export default function ReviewForm({
               const isOpen = previewing === r.form;
               return (
                 <li key={r.form} className="rounded-lg border border-green-200 bg-white">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewing((prev) => (prev === r.form ? null : r.form))}
-                    className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left"
-                  >
-                    <span className="flex items-center gap-2 text-sm font-medium text-green-900">
-                      {FORM_LABELS[r.form]}
-                      {affectedForms.has(r.form) && (
-                        <span className="rounded-full bg-amber-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
-                          Updated
-                        </span>
-                      )}
-                    </span>
-                    <span aria-hidden className="text-green-700">
-                      {isOpen ? "▲" : "▼"}
-                    </span>
-                  </button>
+                  <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewing((prev) => (prev === r.form ? null : r.form))}
+                      aria-expanded={isOpen}
+                      className="flex min-w-0 flex-1 items-center gap-2 rounded text-left outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2"
+                    >
+                      <span aria-hidden className="text-green-700">
+                        {isOpen ? "▲" : "▼"}
+                      </span>
+                      <span className="flex flex-wrap items-center gap-2 text-sm font-medium text-green-900">
+                        {FORM_LABELS[r.form]}
+                        {affectedForms.has(r.form) && (
+                          <span className="rounded-full bg-amber-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
+                            Updated
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                    {/* The inline preview is an iframe inside an accordion
+                        inside a scrolling page — three nested scroll contexts,
+                        which is unusable on a phone. This escape hatch is
+                        always available and is the primary route on small
+                        screens, where the iframe below is hidden outright. */}
+                    <a
+                      href={`${r.downloadUrl}?inline=1`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 rounded border border-green-300 px-2 py-1 text-xs font-medium text-green-900 outline-none transition-colors hover:bg-green-50 focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2"
+                    >
+                      Open in new tab
+                    </a>
+                  </div>
                   {isOpen && (
-                    <iframe
-                      title={`Preview of ${FORM_LABELS[r.form]}`}
-                      src={`${r.downloadUrl}?inline=1`}
-                      className="h-[80vh] w-full border-t border-green-200"
-                    />
+                    <>
+                      <iframe
+                        title={`Preview of ${FORM_LABELS[r.form]}`}
+                        src={`${r.downloadUrl}?inline=1`}
+                        className="hidden h-[80vh] w-full border-t border-green-200 sm:block"
+                      />
+                      <p className="border-t border-green-200 px-3 py-3 text-xs text-green-800 sm:hidden">
+                        PDF previews don&apos;t work well on a small screen — use{" "}
+                        <span className="font-medium">Open in new tab</span> to view or download this form.
+                      </p>
+                    </>
                   )}
                 </li>
               );

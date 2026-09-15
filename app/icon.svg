@@ -1,6 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="14" fill="#1e3a5f"/>
+  <!-- Brand tokens, not approximations: #14124a is --brand-deep and #c9f73d
+       is --lime from app/globals.css. The first version of this icon used a
+       navy (#1e3a5f) that predates the palette and matched nothing else in
+       the app. The checkmark is lime because that's the accent the wordmark
+       uses on deep ink. -->
+  <rect width="64" height="64" rx="14" fill="#14124a"/>
   <path d="M22 15h14l10 10v24a3 3 0 0 1-3 3H22a3 3 0 0 1-3-3V18a3 3 0 0 1 3-3z" fill="#ffffff"/>
-  <path d="M36 15v8a2 2 0 0 0 2 2h8z" fill="#c7d5e5"/>
-  <path d="M25 37.5l5 5 10-11" fill="none" stroke="#1e3a5f" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M36 15v8a2 2 0 0 0 2 2h8z" fill="#c7c6e0"/>
+  <path d="M25 37.5l5 5 10-11" fill="none" stroke="#14124a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
