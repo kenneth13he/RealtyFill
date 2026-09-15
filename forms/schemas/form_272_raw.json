@@ -1,0 +1,614 @@
+[
+  {
+    "field_id": "p1_brokerage",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      100.9,
+      636.5,
+      571.5,
+      648.5
+    ],
+    "label_hint": "BROKERAGE"
+  },
+  {
+    "field_id": "p1_cont",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      618.5,
+      323.9,
+      630.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_brokerage_tel_no",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      433.5,
+      618.5,
+      571.5,
+      630.5
+    ],
+    "label_hint": "(the \u201cListing  Brokerage\u201d) Tel. No"
+  },
+  {
+    "field_id": "p1_landlord",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      91.2,
+      600.5,
+      515.0,
+      612.5
+    ],
+    "label_hint": "LANDLORD"
+  },
+  {
+    "field_id": "p1_designated_representative_s",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      179.4,
+      582.5,
+      571.2,
+      594.5
+    ],
+    "label_hint": "DESIGNATED REPRESENTATIVE(S)"
+  },
+  {
+    "field_id": "p1_cont_2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      561.5,
+      570.3,
+      573.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_ing_the_real_property_for_lease_known_as",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      325.1,
+      534.5,
+      571.5,
+      546.5
+    ],
+    "label_hint": "sting Brokerage listing the real property for lease known as"
+  },
+  {
+    "field_id": "p1_cont_3",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      515.5,
+      516.1,
+      527.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_commencing_at",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      95.1,
+      485.5,
+      173.9,
+      497.5
+    ],
+    "label_hint": "commencing at"
+  },
+  {
+    "field_id": "p1_on_the",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      200.3,
+      485.5,
+      266.9,
+      497.5
+    ],
+    "label_hint": "commencing at ................................ on the"
+  },
+  {
+    "field_id": "p1_n_the_day_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      294.2,
+      485.5,
+      501.1,
+      497.5
+    ],
+    "label_hint": ".................. on the ........................... day of"
+  },
+  {
+    "field_id": "p1_20",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      518.4,
+      485.5,
+      567.7,
+      497.5
+    ],
+    "label_hint": "....................................................... , 20"
+  },
+  {
+    "field_id": "p1_and_expiring_at_11_59_p_m_on_the",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      163.1,
+      464.5,
+      227.2,
+      476.5
+    ],
+    "label_hint": "and expiring at 11:59 p.m. on the"
+  },
+  {
+    "field_id": "p1_on_the_day_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      254.5,
+      464.5,
+      441.7,
+      476.5
+    ],
+    "label_hint": "iring at 11:59 p.m. on the .......................... day of"
+  },
+  {
+    "field_id": "p1_20_2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      456.5,
+      464.5,
+      498.4,
+      476.5
+    ],
+    "label_hint": "........................................................, 20"
+  },
+  {
+    "field_id": "p1_dollars_cdn",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      466.8,
+      417.5,
+      570.3,
+      429.5
+    ],
+    "label_hint": "Dollars (CDN$)"
+  },
+  {
+    "field_id": "p1_cont_4",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      404.5,
+      547.3,
+      416.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_schedule_a",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      82.3,
+      349.5,
+      244.9,
+      361.5
+    ],
+    "label_hint": "Schedule A"
+  },
+  {
+    "field_id": "p1_ay_the_listing_brokerage_a_commission_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      310.3,
+      238.5,
+      571.5,
+      250.5
+    ],
+    "label_hint": "Landlord agrees to pay the Listing Brokerage a commission of"
+  },
+  {
+    "field_id": "p1_e_co_operating_brokerage_a_commission_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      238.9,
+      193.5,
+      571.5,
+      205.5
+    ],
+    "label_hint": "to pay the co-operating brokerage a commission of"
+  },
+  {
+    "field_id": "p1_on_the_landlord_s_behalf_within",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      165.6,
+      123.5,
+      207.5,
+      135.5
+    ],
+    "label_hint": "on the Landlord\u2019s behalf within"
+  },
+  {
+    "field_id": "p2_cont",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      58.5,
+      692.4,
+      351.7,
+      704.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_2",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      58.5,
+      653.4,
+      102.9,
+      665.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_of_the_sale_price_of_the_property_or",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      234.3,
+      653.4,
+      458.5,
+      665.4
+    ],
+    "label_hint": " % of the sale price of the Property or"
+  },
+  {
+    "field_id": "p3_cont",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      364.1,
+      269.7,
+      376.1
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_2",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      282.0,
+      364.1,
+      378.1,
+      376.1
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_3",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      390.5,
+      364.1,
+      570.4,
+      376.1
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_4",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      301.4,
+      264.7,
+      313.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_5",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      281.4,
+      264.7,
+      293.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_6",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      301.7,
+      281.4,
+      417.5,
+      293.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_7",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      439.7,
+      281.4,
+      570.3,
+      293.4
+    ],
+    "label_hint": "               "
+  },
+  {
+    "field_id": "p3_cont_8",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      261.4,
+      264.7,
+      273.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_9",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      301.7,
+      261.4,
+      417.5,
+      273.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_10",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      439.7,
+      261.4,
+      570.3,
+      273.4
+    ],
+    "label_hint": "               "
+  },
+  {
+    "field_id": "p3_cont_11",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      219.6,
+      264.7,
+      231.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_12",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      301.7,
+      219.6,
+      417.5,
+      231.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_13",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      439.7,
+      219.6,
+      570.3,
+      231.6
+    ],
+    "label_hint": "               "
+  },
+  {
+    "field_id": "p3_the_salesperson_broker_broker_of_record",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      197.6,
+      185.6,
+      562.3,
+      197.6
+    ],
+    "label_hint": "The Salesperson/Broker/Broker of Record"
+  },
+  {
+    "field_id": "p3_cont_14",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      153.4,
+      158.6,
+      562.5,
+      170.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_of_this_agreement_on_the",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      161.7,
+      110.6,
+      219.4,
+      122.6
+    ],
+    "label_hint": "of this Agreement on the \u2026\u2026"
+  },
+  {
+    "field_id": "p3_on_the_day_of",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      267.6,
+      110.6,
+      333.4,
+      122.6
+    ],
+    "label_hint": "of this Agreement on the \u2026\u2026..................... day of \u2026\u2026"
+  },
+  {
+    "field_id": "p3_day_of",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      384.2,
+      110.6,
+      439.0,
+      122.6
+    ],
+    "label_hint": "................... day of \u2026\u2026........................\u2026.\u2026\u2026\u2026\u2026\u2026"
+  },
+  {
+    "field_id": "p3_20",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      489.9,
+      110.6,
+      539.3,
+      122.6
+    ],
+    "label_hint": "........................\u2026.\u2026\u2026\u2026\u2026\u2026....................\u2026\u2026\u2026, 20 \u2026"
+  },
+  {
+    "field_id": "p3_20_2",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      563.3,
+      110.6,
+      571.5,
+      122.6
+    ],
+    "label_hint": "...\u2026.\u2026\u2026\u2026\u2026\u2026....................\u2026\u2026\u2026, 20 \u2026..................\u2026\u2026\u2026"
+  },
+  {
+    "field_id": "p3_cont_15",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      92.6,
+      383.0,
+      104.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_16",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      395.3,
+      92.6,
+      570.3,
+      104.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_17",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      71.6,
+      383.0,
+      83.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_18",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      395.3,
+      71.6,
+      570.3,
+      83.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p4_brokerage",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      93.9,
+      648.5,
+      555.0,
+      660.5
+    ],
+    "label_hint": "BROKERAGE"
+  },
+  {
+    "field_id": "p4_landlord",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      89.2,
+      625.5,
+      571.5,
+      637.5
+    ],
+    "label_hint": "LANDLORD"
+  },
+  {
+    "field_id": "p4_property",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      86.1,
+      602.5,
+      571.5,
+      614.5
+    ],
+    "label_hint": "PROPERTY"
+  }
+]

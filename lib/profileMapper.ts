@@ -14,6 +14,74 @@
 // human label — see IntakeField.options in lib/schemas.ts.
 
 import { FormId, IntakeFormSchema, RawFieldInfo, getIntakeFormSchema, getRawFormSchema } from "./schemas";
+import { numberToWords } from "./numberToWords";
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+/**
+ * Values that aren't typed by the user but are assembled from ones that are.
+ *
+ * Computed here rather than in the client-side derived-answers hook because
+ * generation reads whatever is stored in Postgres: anything only ever
+ * computed in the browser is missing when answers arrive some other way (the
+ * extraction endpoint writes them directly). Doing it at map time means the
+ * value is always present and always consistent with its sources.
+ *
+ * Three kinds:
+ *  - `property_address_oneline` — the address fields joined, because the new
+ *    forms give one blank for the whole address where 2229E gives six boxes.
+ *  - `<key>_words` for money — OREA forms print an amount twice, in digits
+ *    and in words.
+ *  - `<key>_day` / `_month` / `_year` for every date — these forms write
+ *    dates as "the ___ day of ___, 20___", three separate blanks.
+ */
+function withComputedValues(answers: Record<string, string>): Record<string, string> {
+  const out = { ...answers };
+
+  // "203 College St #1706", the way a listing writes it — not "1706 203
+  // College St", which is what a naive join produces.
+  const unit = (answers.property_unit_number ?? "").trim();
+  const streetLine = [
+    [answers.property_street_number, answers.property_street_name]
+      .map((p) => (p ?? "").trim())
+      .filter(Boolean)
+      .join(" "),
+    unit ? (unit.startsWith("#") ? unit : `#${unit}`) : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const cityLine = [answers.property_city, answers.property_province, answers.property_postal_code]
+    .map((p) => (p ?? "").trim())
+    .filter(Boolean)
+    .join(" ");
+  const oneline = [streetLine, cityLine].filter(Boolean).join(", ");
+  if (oneline && !out.property_address_oneline) out.property_address_oneline = oneline;
+
+  for (const [key, target] of [
+    ["purchase_price_amount", "purchase_price_words"],
+    ["purchase_deposit_amount", "purchase_deposit_words"],
+  ] as const) {
+    if (answers[key] && !out[target]) out[target] = numberToWords(answers[key]);
+  }
+
+  // ISO yyyy-mm-dd is what <input type="date"> stores; anything else is left
+  // alone rather than guessed at.
+  for (const [key, value] of Object.entries(answers)) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((value ?? "").trim());
+    if (!m) continue;
+    const [, year, month, day] = m;
+    const monthName = MONTHS[Number(month) - 1];
+    if (!monthName) continue;
+    out[`${key}_day`] ??= String(Number(day));
+    out[`${key}_month`] ??= monthName;
+    out[`${key}_year`] ??= year.slice(2);
+  }
+
+  return out;
+}
 
 export interface FillableField {
   field_id: string;
@@ -39,6 +107,22 @@ const SIGNATURE_FIELD_PATTERN = /sig|Signature/i;
 // than loosening the rule for every "sig"-named field on every form.
 const NAME_FIELD_EXCEPTION = /^txt(?:buyer|seller)sig\d+$|^txtTenant\dSig$/;
 
+// The forms added by scripts/add_form_fields.py name every field after the
+// label printed beside it (`p1_designated_representative_s`), so the loose
+// substring rule above misfires on ordinary English: "de-SIG-nated",
+// "SIG-ned", "as-SIG-ned" are not signature fields, and silently dropping
+// them left the designated-representative line blank on Forms 271, 272 and
+// 371. These ids are matched on whole words instead. Their real signature
+// lines are label-less (the caption sits under the rule, not beside it), so
+// they end up as unnamed `_cont` fields that nothing maps to.
+const SYNTHESIZED_FIELD_ID = /^p\d+_/;
+const SIGNATURE_WORD = /(?:^|_)(?:sig|sign|signature|signatures|signed_by)(?:_|$)/i;
+
+function isSignatureField(fieldId: string): boolean {
+  if (SYNTHESIZED_FIELD_ID.test(fieldId)) return SIGNATURE_WORD.test(fieldId);
+  return SIGNATURE_FIELD_PATTERN.test(fieldId) && !NAME_FIELD_EXCEPTION.test(fieldId);
+}
+
 export function mapIntakeToFormFields(
   intakeAnswers: Record<string, string>,
   formId: FormId,
@@ -46,6 +130,7 @@ export function mapIntakeToFormFields(
   rawFields: RawFieldInfo[] = getRawFormSchema(formId)
 ): FillableField[] {
   const pageByFieldId = new Map(rawFields.map((f) => [f.field_id, f.page]));
+  const answers = withComputedValues(intakeAnswers);
   const out: FillableField[] = [];
 
   for (const group of schema.groups) {
@@ -53,11 +138,11 @@ export function mapIntakeToFormFields(
       const targetIds = field.targets[formId];
       if (!targetIds) continue;
 
-      const answer = intakeAnswers[field.key];
+      const answer = answers[field.key];
       if (answer === undefined || answer === null || answer === "") continue;
 
       for (const fieldId of targetIds) {
-        if (SIGNATURE_FIELD_PATTERN.test(fieldId) && !NAME_FIELD_EXCEPTION.test(fieldId)) continue;
+        if (isSignatureField(fieldId)) continue;
         const page = pageByFieldId.get(fieldId);
         if (page === undefined) continue; // field not present on this form/page — skip rather than error
         out.push({ field_id: fieldId, page, value: answer });

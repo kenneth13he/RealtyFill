@@ -1,0 +1,590 @@
+[
+  {
+    "field_id": "p1_brokerage",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      96.3,
+      657.9,
+      507.8,
+      669.9
+    ],
+    "label_hint": "BROKERAGE"
+  },
+  {
+    "field_id": "p1_address",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      83.6,
+      640.9,
+      571.5,
+      652.9
+    ],
+    "label_hint": "ADDRESS"
+  },
+  {
+    "field_id": "p1_cont",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      622.9,
+      296.8,
+      634.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_tel_no",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      329.2,
+      622.9,
+      430.2,
+      634.9
+    ],
+    "label_hint": " Tel. No"
+  },
+  {
+    "field_id": "p1_fax_no",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      463.6,
+      622.9,
+      569.6,
+      634.9
+    ],
+    "label_hint": " Tel. No. ......................................... Fax No"
+  },
+  {
+    "field_id": "p1_buyer",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      72.6,
+      602.9,
+      521.0,
+      614.9
+    ],
+    "label_hint": "BUYER"
+  },
+  {
+    "field_id": "p1_address_2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      83.6,
+      583.9,
+      571.5,
+      595.9
+    ],
+    "label_hint": "ADDRESS"
+  },
+  {
+    "field_id": "p1_municipality",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      103.9,
+      562.9,
+      370.0,
+      574.9
+    ],
+    "label_hint": "MUNICIPALITY"
+  },
+  {
+    "field_id": "p1_postal_code",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      433.5,
+      562.9,
+      571.5,
+      574.9
+    ],
+    "label_hint": "................................................ POSTAL CODE"
+  },
+  {
+    "field_id": "p1_designated_representative_s",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      179.4,
+      544.9,
+      571.2,
+      556.9
+    ],
+    "label_hint": "DESIGNATED REPRESENTATIVE(S)"
+  },
+  {
+    "field_id": "p1_cont_2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      525.9,
+      570.3,
+      537.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_commencing_at",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      94.9,
+      487.9,
+      173.7,
+      499.9
+    ],
+    "label_hint": "commencing at"
+  },
+  {
+    "field_id": "p1_on_the",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      199.8,
+      487.9,
+      266.3,
+      499.9
+    ],
+    "label_hint": "commencing at ................................ on the"
+  },
+  {
+    "field_id": "p1_n_the_day_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      293.3,
+      487.9,
+      502.7,
+      499.9
+    ],
+    "label_hint": ".................. on the ........................... day of"
+  },
+  {
+    "field_id": "p1_20",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      519.7,
+      487.9,
+      569.0,
+      499.9
+    ],
+    "label_hint": "....................................................... , 20"
+  },
+  {
+    "field_id": "p1_and_expiring_at_11_59_p_m_on_the",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      160.8,
+      469.9,
+      224.8,
+      481.9
+    ],
+    "label_hint": "and expiring at 11:59 p.m. on the"
+  },
+  {
+    "field_id": "p1_on_the_day_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      251.1,
+      469.9,
+      463.0,
+      481.9
+    ],
+    "label_hint": "iring at 11:59 p.m. on the .......................... day of"
+  },
+  {
+    "field_id": "p1_20_2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      477.4,
+      469.9,
+      524.2,
+      481.9
+    ],
+    "label_hint": "........................................................, 20"
+  },
+  {
+    "field_id": "p1_property_type_use",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      113.2,
+      401.9,
+      571.5,
+      413.9
+    ],
+    "label_hint": "Property Type (Use)"
+  },
+  {
+    "field_id": "p1_cont_3",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      385.9,
+      572.0,
+      397.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_geographic_location",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      118.1,
+      369.9,
+      571.5,
+      381.9
+    ],
+    "label_hint": "Geographic Location"
+  },
+  {
+    "field_id": "p1_cont_4",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      353.9,
+      570.3,
+      365.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_schedule_a",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      82.3,
+      311.9,
+      244.8,
+      323.9
+    ],
+    "label_hint": "Schedule A"
+  },
+  {
+    "field_id": "p1_e_is_entitled_to_be_paid_a_commission_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      322.4,
+      122.4,
+      448.1,
+      134.4
+    ],
+    "label_hint": "es that the Brokerage is entitled to be paid a commission of"
+  },
+  {
+    "field_id": "p1_or",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      71.3,
+      108.4,
+      571.5,
+      120.4
+    ],
+    "label_hint": "or"
+  },
+  {
+    "field_id": "p1_or_for_a_lease_a_commission_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      168.6,
+      94.4,
+      570.3,
+      106.4
+    ],
+    "label_hint": "or for a lease, a commission of"
+  },
+  {
+    "field_id": "p2_he_buyer_enters_into_an_agreement_within",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      406.4,
+      689.4,
+      485.2,
+      701.4
+    ],
+    "label_hint": "such commission if the Buyer enters into an agreement within"
+  },
+  {
+    "field_id": "p3_cont",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      401.9,
+      257.3,
+      413.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_2",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      277.0,
+      401.9,
+      385.5,
+      413.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_3",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      400.5,
+      401.9,
+      570.5,
+      413.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_4",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      316.9,
+      272.1,
+      328.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_5",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      299.7,
+      316.9,
+      405.6,
+      328.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_6",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      415.5,
+      316.9,
+      570.7,
+      328.9
+    ],
+    "label_hint": "           "
+  },
+  {
+    "field_id": "p3_cont_7",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      291.9,
+      272.1,
+      303.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_8",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      299.7,
+      291.9,
+      405.6,
+      303.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_9",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      415.5,
+      291.9,
+      570.7,
+      303.9
+    ],
+    "label_hint": "           "
+  },
+  {
+    "field_id": "p3_the_salesperson_broker_broker_of_record",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      198.2,
+      242.9,
+      560.4,
+      254.9
+    ],
+    "label_hint": "The Salesperson/Broker/Broker of Record"
+  },
+  {
+    "field_id": "p3_cont_10",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      134.1,
+      202.9,
+      560.4,
+      214.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_on_the",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      80.3,
+      140.9,
+      156.6,
+      152.9
+    ],
+    "label_hint": "on the \u2026\u2026"
+  },
+  {
+    "field_id": "p3_day_of",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      207.6,
+      140.9,
+      249.2,
+      152.9
+    ],
+    "label_hint": "on the \u2026\u2026................................. day of \u2026\u2026\u2026"
+  },
+  {
+    "field_id": "p3_day_of_2",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      273.2,
+      140.9,
+      335.6,
+      152.9
+    ],
+    "label_hint": "............................ day of \u2026\u2026\u2026..................\u2026\u2026\u2026"
+  },
+  {
+    "field_id": "p3_cont_11",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      377.9,
+      140.9,
+      421.9,
+      152.9
+    ],
+    "label_hint": "of \u2026\u2026\u2026..................\u2026\u2026\u2026...........................\u2026.\u2026\u2026\u2026\u2026"
+  },
+  {
+    "field_id": "p3_20",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      478.1,
+      140.9,
+      540.5,
+      152.9
+    ],
+    "label_hint": ".........................\u2026.\u2026\u2026\u2026\u2026...................\u2026\u2026\u2026\u2026, 20 \u2026"
+  },
+  {
+    "field_id": "p3_cont_12",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      119.9,
+      402.7,
+      131.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_13",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      408.9,
+      119.9,
+      571.5,
+      131.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_14",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      97.9,
+      402.7,
+      109.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_15",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      408.9,
+      97.9,
+      571.5,
+      109.9
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p4_brokerage",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      93.9,
+      658.5,
+      555.0,
+      670.5
+    ],
+    "label_hint": "BROKERAGE"
+  },
+  {
+    "field_id": "p4_buyer",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      71.3,
+      635.5,
+      571.5,
+      647.5
+    ],
+    "label_hint": "BUYER"
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "field_id": "p1_tenant",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      78.2,
+      658.5,
+      553.8,
+      670.5
+    ],
+    "label_hint": "TENANT"
+  },
+  {
+    "field_id": "p1_landlord",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      91.0,
+      635.5,
+      571.5,
+      647.5
+    ],
+    "label_hint": "LANDLORD"
+  },
+  {
+    "field_id": "p1_for_the_lease_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      93.5,
+      612.5,
+      571.5,
+      624.5
+    ],
+    "label_hint": "for the lease of"
+  },
+  {
+    "field_id": "p1_cont",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      589.5,
+      274.6,
+      601.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_dated_the",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      311.3,
+      589.5,
+      348.3,
+      601.5
+    ],
+    "label_hint": " dated the"
+  },
+  {
+    "field_id": "p1_dated_the_day_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      374.7,
+      589.5,
+      520.0,
+      601.5
+    ],
+    "label_hint": " dated the ............... day of"
+  },
+  {
+    "field_id": "p1_20",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      534.5,
+      589.5,
+      571.5,
+      601.5
+    ],
+    "label_hint": "........................................................, 20"
+  }
+]

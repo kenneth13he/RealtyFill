@@ -9,6 +9,7 @@
 
 import { notFound } from "next/navigation";
 import { getIntakeFormSchema } from "@/lib/schemas";
+import { FORM_SETS, filterSchemaForSet, toFormSetId } from "@/lib/formTypes";
 import { createClient } from "@/lib/supabase/server";
 import Header from "@/components/Header";
 import IntakeForm from "./IntakeForm";
@@ -17,8 +18,8 @@ export default async function IntakePage({ params }: { params: Promise<{ dealId:
   const { dealId } = await params;
   const supabase = await createClient();
 
-  const [{ data: deal }, { data: intakeRow }, schema] = await Promise.all([
-    supabase.from("deals").select("id, label").eq("id", dealId).maybeSingle(),
+  const [{ data: deal }, { data: intakeRow }, fullSchema] = await Promise.all([
+    supabase.from("deals").select("id, label, form_set").eq("id", dealId).maybeSingle(),
     supabase.from("deal_intake").select("answers").eq("deal_id", dealId).maybeSingle(),
     getIntakeFormSchema(),
   ]);
@@ -27,6 +28,10 @@ export default async function IntakePage({ params }: { params: Promise<{ dealId:
     notFound();
   }
 
+  // Only ask what this deal's forms actually use — a purchase deal has no
+  // rent, utilities or tenant-insurance questions.
+  const formSet = FORM_SETS[toFormSetId(deal.form_set)];
+  const schema = filterSchemaForSet(fullSchema, formSet.id);
   const initialAnswers = (intakeRow?.answers as Record<string, string>) ?? {};
   const isEditing = Object.keys(initialAnswers).length > 0;
 
@@ -35,6 +40,7 @@ export default async function IntakePage({ params }: { params: Promise<{ dealId:
       <Header active="intake" dealId={dealId} />
       <main className="mx-auto max-w-3xl px-6 py-10">
         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">{deal.label}</h1>
+        <p className="mt-1 text-sm font-medium text-[var(--color-accent)]">{formSet.label}</p>
         <p className="mt-1 text-[var(--color-text-muted)]">
           {isEditing
             ? "Editing this deal's saved answers — changes here won't take effect until you continue to review."
