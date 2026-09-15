@@ -9,6 +9,7 @@
 // rather than anything the request body claims.
 
 import { NextResponse } from "next/server";
+import { isSameOrigin, crossOriginRefusal } from "@/lib/sameOrigin";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminUser, adminsConfigured } from "@/lib/admin";
@@ -81,6 +82,10 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
+  // Defence in depth behind the SameSite=Lax session cookie — see
+  // lib/sameOrigin.ts. Matters more here than elsewhere: this is the one
+  // endpoint that writes to another user's row.
+  if (!isSameOrigin(request)) return crossOriginRefusal();
   const gate = await requireAdmin();
   if (gate.error) return gate.error;
 
