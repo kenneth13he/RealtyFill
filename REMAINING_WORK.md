@@ -170,15 +170,19 @@ Form 410 needs a separate tenant-facing flow, is left partially filled
 deliberately, or is dropped from the supported set — before anyone builds
 80 fields.
 
-### 10. ✅ Validation on generate
-The review page now lists exactly which required fields are still empty
-**for the forms currently selected** (warning about a Form 410 field while
-someone generates only the 2229E would be noise), and the button reads
-"Generate anyway" when there are gaps.
+### 10. 🟡 Validation — per-field only; the summary warning was removed
+The editor marks each empty non-optional field with a red `*` at the point
+of entry, which stands.
 
-Deliberately *not* a hard block: a realtor legitimately may not have every
-detail yet, and refusing to generate would make the tool unusable in normal
-workflow. The goal is that nothing gets generated incomplete *by accident*.
+A summary warning on the review page ("N fields still empty on the forms
+you've selected") was built and then removed: `"(optional)"` in a label is
+too crude a proxy for "required", so it counted ~37 fields on a realistic
+deal — mostly things a realtor legitimately wouldn't have. It read as noise
+rather than a signal.
+
+Doing this properly needs a real notion of which fields are genuinely
+required *per form*, which doesn't exist in `intake_form_schema.json` today
+and overlaps with the item 9 audit. Worth revisiting together with that.
 
 ### 11. ❌ Nothing has been verified in an actual browser
 Every test so far has been HTTP-level (curl + pypdf). Nobody has clicked

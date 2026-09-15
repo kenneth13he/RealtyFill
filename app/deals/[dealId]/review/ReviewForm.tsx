@@ -146,7 +146,14 @@ export default function ReviewForm({
       if (!saveRes.ok) throw new Error("Failed to save updated answers");
 
       setUpdateText("");
-      await handleGenerate();
+      // Only regenerate if there's actually something to regenerate. This
+      // box is available before the first generate too (paste the listing
+      // details in, then generate once), and calling generate with nothing
+      // selected would fail with "selectedForms must include at least one
+      // form" — an error about a step the user hasn't taken yet.
+      if (hasGenerated && selectedRef.current.size > 0) {
+        await handleGenerate();
+      }
     } catch (err) {
       setUpdateError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -167,27 +174,11 @@ export default function ReviewForm({
 
   const hasAnswers = groupsWithAnswers.length > 0;
 
-  // Fields that are empty AND feed at least one of the forms currently
-  // selected. Scoped to the selection deliberately — warning about a Form 410
-  // field while someone is generating only the 2229E would be noise. Fields
-  // whose label says "(optional)" are excluded, matching the same convention
-  // components/IntakeFieldsEditor.tsx uses for its red asterisks.
-  const missingForSelected: string[] = [];
-  if (selected.size > 0) {
-    for (const group of schema.groups) {
-      for (const field of group.fields) {
-        if (field.hidden || field.derived_from) continue;
-        if (field.label.toLowerCase().includes("(optional)")) continue;
-        if (field.type === "checkbox") continue;
-        const targetsSelected = (Object.keys(field.targets) as FormId[]).some((f) => selected.has(f));
-        if (!targetsSelected) continue;
-        const value = answers[field.key];
-        if (value === undefined || value === "" || value === "/Off") {
-          missingForSelected.push(field.label);
-        }
-      }
-    }
-  }
+  // (An empty-field warning used to live here. Removed: "(optional)" in the
+  // label is too crude a proxy for "required" — it counted ~37 fields on a
+  // realistic deal, most of them things a realtor legitimately wouldn't have
+  // or need, which made it noise rather than a signal. The per-field red
+  // asterisks in the editor already cover this at the point of entry.)
 
   const affectedForms = new Set<FormId>();
   if (changedKeys.size > 0) {
@@ -294,37 +285,12 @@ export default function ReviewForm({
             </label>
           ))}
         </div>
-        {missingForSelected.length > 0 && (
-          <div className="mt-4 rounded-md border border-[var(--color-warn-border)] bg-[var(--color-warn-bg)] px-3 py-2.5 text-sm text-[var(--color-warn-text)]">
-            <p className="font-medium">
-              {missingForSelected.length} field{missingForSelected.length === 1 ? "" : "s"} still empty on the forms
-              you&apos;ve selected
-            </p>
-            <p className="mt-1">
-              You can still generate — those spots will just be blank on the PDF. Fill them in under &quot;Edit
-              answers&quot; above if you want them completed.
-            </p>
-            <details className="mt-2">
-              <summary className="cursor-pointer font-medium">Show which fields</summary>
-              <ul className="mt-1.5 list-disc pl-5">
-                {missingForSelected.map((label) => (
-                  <li key={label}>{label}</li>
-                ))}
-              </ul>
-            </details>
-          </div>
-        )}
-
         <button
           onClick={handleGenerate}
           disabled={generating || selected.size === 0 || !hasAnswers}
           className="mt-4 w-full rounded-lg bg-[var(--color-accent)] px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
-          {generating
-            ? "Generating…"
-            : missingForSelected.length > 0
-              ? "Generate anyway"
-              : "Generate selected forms"}
+          {generating ? "Generating…" : "Generate selected forms"}
         </button>
       </div>
 
@@ -334,12 +300,15 @@ export default function ReviewForm({
         </p>
       )}
 
-      {hasGenerated && (
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+      {/* Shown before the first generate too, not just after — pasting the
+          details in is often the first thing you'd want to do on a new deal,
+          and hiding this until after a generate made that non-obvious. */}
+      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
           <h2 className="text-base font-semibold text-[var(--color-text)]">Update with more info</h2>
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-            Paste any new or corrected details (an email, a note, an updated listing) — matching fields are updated
-            and the selected forms are regenerated automatically.
+            Paste any new or corrected details (an email, a note, an updated listing) and matching fields are filled
+            in for you.
+            {hasGenerated ? " The forms you've generated are then updated automatically." : ""}
           </p>
           <textarea
             value={updateText}
@@ -354,7 +323,7 @@ export default function ReviewForm({
             disabled={updating || generating || !updateText.trim()}
             className="mt-3 w-full rounded-lg bg-[var(--color-accent)] px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
           >
-            {updating ? "Updating…" : "Update & regenerate forms"}
+            {updating ? "Updating…" : hasGenerated ? "Update & regenerate forms" : "Add this info"}
           </button>
           {updateError && (
             <p role="alert" className="mt-3 rounded-md border border-[var(--color-error-border)] bg-[var(--color-error-bg)] px-3 py-2 text-sm text-[var(--color-error-text)]">
@@ -366,8 +335,7 @@ export default function ReviewForm({
               Left unchanged (ambiguous): {Object.entries(updateFlagged).map(([key, reason]) => `${key} (${reason})`).join("; ")}
             </p>
           )}
-        </div>
-      )}
+      </div>
 
       {results.length > 0 && (
         <div className="rounded-xl border border-green-200 bg-green-50 p-5">
