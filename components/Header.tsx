@@ -1,12 +1,18 @@
 // components/Header.tsx
-// Shared top bar across every page — app name + a step indicator showing
-// where the realtor is in the Intake → Review → Generate flow for one deal,
-// plus Settings/Sign out for a signed-in visitor. Phase 2: pages live under
-// /deals/[dealId]/..., so the steps need that dealId to link anywhere — pass
-// it whenever `active` is set. Async server component: checks auth itself
-// rather than every page threading a `user` prop through just for this.
+// Shared top bar across every signed-in page — app name + a step indicator
+// showing where the realtor is in the Intake → Review → Generate flow for one
+// deal, plus Settings/Sign out. Phase 2: pages live under /deals/[dealId]/...,
+// so the steps need that dealId to link anywhere — pass it whenever `active`
+// is set. Async server component: checks auth itself rather than every page
+// threading a `user` prop through just for this.
+//
+// Rendered in deep ink with the lime accent, matching the landing page's nav
+// and footer. The page body below stays light for form readability — the bar
+// is what carries the brand into the app, so signing in doesn't feel like
+// landing on a different product.
 
 import Link from "next/link";
+import Wordmark from "@/components/Wordmark";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/login/actions";
 
@@ -24,14 +30,14 @@ export default async function Header({ active, dealId }: { active?: "intake" | "
   } = await supabase.auth.getUser();
 
   return (
-    <header className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-      <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
+    <header className="bg-[var(--brand-deep)]">
+      <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-y-3 px-6 py-4">
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-lg font-semibold tracking-tight text-[var(--color-text)]">
-            RealtyFill
+          <Link href="/" className="text-xl">
+            <Wordmark tone="dark" />
           </Link>
           {active && dealId && (
-            <Link href="/dashboard" className="text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-accent)]">
+            <Link href="/dashboard" className="text-sm font-medium text-white/55 transition-colors hover:text-white">
               ← Dashboard
             </Link>
           )}
@@ -46,8 +52,8 @@ export default async function Header({ active, dealId }: { active?: "intake" | "
                   className={
                     "rounded-full px-3 py-1 font-medium transition-colors " +
                     (step.key === active
-                      ? "bg-[var(--color-accent)] text-white"
-                      : "text-[var(--color-text-muted)] hover:bg-[var(--color-accent)]/10")
+                      ? "bg-[var(--lime)] text-[var(--brand-deep)]"
+                      : "text-white/60 hover:bg-white/10 hover:text-white")
                   }
                 >
                   {step.label}
@@ -57,11 +63,14 @@ export default async function Header({ active, dealId }: { active?: "intake" | "
           )}
           {user && (
             <div className="flex items-center gap-3 text-sm">
-              <Link href="/settings" className="font-medium text-[var(--color-text-muted)] hover:text-[var(--color-accent)]">
+              <Link href="/settings" className="font-medium text-white/60 transition-colors hover:text-white">
                 Settings
               </Link>
               <form action={signOut}>
-                <button type="submit" className="font-medium text-[var(--color-text-muted)] hover:text-[var(--color-accent)]">
+                <button
+                  type="submit"
+                  className="font-medium text-white/60 transition-colors hover:text-white"
+                >
                   Sign out
                 </button>
               </form>

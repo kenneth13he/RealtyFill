@@ -39,7 +39,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ dealId:
     <>
       <Header active="review" dealId={dealId} />
       <main className="mx-auto max-w-3xl px-6 py-10">
-        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">{deal.label}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">{deal.label}</h1>
         <p className="mt-1 text-sm font-medium text-[var(--color-accent)]">{formSet.label}</p>
         <p className="mt-1 text-[var(--color-text-muted)]">
           Double-check what you entered, pick which forms to generate, then download the filled PDFs.

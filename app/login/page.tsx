@@ -6,6 +6,7 @@
 // user was headed instead of always dropping them on the dashboard.
 
 import Link from "next/link";
+import Wordmark from "@/components/Wordmark";
 import { signIn, signUp, signInWithGoogle, requestPasswordReset } from "./actions";
 
 export default async function LoginPage({
@@ -20,9 +21,17 @@ export default async function LoginPage({
   const heading = isReset ? "Reset your password" : isSignup ? "Create an account" : "Sign in";
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6 py-12">
-      <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">RealtyFill</h1>
-      <p className="mt-1 text-[var(--color-text-muted)]">{heading}</p>
+    // Deep-ink field with a white card floated on it — the same inversion the
+    // landing page uses between sections. Arriving here from the landing CTA
+    // should feel like the next room, not a different building.
+    <main className="flex min-h-screen flex-col justify-center bg-[var(--brand-deep)] px-6 py-12">
+      <div className="mx-auto w-full max-w-sm">
+        <Link href="/" className="inline-block text-2xl">
+          <Wordmark tone="dark" />
+        </Link>
+
+        <div className="mt-6 rounded-2xl bg-[var(--color-surface)] p-7 shadow-2xl shadow-black/25">
+      <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text)]">{heading}</h1>
 
       {error && (
         <p role="alert" className="mt-4 rounded-md border border-[var(--color-error-border)] bg-[var(--color-error-bg)] px-3 py-2 text-sm text-[var(--color-error-text)]">
@@ -158,17 +167,20 @@ export default async function LoginPage({
         </>
       )}
 
-      <p className="mt-6 text-xs leading-relaxed text-[var(--color-text-muted)]">
-        By continuing you agree to our{" "}
-        <Link href="/terms" className="underline hover:text-[var(--color-text)]">
-          Terms of Service
-        </Link>{" "}
-        and{" "}
-        <Link href="/privacy" className="underline hover:text-[var(--color-text)]">
-          Privacy Policy
-        </Link>
-        .
-      </p>
+        </div>
+
+        <p className="mt-6 text-xs leading-relaxed text-white/45">
+          By continuing you agree to our{" "}
+          <Link href="/terms" className="underline transition-colors hover:text-white">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="underline transition-colors hover:text-white">
+            Privacy Policy
+          </Link>
+          .
+        </p>
+      </div>
     </main>
   );
 }

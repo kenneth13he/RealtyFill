@@ -26,7 +26,7 @@ export default async function SettingsPage() {
     <>
       <Header />
       <main className="mx-auto max-w-3xl px-6 py-10">
-        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">Settings</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">Settings</h1>
         <div className="mt-8">
           <SettingsForm initialProfile={initialProfile} />
         </div>

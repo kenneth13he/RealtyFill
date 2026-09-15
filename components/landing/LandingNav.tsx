@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Wordmark from "@/components/Wordmark";
 
 export default function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -29,8 +30,8 @@ export default function LandingNav() {
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-        <Link href="/" className="text-2xl font-semibold tracking-tight text-white">
-          realty<span className="text-[var(--lime)]">fill</span>
+        <Link href="/" className="text-2xl">
+          <Wordmark tone="dark" />
         </Link>
 
         <div className="flex items-center gap-8">

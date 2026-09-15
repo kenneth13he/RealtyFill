@@ -14,6 +14,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import Wordmark from "@/components/Wordmark";
 import LandingNav from "@/components/landing/LandingNav";
 import VisualProof from "@/components/landing/VisualProof";
 import Marquee from "@/components/landing/Marquee";
@@ -220,9 +221,7 @@ export default async function HomePage() {
 
       <footer className="bg-[var(--brand-deep)] py-10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 text-sm text-white/45 sm:flex-row">
-          <span className="text-base font-semibold text-white">
-            realty<span className="text-[var(--lime)]">fill</span>
-          </span>
+          <Wordmark tone="dark" className="text-base" />
           <div className="flex items-center gap-4">
             <Link href="/terms" className="transition-colors hover:text-white">
               Terms of Service
