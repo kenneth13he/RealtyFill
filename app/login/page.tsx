@@ -110,6 +110,18 @@ export default async function LoginPage({
           </>
         )}
       </p>
+
+      <p className="mt-6 text-xs leading-relaxed text-[var(--color-text-muted)]">
+        By continuing you agree to our{" "}
+        <Link href="/terms" className="underline hover:text-[var(--color-text)]">
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="underline hover:text-[var(--color-text)]">
+          Privacy Policy
+        </Link>
+        .
+      </p>
     </main>
   );
 }

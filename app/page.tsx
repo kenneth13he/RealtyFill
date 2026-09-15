@@ -55,6 +55,16 @@ export default async function HomePage() {
             </div>
           ))}
         </dl>
+
+        <footer className="mt-16 border-t border-[var(--color-border)] pt-6 text-sm text-[var(--color-text-muted)]">
+          <Link href="/terms" className="hover:underline">
+            Terms of Service
+          </Link>
+          <span className="mx-2">·</span>
+          <Link href="/privacy" className="hover:underline">
+            Privacy Policy
+          </Link>
+        </footer>
       </main>
     </>
   );
