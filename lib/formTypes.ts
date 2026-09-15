@@ -28,7 +28,9 @@ export type FormId =
   | "form_203"
   | "form_244"
   | "form_271"
-  | "form_291";
+  | "form_291"
+  // Given to every client in every transaction, so it belongs to no one set.
+  | "form_reco";
 
 export interface IntakeFieldOption {
   value: string;
@@ -101,13 +103,30 @@ export const FORM_LABELS: Record<FormId, string> = {
   form_244: "Form 244 — Seller's Direction re: Property/Offers",
   form_271: "Form 271 — Listing Agreement, Seller Designated Representation",
   form_291: "Form 291 — MLS® Data Information Form (Condo, Sale)",
+
+  form_reco: "RECO Information Guide — Working with a real estate agent",
 };
 
-// PropTx's MLS data forms (291 sale / 292 lease) are deliberately absent from
-// the sets above. They are 13-page data-entry sheets — hundreds of checkboxes
-// with max-select rules and a 99-row room table — whose content barely
-// overlaps the intake schema, and a realtor enters that data in PropTx
-// directly. Their blanks stay in forms/blank_templates/ if that changes.
+// RECO requires an agent to walk every buyer or seller through this guide
+// before providing services, and to have it acknowledged — so it is attached
+// to all four sets rather than belonging to any one of them. It lives in
+// forms/blank_templates/shared/ and is resolved by blankTemplatePath below.
+export const SHARED_FORM_IDS: FormId[] = ["form_reco"];
+
+// Forms delivered as blanks: they are part of a set and generate into the
+// bundle, but carry no fillable fields so nothing is written into them.
+// Declared explicitly so tests assert against this list rather than treating
+// "zero fields" as an acceptable surprise anywhere it turns up.
+export const BLANK_ONLY_FORM_IDS: FormId[] = ["form_291", "form_292"];
+
+// PropTx's MLS data forms (291 sale / 292 lease) are now part of their sets,
+// but as BLANKS. They are 13-page data-entry sheets — hundreds of checkboxes
+// with max-select rules and a 99-row room table — laid out as grids rather
+// than the dot-leader blanks scripts/add_form_fields.py understands, so they
+// carry zero fillable fields and their schemas in forms/schemas/ are empty
+// arrays. Generating one copies the blank through unchanged, which is the
+// honest behaviour: the realtor gets the sheet in their bundle and enters the
+// data in PropTx, which is where they were entering it anyway.
 
 // ---------------------------------------------------------------------------
 // Form sets
@@ -147,7 +166,7 @@ export const FORM_SETS: Record<FormSetId, FormSet> = {
     label: "Condo for lease — tenant side",
     description: "You represent the tenant. Lease agreement, rental application, and co-operation forms.",
     templateDir: "",
-    formIds: ["2229e", "form_400", "form_410", "form_324", "form_372"],
+    formIds: ["2229e", "form_400", "form_410", "form_324", "form_372", "form_reco"],
     ready: true,
   },
   lease_landlord: {
@@ -155,7 +174,7 @@ export const FORM_SETS: Record<FormSetId, FormSet> = {
     label: "Condo for lease — landlord side",
     description: "You represent the landlord. Listing agreement and lease schedule.",
     templateDir: "lease_landlord_condo",
-    formIds: ["form_272", "form_401"],
+    formIds: ["form_272", "form_401", "form_292", "form_reco"],
     ready: true,
   },
   sale_buyer: {
@@ -163,7 +182,7 @@ export const FORM_SETS: Record<FormSetId, FormSet> = {
     label: "Condo for sale — buyer side",
     description: "You represent the buyer. Agreement of purchase and sale, buyer representation, and offer summary.",
     templateDir: "purchase_buyer_condo",
-    formIds: ["form_101", "form_303", "form_320", "form_371", "form_801"],
+    formIds: ["form_101", "form_303", "form_320", "form_371", "form_801", "form_reco"],
     ready: true,
   },
   sale_seller: {
@@ -171,7 +190,7 @@ export const FORM_SETS: Record<FormSetId, FormSet> = {
     label: "Condo for sale — seller side",
     description: "You represent the seller. Listing agreement, seller's direction, and schedule.",
     templateDir: "sale_seller_condo",
-    formIds: ["form_203", "form_244", "form_271"],
+    formIds: ["form_203", "form_244", "form_271", "form_291", "form_reco"],
     ready: true,
   },
 };
@@ -188,6 +207,18 @@ export function isFormSetId(value: unknown): value is FormSetId {
 /** Normalises whatever came back from the database into a set id we can trust. */
 export function toFormSetId(value: unknown): FormSetId {
   return isFormSetId(value) ? value : DEFAULT_FORM_SET;
+}
+
+/**
+ * Where a set's blank template for one form lives.
+ *
+ * Most templates sit in the set's own directory. The RECO guide is attached to
+ * every set, so it lives in shared/ once rather than being copied four times —
+ * it is 3.2 MB of photography and duplicating it would put 13 MB of identical
+ * bytes in the repo.
+ */
+export function blankTemplateDir(setId: FormSetId, formId: FormId): string {
+  return SHARED_FORM_IDS.includes(formId) ? "shared" : FORM_SETS[setId].templateDir;
 }
 
 export function formIdsForSet(setId: FormSetId): FormId[] {

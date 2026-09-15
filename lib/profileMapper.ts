@@ -36,7 +36,8 @@ const MONTHS = [
  *  - `<key>_words` for money — OREA forms print an amount twice, in digits
  *    and in words.
  *  - `<key>_day` / `_month` / `_year` for every date — these forms write
- *    dates as "the ___ day of ___, 20___", three separate blanks.
+ *    dates as "the ___ day of ___, 20___", three separate blanks — plus
+ *    `<key>_long` ("September 15, 2026") for forms with one date box.
  */
 export function withComputedValues(answers: Record<string, string>): Record<string, string> {
   const out = { ...answers };
@@ -78,6 +79,10 @@ export function withComputedValues(answers: Record<string, string>): Record<stri
     out[`${key}_day`] ??= String(Number(day));
     out[`${key}_month`] ??= monthName;
     out[`${key}_year`] ??= year.slice(2);
+    // OREA forms split a date across three blanks; a form with a single date
+    // box wants it written the way a person writes it. "2026-09-15" on a
+    // document a client signs looks like a database field, not a date.
+    out[`${key}_long`] ??= `${monthName} ${Number(day)}, ${year}`;
   }
 
   return out;

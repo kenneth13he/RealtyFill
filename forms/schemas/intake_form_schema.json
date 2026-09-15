@@ -2336,6 +2336,63 @@
           "hidden": true
         }
       ]
+    },
+    {
+      "group": "reco_acknowledgement",
+      "label": "RECO Information Guide",
+      "note": "RECO requires you to walk every client through this guide before providing services, and to have them acknowledge it. These four answers fill the acknowledgement page; the signatures are left for you and the client to sign. Your brokerage name is already printed on the form.",
+      "fields": [
+        {
+          "key": "reco_agent_name",
+          "label": "Your name (the agent providing the guide)",
+          "type": "text",
+          "profile": "full_name",
+          "targets": {
+            "form_reco": [
+              "p13_real_estate_agent_name"
+            ]
+          }
+        },
+        {
+          "key": "reco_date_provided",
+          "label": "Date the guide was provided",
+          "type": "date",
+          "targets": {}
+        },
+        {
+          "key": "reco_date_provided_long",
+          "label": "Date the guide was provided (written out)",
+          "type": "text",
+          "hidden": true,
+          "derived_from": "reco_date_provided",
+          "targets": {
+            "form_reco": [
+              "p13_date_guide_was_provided"
+            ]
+          }
+        },
+        {
+          "key": "reco_client_name_1",
+          "label": "Client name (the buyer, seller, tenant or landlord you represent)",
+          "type": "text",
+          "targets": {
+            "form_reco": [
+              "p13_buyer_seller_name"
+            ]
+          },
+          "note": "Deliberately its own question rather than reused from the parties section: who your client is depends on which side of the deal you are on, and the existing tenant/landlord/buyer/seller fields can't express that per set."
+        },
+        {
+          "key": "reco_client_name_2",
+          "label": "Second client name (optional)",
+          "type": "text",
+          "targets": {
+            "form_reco": [
+              "p13_buyer_seller_name_2"
+            ]
+          }
+        }
+      ]
     }
   ]
 }

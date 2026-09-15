@@ -24,9 +24,9 @@ export function getIntakeFormSchema(): IntakeFormSchema {
   return readJson<IntakeFormSchema>("intake_form_schema.json");
 }
 
-// Partial because PropTx 291/292 are intentionally not part of any set (see
-// lib/formTypes.ts) and so have no extracted schema — an explicit error beats
-// a confusing ENOENT if something ever routes one of them here.
+// Partial so a form added to FormId without a schema fails with a clear error
+// rather than a confusing ENOENT. Every form in a set has an entry; 291 and
+// 292 map to empty arrays because they carry no fillable fields.
 const RAW_SCHEMA_FILES: Partial<Record<FormId, string>> = {
   "2229e": "2229e_raw.json",
   form_400: "form_400_raw.json",
@@ -46,6 +46,14 @@ const RAW_SCHEMA_FILES: Partial<Record<FormId, string>> = {
   form_203: "form_203_raw.json",
   form_244: "form_244_raw.json",
   form_271: "form_271_raw.json",
+
+  // Attached to every set.
+  form_reco: "form_reco_raw.json",
+
+  // Empty arrays on purpose — these two are grid-style PropTx sheets with no
+  // fillable fields, delivered as blanks. See lib/formTypes.ts.
+  form_291: "form_291_raw.json",
+  form_292: "form_292_raw.json",
 };
 
 export function getRawFormSchema(formId: FormId): RawFieldInfo[] {

@@ -1,0 +1,112 @@
+[
+  {
+    "field_id": "p13_real_estate_agent_name",
+    "type": "text",
+    "page": 13,
+    "rect": [
+      47.25,
+      676.14,
+      564.26,
+      695.36
+    ]
+  },
+  {
+    "field_id": "p13_brokerage_name",
+    "type": "text",
+    "page": 13,
+    "rect": [
+      47.25,
+      631.55,
+      564.26,
+      650.77
+    ]
+  },
+  {
+    "field_id": "p13_date_guide_was_provided",
+    "type": "text",
+    "page": 13,
+    "rect": [
+      47.25,
+      584.96,
+      297.24,
+      604.18
+    ]
+  },
+  {
+    "field_id": "p13_signature_of_real_estate_agent",
+    "type": "text",
+    "page": 13,
+    "rect": [
+      315,
+      584.96,
+      564.99,
+      604.18
+    ]
+  },
+  {
+    "field_id": "p13_buyer_seller_name",
+    "type": "text",
+    "page": 13,
+    "rect": [
+      47.25,
+      483.7,
+      297.24,
+      502.92
+    ]
+  },
+  {
+    "field_id": "p13_buyer_seller_name_2",
+    "type": "text",
+    "page": 13,
+    "rect": [
+      315,
+      483.7,
+      564.24,
+      502.92
+    ]
+  },
+  {
+    "field_id": "p13_signature_of_buyer_seller",
+    "type": "text",
+    "page": 13,
+    "rect": [
+      47.25,
+      436.97,
+      297.24,
+      456.19
+    ]
+  },
+  {
+    "field_id": "p13_signature_of_buyer_seller_2",
+    "type": "text",
+    "page": 13,
+    "rect": [
+      315,
+      436.97,
+      564.24,
+      456.19
+    ]
+  },
+  {
+    "field_id": "p13_date",
+    "type": "text",
+    "page": 13,
+    "rect": [
+      47.25,
+      392.23,
+      297.24,
+      411.45
+    ]
+  },
+  {
+    "field_id": "p13_date_2",
+    "type": "text",
+    "page": 13,
+    "rect": [
+      315,
+      392.23,
+      564.24,
+      411.45
+    ]
+  }
+]

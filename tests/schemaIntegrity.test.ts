@@ -12,7 +12,7 @@ import path from "node:path";
 import { test, describe } from "node:test";
 
 import { getIntakeFormSchema, getRawFormSchema } from "../lib/schemas";
-import { FORM_SETS, FORM_SET_IDS, FORM_LABELS, ALL_FORM_IDS, filterSchemaForSet, type FormId } from "../lib/formTypes";
+import { FORM_SETS, FORM_SET_IDS, FORM_LABELS, ALL_FORM_IDS, BLANK_ONLY_FORM_IDS, SHARED_FORM_IDS, blankTemplateDir, filterSchemaForSet, type FormId } from "../lib/formTypes";
 
 const TEMPLATES_DIR = path.join(process.cwd(), "forms", "blank_templates");
 const schema = getIntakeFormSchema();
@@ -25,7 +25,14 @@ describe("form sets", () => {
     for (const setId of FORM_SET_IDS) {
       for (const formId of FORM_SETS[setId].formIds) {
         const fields = getRawFormSchema(formId);
-        assert.ok(fields.length > 0, `${formId} (${setId}) has an empty field schema`);
+        // 291/292 are delivered as blanks and legitimately have none — but
+        // only those two, checked against the declared list so a form that
+        // loses its fields by accident still fails here.
+        if (BLANK_ONLY_FORM_IDS.includes(formId)) {
+          assert.equal(fields.length, 0, `${formId} is declared blank-only but has fields`);
+        } else {
+          assert.ok(fields.length > 0, `${formId} (${setId}) has an empty field schema`);
+        }
       }
     }
   });
@@ -34,7 +41,8 @@ describe("form sets", () => {
     for (const setId of FORM_SET_IDS) {
       const set = FORM_SETS[setId];
       for (const formId of set.formIds) {
-        const file = path.join(TEMPLATES_DIR, set.templateDir, `${formId}_blank.pdf`);
+        // blankTemplateDir, not set.templateDir: shared forms live in shared/.
+        const file = path.join(TEMPLATES_DIR, blankTemplateDir(setId, formId), `${formId}_blank.pdf`);
         assert.ok(fs.existsSync(file), `missing template: ${file}`);
       }
     }
@@ -49,13 +57,24 @@ describe("form sets", () => {
     }
   });
 
-  test("no form appears in two sets", () => {
+  test("no form appears in two sets, apart from the shared ones", () => {
     const seen = new Map<FormId, string>();
     for (const setId of FORM_SET_IDS) {
       for (const formId of FORM_SETS[setId].formIds) {
+        if (SHARED_FORM_IDS.includes(formId)) continue;
         const prior = seen.get(formId);
         assert.equal(prior, undefined, `${formId} is in both ${prior} and ${setId}`);
         seen.set(formId, setId);
+      }
+    }
+  });
+
+  test("every shared form is in every set", () => {
+    // RECO must be given to every client in every transaction, so a set
+    // missing it is a compliance gap, not a styling choice.
+    for (const shared of SHARED_FORM_IDS) {
+      for (const setId of FORM_SET_IDS) {
+        assert.ok(FORM_SETS[setId].formIds.includes(shared), `${setId} is missing ${shared}`);
       }
     }
   });
@@ -161,6 +180,7 @@ describe("filterSchemaForSet", () => {
     for (const setId of FORM_SET_IDS) {
       const visible = filterSchemaForSet(schema, setId);
       for (const formId of FORM_SETS[setId].formIds) {
+        if (BLANK_ONLY_FORM_IDS.includes(formId)) continue; // nothing to fill, by design
         const reachable = visible.groups.some((g) => g.fields.some((f) => f.targets[formId]?.length));
         assert.ok(reachable, `${setId}: no visible question targets ${formId}`);
       }

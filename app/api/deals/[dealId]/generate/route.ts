@@ -21,7 +21,7 @@ import { isSameOrigin, crossOriginRefusal } from "@/lib/sameOrigin";
 import fs from "fs/promises";
 import os from "os";
 import path from "path";
-import { FORM_SETS, FormId, formIdsForSet, toFormSetId } from "@/lib/schemas";
+import { FORM_SETS, FormId, blankTemplateDir, formIdsForSet, toFormSetId } from "@/lib/schemas";
 import { mapIntakeToFormFields } from "@/lib/profileMapper";
 import { fillPdf } from "@/lib/pdfFill";
 import { createClient } from "@/lib/supabase/server";
@@ -100,7 +100,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ dea
   try {
     for (const formId of selectedForms) {
       const fields = mapIntakeToFormFields(intakeAnswers, formId);
-      const blankPath = path.join(TEMPLATES_DIR, formSet.templateDir, `${formId}_blank.pdf`);
+      // Not formSet.templateDir: the RECO guide is shared across all four
+      // sets and lives in shared/ rather than in each set's own directory.
+      const blankPath = path.join(TEMPLATES_DIR, blankTemplateDir(formSet.id, formId), `${formId}_blank.pdf`);
       const tmpOutputPath = path.join(os.tmpdir(), `realtyfill_${dealId}_${formId}_${Date.now()}.pdf`);
 
       await fillPdf(blankPath, fields, tmpOutputPath);
