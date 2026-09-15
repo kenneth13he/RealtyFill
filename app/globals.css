@@ -1,30 +1,82 @@
 /* app/globals.css
-   Global styles + Tailwind entrypoint. Design system kept intentionally small:
-   one accent color (indigo), neutral grays for everything else, system font
-   stack. Loaded once via app/layout.tsx. */
+   Global styles + Tailwind entrypoint.
+
+   Two palettes on purpose. The signed-in app stays light and quiet (long
+   form-filling sessions, documents, readability). The marketing landing page
+   runs on a bold flat brand flood — vivid indigo with a lime accent, big
+   geometric type, hard section colour inversions — which is what makes it
+   read as designed rather than as a default template.
+
+   Typeface is Outfit via next/font (see app/layout.tsx): geometric, holds up
+   at very large display sizes, which the landing page leans on heavily. */
 
 @import "tailwindcss";
 
 :root {
+  /* In-app (light) */
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
   --color-border: #e2e8f0;
   --color-text: #0f172a;
   --color-text-muted: #64748b;
-  --color-accent: #4f46e5;
-  --color-accent-hover: #4338ca;
+  --color-accent: #1e3a5f;
+  --color-accent-hover: #16293f;
   --color-warn-bg: #fffbeb;
   --color-warn-border: #fde68a;
   --color-warn-text: #92400e;
   --color-error-bg: #fef2f2;
   --color-error-border: #fecaca;
   --color-error-text: #b91c1c;
+
+  /* Landing page brand */
+  --brand: #2d28d9;
+  --brand-deep: #14124a;
+  --brand-light: #5b56ec;
+  --lime: #c9f73d;
 }
 
 body {
   background: var(--color-bg);
   color: var(--color-text);
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Continuous ticker for the "keep scrolling" pill. Two identical tracks sit
+   side by side and the pair slides exactly one track-width, so the loop has
+   no visible seam. */
+@keyframes rf-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.rf-marquee-track {
+  animation: rf-marquee 18s linear infinite;
+}
+
+/* Slow drift for the suspended documents in the hero's 3D field. Only the
+   local offset — each card's translate3d/rotate placement lives on the
+   parent, so this animates without fighting it. */
+@keyframes rf-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -16px, 0) rotate(1deg);
+  }
+}
+
+.rf-float > * {
+  animation: rf-float 9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rf-float > *,
+  .rf-marquee-track {
+    animation: none;
+  }
 }
