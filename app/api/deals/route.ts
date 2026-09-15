@@ -6,6 +6,7 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_FORM_SET, FORM_SETS, isFormSetId } from "@/lib/formTypes";
 
 export async function GET() {
   const supabase = await createClient();
@@ -35,7 +36,25 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const label = typeof body?.label === "string" && body.label.trim() ? body.label.trim() : "Untitled deal";
 
-  const { data: deal, error } = await supabase.from("deals").insert({ user_id: user.id, label }).select().single();
+  // Which bundle of forms this deal is for. Rejected rather than defaulted
+  // when unrecognised: silently filing a deal under the wrong transaction
+  // type would hand the realtor the wrong legal forms later.
+  const formSet = body?.formSet === undefined ? DEFAULT_FORM_SET : body.formSet;
+  if (!isFormSetId(formSet)) {
+    return NextResponse.json({ error: `Unknown form set: ${String(formSet)}` }, { status: 400 });
+  }
+  if (!FORM_SETS[formSet].ready) {
+    return NextResponse.json(
+      { error: `"${FORM_SETS[formSet].label}" isn't available yet — its forms aren't ready to fill.` },
+      { status: 400 }
+    );
+  }
+
+  const { data: deal, error } = await supabase
+    .from("deals")
+    .insert({ user_id: user.id, label, form_set: formSet })
+    .select()
+    .single();
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -20,7 +20,7 @@ import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import os from "os";
 import path from "path";
-import { ALL_FORM_IDS, FormId } from "@/lib/schemas";
+import { FORM_SETS, FormId, formIdsForSet, toFormSetId } from "@/lib/schemas";
 import { mapIntakeToFormFields } from "@/lib/profileMapper";
 import { fillPdf } from "@/lib/pdfFill";
 import { createClient } from "@/lib/supabase/server";
@@ -34,10 +34,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ dea
   const body = await request.json();
   const selectedForms: FormId[] = Array.isArray(body?.selectedForms) ? body.selectedForms : [];
 
-  const invalid = selectedForms.filter((f) => !ALL_FORM_IDS.includes(f));
-  if (invalid.length > 0) {
-    return NextResponse.json({ error: `Unknown form id(s): ${invalid.join(", ")}` }, { status: 400 });
-  }
   if (selectedForms.length === 0) {
     return NextResponse.json({ error: "selectedForms must include at least one form" }, { status: 400 });
   }
@@ -49,8 +45,29 @@ export async function POST(request: Request, { params }: { params: Promise<{ dea
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (!(await getOwnedDeal(supabase, dealId))) {
+  const deal = await getOwnedDeal(supabase, dealId);
+  if (!deal) {
     return NextResponse.json({ error: "Deal not found" }, { status: 404 });
+  }
+
+  // Validate against this deal's own form set, not the global list of every
+  // form the app knows about. A buyer-side form on a lease deal would be
+  // mapped from lease intake answers and produce a plausible-looking but
+  // wrong legal document, so it's rejected rather than best-efforted.
+  const formSet = FORM_SETS[toFormSetId(deal.form_set)];
+  if (!formSet.ready) {
+    return NextResponse.json(
+      { error: `"${formSet.label}" forms aren't ready to fill yet.` },
+      { status: 400 }
+    );
+  }
+  const allowed = formIdsForSet(formSet.id);
+  const invalid = selectedForms.filter((f) => !allowed.includes(f));
+  if (invalid.length > 0) {
+    return NextResponse.json(
+      { error: `Form(s) not in this deal's set (${formSet.label}): ${invalid.join(", ")}` },
+      { status: 400 }
+    );
   }
 
   const { data: intakeRow, error: intakeErr } = await supabase
@@ -71,7 +88,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ dea
   try {
     for (const formId of selectedForms) {
       const fields = mapIntakeToFormFields(intakeAnswers, formId);
-      const blankPath = path.join(TEMPLATES_DIR, `${formId}_blank.pdf`);
+      const blankPath = path.join(TEMPLATES_DIR, formSet.templateDir, `${formId}_blank.pdf`);
       const tmpOutputPath = path.join(os.tmpdir(), `realtyfill_${dealId}_${formId}_${Date.now()}.pdf`);
 
       await fillPdf(blankPath, fields, tmpOutputPath);
