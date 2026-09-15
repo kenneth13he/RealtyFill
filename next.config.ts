@@ -53,13 +53,16 @@ const CSP_DIRECTIVES = [
   // Sign-in and every other form posts to this app and nowhere else.
   `form-action 'self'`,
   `frame-ancestors 'none'`,
-  `upgrade-insecure-requests`,
+  // Production only. It does nothing in a Report-Only policy (Chromium logs
+  // a console notice saying so on every page load), and once enforcing it has
+  // no business in a local http:// dev server.
+  ...(isDev ? [] : [`upgrade-insecure-requests`]),
 ].join("; ");
 
 // To enforce the policy, change this to "Content-Security-Policy" — but only
 // after clicking through the app (sign in, intake, generate, preview a PDF)
 // with the console open and seeing no violations reported.
-const CSP_HEADER = "Content-Security-Policy-Report-Only";
+const CSP_HEADER = "Content-Security-Policy";
 
 const securityHeaders = [
   // Don't let a browser second-guess a declared Content-Type — the PDF
