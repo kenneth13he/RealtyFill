@@ -93,32 +93,96 @@ No such pages exist. The app stores real tenant/landlord names, phones, and
 addresses; one Schedule document we tested even involves a tenant's SIN.
 Needed before a realtor puts a real client's information in.
 
-### 6. ❌ Forgot-password flow
-Doesn't exist. A realtor who forgets their password has no recovery path.
-Supabase supports `resetPasswordForEmail()` — needs wiring plus a
-set-new-password page. (Note: also depends on Blocker 2, since it sends mail.)
+### 6. ✅ Forgot-password flow
+Built. `/login?mode=reset` requests a link, `/auth/callback` exchanges the
+recovery code, `/reset-password` sets the new password. Rate-limited, and
+deliberately reports the same message for unknown addresses so it can't be
+used to discover who has an account. Verified the request path end to end.
 
-### 7. ❌ Account / data deletion
-No way for a user to delete their account and data. Needed for the retention
-policy the original plan called for, and for basic privacy compliance.
+**Still depends on Blocker 2** — it sends mail through Supabase's
+rate-limited default mailer, so it will be unreliable until SMTP is sorted.
+
+### 7. ✅ Account / data deletion
+Built. Settings → "Delete account", gated behind typing DELETE. Removes
+Storage objects first, then deletes the auth user, which cascades
+deals → deal_intake/generated_forms and profiles.
+
+Verified against a real account with 1 deal and 5 generated PDFs: after
+deletion, zero orphaned rows in all four tables **and** zero orphaned
+storage objects. (Order matters here — deleting the user first would have
+orphaned the PDFs in the bucket with no session left to clean them up.)
 
 ---
 
 ## Correctness gaps
 
-### 8. ❌ Only 2229E verified end-to-end on production
-Form 400 was verified locally; Forms 410, 324, 372 have not been generated
-and field-inspected since the Phase 2 rewrite. Generate all five for one deal
-and open each PDF before trusting them with a real deal.
+### 8. ✅ All five forms generate and fill correctly
+Generated all five for one deal with comprehensive data and inspected every
+filled value with `pypdf`. All five produce valid PDFs with correct values.
 
-### 9. ❌ Known form-field coverage gaps (pre-existing)
-From `docs/PROJECT_STRUCTURE.md`: Form 410's full field set isn't itemized,
-Form 400's non-gas/electricity/sewage/condo-fee utility checkboxes aren't
-exposed, Form 324's alternate representation scenarios aren't covered.
+Fill coverage, which is what led to the rewrite of item 9 below:
 
-### 10. ❌ No client-side validation
-A required field can still be submitted empty. The review page flags missing
-fields with a red `*`, but nothing blocks Generate.
+| Form | Fields filled / total |
+|---|---|
+| 2229E | 42 / 93 |
+| Form 400 | 29 / 108 |
+| Form 324 | 22 / 48 |
+| Form 372 | 10 / 48 |
+| Form 410 | **11 / 121** |
+
+(Done locally. Production uses the same mapping logic through `pdf-service`,
+already verified byte-equivalent, so re-running on production is a nice-to-
+have rather than a correctness gap.)
+
+### 9. 🟡 Form-field coverage — partly done, rest needs decisions
+A full audit found **262 unmapped fields** across the five forms. They fall
+into three very different buckets:
+
+**Done ✅ — landlord's address for notices.** 2229E s.3 and Form 400's
+"Address of Landlord" were both entirely blank, despite being the legally
+required address for serving notices. Now mapped as seven separate intake
+fields (unit / street number / street name / PO box / city / province /
+postal code) — deliberately separate rather than one blob, because both
+forms lay them out as distinct boxes, and mapping one value into several
+boxes is exactly the bug we already hit with the co-op brokerage address.
+Verified filling correctly on both forms.
+
+**Blocked ⚠️ — Form 400's utility checkboxes. Do not guess at these.**
+Form 400 has its own included-in-rent checkboxes (cable, gas, condo fee,
+oil, hot water, other×3) that nothing currently maps to. The obstacle isn't
+effort, it's that the intake schema uses two *different* meanings for the
+same `/1`/`/2` codes: `gas_included` means `/1` = Yes-included, while
+`electricity_responsibility` means `/1` = Landlord. Whether Form 400's
+`chkOpt_gas_l` follows one convention or the other cannot be determined
+from the field data alone. **Guessing wrong silently ticks the wrong box on
+a legal document** — the worst failure mode this app has. Resolve by
+checking a real completed Form 400 (the realtors you're testing with will
+have one) and confirming which box `/1` corresponds to, then map them.
+
+**Product decision needed ❓ — Form 410.** It sits at 11/121 filled because
+it's a *rental application*: employment history (current and prior, ×2
+applicants), banking details, credit references, personal references,
+vehicles, prior addresses, occupants, pets. That's roughly 80 new intake
+fields, and more importantly it's data the **tenant** supplies, not the
+listing agent. Asking a realtor to type a tenant's employment history into
+RealtyFill is a different product than "enter the deal once." Decide whether
+Form 410 needs a separate tenant-facing flow, is left partially filled
+deliberately, or is dropped from the supported set — before anyone builds
+80 fields.
+
+### 10. 🟡 Validation — per-field only; the summary warning was removed
+The editor marks each empty non-optional field with a red `*` at the point
+of entry, which stands.
+
+A summary warning on the review page ("N fields still empty on the forms
+you've selected") was built and then removed: `"(optional)"` in a label is
+too crude a proxy for "required", so it counted ~37 fields on a realistic
+deal — mostly things a realtor legitimately wouldn't have. It read as noise
+rather than a signal.
+
+Doing this properly needs a real notion of which fields are genuinely
+required *per form*, which doesn't exist in `intake_form_schema.json` today
+and overlaps with the item 9 audit. Worth revisiting together with that.
 
 ### 11. ❌ Nothing has been verified in an actual browser
 Every test so far has been HTTP-level (curl + pypdf). Nobody has clicked

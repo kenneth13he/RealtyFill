@@ -4,6 +4,7 @@
 import Header from "@/components/Header";
 import { createClient } from "@/lib/supabase/server";
 import SettingsForm, { type Profile } from "./SettingsForm";
+import DeleteAccount from "./DeleteAccount";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -28,6 +29,9 @@ export default async function SettingsPage() {
         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">Settings</h1>
         <div className="mt-8">
           <SettingsForm initialProfile={initialProfile} />
+        </div>
+        <div className="mt-10">
+          <DeleteAccount />
         </div>
       </main>
     </>

@@ -13,7 +13,14 @@
         { "key": "tenant2_last_name", "label": "Tenant 2 — Last Name (optional)", "type": "text", "hidden": true, "derived_from": "tenant2_full_name", "profile": "tenant2_full_name", "targets": { "2229e": ["txtbuyer2LName"] } },
         { "key": "tenant2_full_name", "label": "Tenant 2 — Full Name (optional)", "type": "text", "profile": "tenant2_full_name", "targets": { "2229e": ["txtbuyersig2"], "form_400": ["txtbuyer2"], "form_410": ["txtbuyer2", "txtbuyersig2"], "form_324": ["txtbuyer2", "txtbuyersig2"], "form_372": ["txtbuyer2", "txtbuyersig2"] } },
         { "key": "landlord_full_name", "label": "Landlord — Full Legal Name", "type": "text", "profile": "landlord_full_name", "targets": { "2229e": ["txtseller1", "txtRentPayable", "txtsellersig1"], "form_400": ["txtseller1", "txtsellersig1"], "form_324": ["txtseller1", "txtsellersig1"] } },
-        { "key": "guarantor_name", "label": "Guarantor Name (optional)", "type": "text", "form_specific": "form_400", "targets": { "form_400": ["txtguarsig"] } }
+        { "key": "guarantor_name", "label": "Guarantor Name (optional)", "type": "text", "form_specific": "form_400", "targets": { "form_400": ["txtguarsig"] } },
+        { "key": "landlord_address_unit", "label": "Landlord's Address for Notices — Unit (optional)", "type": "text", "note": "2229E s.3 / Form 400 'Address of Landlord' — the legal address for receiving notices. Split into separate components because both forms lay them out as separate boxes on one line.", "targets": { "2229e": ["txtSellUnit"] } },
+        { "key": "landlord_address_street_number", "label": "Landlord's Address — Street Number", "type": "text", "targets": { "2229e": ["txtS_streetnum"], "form_400": ["txtS_streetnum"] } },
+        { "key": "landlord_address_street_name", "label": "Landlord's Address — Street Name", "type": "text", "targets": { "2229e": ["txtS_street"], "form_400": ["txtS_street"] } },
+        { "key": "landlord_address_po_box", "label": "Landlord's Address — PO Box (optional)", "type": "text", "targets": { "2229e": ["txts_POBox"] } },
+        { "key": "landlord_address_city", "label": "Landlord's Address — City / Town", "type": "text", "targets": { "2229e": ["txtS_city"], "form_400": ["txtS_city"] } },
+        { "key": "landlord_address_province", "label": "Landlord's Address — Province", "type": "text", "default": "Ontario", "targets": { "2229e": ["txtS_state"], "form_400": ["txtS_state"] } },
+        { "key": "landlord_address_postal_code", "label": "Landlord's Address — Postal Code", "type": "text", "targets": { "2229e": ["txtS_zipcode"], "form_400": ["txtS_zipcode"] } }
       ]
     },
     {

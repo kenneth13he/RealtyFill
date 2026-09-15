@@ -7,9 +7,9 @@
 // (brand → white → deep ink) rather than one continuous pale page. The product
 // mockup is rendered tonally in-brand instead of as a white screenshot.
 //
-// Terms/Privacy links deliberately left out of the footer — those pages don't
-// exist yet (REMAINING_WORK.md item 5), and dead footer links read worse than
-// a shorter footer. Add them once those pages exist.
+// Footer links to /terms and /privacy, which landed alongside this redesign
+// (REMAINING_WORK.md item 5). They were held back while those pages didn't
+// exist — a dead footer link reads worse than a shorter footer.
 
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -219,11 +219,19 @@ export default async function HomePage() {
       </section>
 
       <footer className="bg-[var(--brand-deep)] py-10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 text-sm text-white/45 sm:flex-row">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 text-sm text-white/45 sm:flex-row">
           <span className="text-base font-semibold text-white">
             realty<span className="text-[var(--lime)]">fill</span>
           </span>
-          <span>© {new Date().getFullYear()} RealtyFill</span>
+          <div className="flex items-center gap-4">
+            <Link href="/terms" className="transition-colors hover:text-white">
+              Terms of Service
+            </Link>
+            <Link href="/privacy" className="transition-colors hover:text-white">
+              Privacy Policy
+            </Link>
+            <span>© {new Date().getFullYear()} RealtyFill</span>
+          </div>
         </div>
       </footer>
     </div>
