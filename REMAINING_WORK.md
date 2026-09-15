@@ -10,8 +10,16 @@ Status markers: ✅ done and verified · ⚠️ done but unverified · ❌ not s
 
 ## Where things actually stand
 
-**Live at:** https://realtyfill-realty-fill.vercel.app (private — behind
-Vercel Authentication, see Blocker 1)
+**Live at:** https://realtyfill.vercel.app — public, verified serving the app
+to a cookie-less request (see Blocker 1)
+
+**All four form sets now generate.** Lease–tenant (5 forms), lease–landlord
+(2), sale–buyer (5), sale–seller (3). "Coming soon" is gone. The blank
+templates for the three new sets arrived as flat PDFs with zero AcroForm
+fields, so `scripts/add_form_fields.py` synthesizes fields over the dot-leader
+blanks — 395 across 10 forms. **Those field positions are inferred, not
+authoritative**; each template folder's README says what to redo if a real
+WEBForms export ever arrives. PropTx 291/292 remain deliberately out of scope.
 
 **Verified working in production** (tested end-to-end via real HTTP requests
 against the deployed site, with `pypdf` inspection of the output PDF — not
@@ -36,53 +44,58 @@ just "the request returned 200"):
 
 ## Blockers — no realtor can test until these are done
 
-### 1. ❌ Decide how testers reach the site
-Currently behind Vercel Authentication. Options:
+### 1. ✅ Decide how testers reach the site — resolved for production
+`https://realtyfill.vercel.app` is publicly reachable: a cookie-less request
+returns 200 and the real landing page, not an SSO gate. Anyone can visit it.
+
+Caveat worth knowing: the project still reports
+`ssoProtection: all_except_custom_domains` via the API, yet the production
+alias serves publicly — so the setting and the observed behaviour disagree.
+Preview deployments do still appear to be gated. If you need previews open
+too, check Settings → Deployment Protection directly rather than trusting
+either signal.
+
+Still do: rotate the bypass secret if you haven't (one was pasted into a chat
+log).
+
+<details><summary>Original options, kept for reference</summary>
+
 - **Turn protection off** (Settings → Deployment Protection → Vercel
   Authentication → Disabled). Simplest; site becomes public.
 - **Keep it private, hand testers a bypass link** — works, but means giving
   each tester a URL containing a secret token. Fine for Kenneth, wrong for
   external realtors.
 - **Vercel Pro team** — real member accounts / password protection. Costs money.
+</details>
 
-Also: rotate the bypass secret if you haven't (one was pasted into a chat log).
+### 2. ❌ Email delivery (SMTP) — still the real blocker
+Confirmed via the management API: `smtp_host` is null, so the project is on
+Supabase's built-in mailer — **2 emails/hour, project-wide, and only
+deliverable to your own team members.**
 
-### 2. ❌ Email delivery (SMTP)
-**This is the one that will break realtor signups immediately.** Supabase's
-built-in mailer is heavily rate-limited — we hit `"email rate limit
-exceeded"` after *two* signups during testing. Email confirmation is
-currently **required** (`mailer_autoconfirm: false`), so a rate-limited email
-means a realtor literally cannot get into their account.
+The stopgap has been applied: `mailer_autoconfirm` is now `true`, so signup
+no longer sends an email and works instantly. That's why signups succeed.
 
-Fix: configure a real SMTP provider (Resend, Postmark, SendGrid) in Supabase
-→ Project Settings → Authentication → SMTP Settings.
+What's still broken is **forgot-password**, which sends a real email no
+matter what that setting says. For any realtor who isn't on your Supabase
+team, that email never arrives — silently.
 
-Alternative stopgap: turn email confirmation *off* in Supabase so accounts
-work instantly — weaker, but unblocks testing without an SMTP provider.
+Fix: Resend or Postmark, then Supabase → Project Settings → Authentication →
+SMTP Settings. ~20 minutes, and it's the last thing between you and handing
+this to a tester.
 
-### 3. ⚠️ Supabase URL configuration
-Supabase → Authentication → URL Configuration must have:
-- Site URL: `https://realtyfill-realty-fill.vercel.app`
-- Redirect URLs: `https://realtyfill-realty-fill.vercel.app/**` and
-  `http://localhost:3000/**`
+### 3. ✅ Supabase URL configuration — verified correct
+Confirmed via the management API:
+- `site_url`: `https://realtyfill.vercel.app`
+- `uri_allow_list`: `https://realtyfill.vercel.app/**`
 
-Unverified — if this isn't set, confirmation and OAuth links will bounce
-users to the wrong place.
+One gap: `http://localhost:3000/**` is **not** in the allow list, so password
+reset and OAuth redirects will bounce to production when testing locally.
+Add it if you work on auth flows in dev.
 
-### 4. ❌ Google sign-in — code shipped, not enabled
-The "Continue with Google" button is deployed and generates a correct OAuth
-request, but Supabase reports `google: false`, so clicking it currently
-lands on a Supabase "Unsupported provider" error page.
-
-To finish:
-1. Google Cloud Console → OAuth consent screen → Credentials → OAuth client
-   ID (Web application)
-2. Authorized redirect URI: `https://wxtyyakxasxsftjneqgl.supabase.co/auth/v1/callback`
-   (Supabase's callback, **not** the app's — easy to get wrong)
-3. Supabase → Authentication → Providers → Google → enable + paste Client
-   ID/Secret
-
-Until then, either finish setup or the button should be hidden.
+### 4. ✅ Google sign-in — enabled
+Supabase now reports `external_google_enabled: true`. The button should work.
+Not clicked through in a browser yet (see item 11).
 
 ---
 
@@ -193,14 +206,23 @@ rendering — all unverified visually. **Do this before handing it to anyone.**
 
 ## Technical debt introduced along the way
 
-### 12. ⚠️ PDF fill logic exists in two copies
-`scripts/fill_fillable_fields.py` (used by local dev + the Docker/Render
-path) and `pdf-service/fill_fillable_fields.py` (used by Vercel). Same logic,
-two files. **If you change one, change both** — a divergence here means
-locally-correct PDFs that are wrong in production, which is exactly the kind
-of bug that's painful to catch.
+### 12. ✅ PDF fill logic exists in two copies — resolved
+There is now one copy. `pdf-service/fill_fillable_fields.py` and
+`pdf-service/extract_form_field_info.py` hold the logic;
+`scripts/fill_fillable_fields.py` and `scripts/extract_form_field_info.py`
+are thin CLI wrappers that import them. The dependency has to point that way
+round: `pdf-service/` deploys with `root: pdf-service/` and can only import
+files inside itself, while `scripts/` can reach down into it.
 
-Worth resolving by picking one deployment path (see next item).
+Both paths verified against the same template after the change — the CLI
+(`python scripts/fill_fillable_fields.py …`) and the HTTP endpoint
+(`POST /fill`) each wrote the value into the field and read it back
+correctly, and each rejected an unknown field id.
+
+One behaviour change while doing this: the CLI now prints validation errors
+to **stderr** rather than stdout. `lib/pdfFill.ts` surfaces only stderr in the
+error it throws, so a bad field id previously reached the API as a bare
+"Command failed" with no indication of which field was wrong.
 
 ### 13. ❌ Two deployment paths, only one in use
 The repo carries both Vercel config (`vercel.json`, `pdf-service/`) and
@@ -209,20 +231,36 @@ Only Vercel is live. The root `requirements.txt` is also what caused the
 "Multiple frameworks detected" build failure. Decide whether Render is a real
 fallback; if not, delete it and item 12 goes away too.
 
-### 14. ⚠️ Two repos with unrelated git histories
-`kenneth13he/realtyfill` (origin) and `ChrisAndrei123/realtyfill` (the fork
-Vercel builds from) share no history, so changes have to be pushed to each
-separately — currently done by replaying commits by hand. This will cause a
-divergence eventually. Pick one repo as canonical and point Vercel at it, or
-re-fork properly.
+### 14. ✅ Two repos with unrelated git histories — resolved
+`kenneth13he/realtyfill` is canonical and Vercel builds from it. It is the
+only remote configured locally, so there is nothing left to replay by hand.
+(The repo was also renamed to lowercase; the local remote URL was updated to
+match, since GitHub was redirecting every push.)
 
-Also: `new-main` and `phase-2-accounts` branches are fully merged into `main`
-and can be deleted.
+Still worth doing: `new-main` and `phase-2-accounts` are fully merged into
+`main` and can be deleted.
 
-### 15. ❌ No automated tests
-Everything has been verified manually. There's no regression safety net — the
-Section 17 signature bug and the missing-anon-key failure were both caught by
-hand, and a test suite would have caught neither because none exists.
+### 15. 🟡 Automated tests — a first suite exists, coverage is partial
+`npm test` (24 tests, `node:test` via `tsx`, no new framework) and
+`npm run test:py` (9 tests, plain `unittest`, no pytest dependency).
+
+What they cover, chosen as the places bugs have actually happened:
+- `isSignatureField` — including the substring bug that blanked the
+  designated-representative line on Forms 271/272/371
+- `withComputedValues` — one-line address, money-to-words, date splitting
+- **every intake `targets` entry names a field id that really exists on that
+  form** — this is the one that matters most. A target pointing at a
+  non-existent field fails silently: the PDF generates fine and the blank
+  just stays empty. It's what produced Form 244's shifted date parts.
+- every set's templates exist on disk where the generate route looks
+- checkbox targets use the `/1`/`/Off` pair `IntakeFieldsEditor` hardcodes
+- the fill logic itself: values land, unknown ids and wrong page numbers are
+  rejected, all errors reported not just the first, `/fill` returns 422 with
+  the detail list `lib/pdfFill.ts` expects
+
+Not covered: React components, the API routes, auth/RLS, and whether a filled
+field is in the *right place on the page* (that still needs a human looking
+at a rendered PDF — it's how the Form 101 purchase-price bug was caught).
 
 ---
 
@@ -234,8 +272,21 @@ but nothing notifies you. If PDF generation starts failing for a realtor
 mid-test, you'll find out when they tell you. Consider Sentry or a log drain.
 
 ### 17. ❌ No backup/retention policy
-Supabase free tier's backup guarantees are limited. Decide what happens if
-the database is lost, and how long real client data is kept.
+Checked via the management API: **PITR is off and the project has zero
+backups.** Free tier, so there is currently no recovery path at all — if the
+database is lost, every deal and every intake answer goes with it. That's
+tolerable while the only data is yours and Kenneth's; it stops being
+tolerable the moment a realtor enters a real client's details.
+
+Options: Supabase Pro (daily backups + PITR), or a scheduled `pg_dump` to
+somewhere off-platform. Also still undecided: how long real client data is
+kept.
+
+### 17b. ❌ Password policy is weak
+`password_min_length` is 6 and no character classes are required. Raising it
+(Supabase → Authentication → Policies) is a one-field change. Attempted here
+and blocked by the permission classifier as a change to shared auth config —
+it needs to be you, in the dashboard.
 
 ---
 

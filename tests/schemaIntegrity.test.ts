@@ -1,0 +1,169 @@
+// tests/schemaIntegrity.test.ts
+// Structural checks across the four form sets. These catch the class of bug
+// that produced Form 244's shifted date parts and Form 101's mis-placed
+// purchase price: a `targets` entry naming a field id that doesn't exist on
+// that form fails silently — mapIntakeToFormFields just skips it, the PDF
+// generates fine, and the blank stays empty. Nothing errors, so only a check
+// like this one notices.
+
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { test, describe } from "node:test";
+
+import { getIntakeFormSchema, getRawFormSchema } from "../lib/schemas";
+import { FORM_SETS, FORM_SET_IDS, FORM_LABELS, ALL_FORM_IDS, filterSchemaForSet, type FormId } from "../lib/formTypes";
+
+const TEMPLATES_DIR = path.join(process.cwd(), "forms", "blank_templates");
+const schema = getIntakeFormSchema();
+
+// PropTx 291/292 are deliberately in no set and have no extracted schema.
+const formsInSets = new Set<FormId>(ALL_FORM_IDS);
+
+describe("form sets", () => {
+  test("every set's forms have a readable field schema", () => {
+    for (const setId of FORM_SET_IDS) {
+      for (const formId of FORM_SETS[setId].formIds) {
+        const fields = getRawFormSchema(formId);
+        assert.ok(fields.length > 0, `${formId} (${setId}) has an empty field schema`);
+      }
+    }
+  });
+
+  test("every set's blank templates exist on disk where the generate route looks", () => {
+    for (const setId of FORM_SET_IDS) {
+      const set = FORM_SETS[setId];
+      for (const formId of set.formIds) {
+        const file = path.join(TEMPLATES_DIR, set.templateDir, `${formId}_blank.pdf`);
+        assert.ok(fs.existsSync(file), `missing template: ${file}`);
+      }
+    }
+  });
+
+  test("every form id has a human label", () => {
+    for (const formId of Object.keys(FORM_LABELS) as FormId[]) {
+      assert.ok(FORM_LABELS[formId]?.length > 0, `${formId} has no label`);
+    }
+    for (const formId of formsInSets) {
+      assert.ok(FORM_LABELS[formId], `${formId} is in a set but has no label`);
+    }
+  });
+
+  test("no form appears in two sets", () => {
+    const seen = new Map<FormId, string>();
+    for (const setId of FORM_SET_IDS) {
+      for (const formId of FORM_SETS[setId].formIds) {
+        const prior = seen.get(formId);
+        assert.equal(prior, undefined, `${formId} is in both ${prior} and ${setId}`);
+        seen.set(formId, setId);
+      }
+    }
+  });
+});
+
+describe("intake schema targets", () => {
+  test("every target names a field that actually exists on that form", () => {
+    const problems: string[] = [];
+    for (const group of schema.groups) {
+      for (const field of group.fields) {
+        for (const [formId, targetIds] of Object.entries(field.targets) as [FormId, string[]][]) {
+          if (!formsInSets.has(formId)) continue; // 291/292 have no schema by design
+          const known = new Set(getRawFormSchema(formId).map((f) => f.field_id));
+          for (const id of targetIds) {
+            if (!known.has(id)) problems.push(`${field.key} -> ${formId}.${id}`);
+          }
+        }
+      }
+    }
+    assert.deepEqual(problems, [], `targets pointing at non-existent fields:\n  ${problems.join("\n  ")}`);
+  });
+
+  test("field keys are unique across the whole schema", () => {
+    const seen = new Set<string>();
+    for (const group of schema.groups) {
+      for (const field of group.fields) {
+        assert.ok(!seen.has(field.key), `duplicate intake key: ${field.key}`);
+        seen.add(field.key);
+      }
+    }
+  });
+
+  test("radio fields declare their options", () => {
+    for (const group of schema.groups) {
+      for (const field of group.fields) {
+        if (field.type === "radio") {
+          assert.ok((field.options?.length ?? 0) > 0, `${field.key} is a radio with no options`);
+        }
+      }
+    }
+  });
+
+  test("checkbox targets use the /1 and /Off pair the editor hardcodes", () => {
+    // components/IntakeFieldsEditor.tsx writes literally "/1" or "/Off" for
+    // every checkbox rather than reading per-field values, so a checkbox
+    // whose PDF uses a different on-state would fail the Python validator at
+    // generate time — after the user has filled everything in.
+    const problems: string[] = [];
+    for (const group of schema.groups) {
+      for (const field of group.fields) {
+        if (field.type !== "checkbox") continue;
+        for (const [formId, targetIds] of Object.entries(field.targets) as [FormId, string[]][]) {
+          if (!formsInSets.has(formId)) continue;
+          const byId = new Map(getRawFormSchema(formId).map((f) => [f.field_id, f]));
+          for (const id of targetIds) {
+            const info = byId.get(id);
+            if (!info || info.type !== "checkbox") continue; // covered by the targets test above
+            if (info.checked_value !== "/1" || info.unchecked_value !== "/Off") {
+              problems.push(`${field.key} -> ${formId}.${id} (on=${info.checked_value}, off=${info.unchecked_value})`);
+            }
+          }
+        }
+      }
+    }
+    assert.deepEqual(problems, [], `checkboxes the editor can't set correctly:\n  ${problems.join("\n  ")}`);
+  });
+
+  test("a field's `sets` only names sets whose forms it actually targets", () => {
+    // A field restricted to sets it can't fill is dead weight; a field left
+    // unrestricted that only targets one set's forms asks every deal a
+    // question most of them don't need.
+    for (const group of schema.groups) {
+      for (const field of group.fields) {
+        if (!field.sets) continue;
+        for (const setId of field.sets) {
+          assert.ok(FORM_SETS[setId], `${field.key} names unknown set ${setId}`);
+        }
+      }
+    }
+  });
+});
+
+describe("filterSchemaForSet", () => {
+  test("each set gets a non-empty, strictly smaller-or-equal question list", () => {
+    const total = schema.groups.reduce((n, g) => n + g.fields.length, 0);
+    for (const setId of FORM_SET_IDS) {
+      const filtered = filterSchemaForSet(schema, setId);
+      const count = filtered.groups.reduce((n, g) => n + g.fields.length, 0);
+      assert.ok(count > 0, `${setId} filtered down to zero questions`);
+      assert.ok(count <= total, `${setId} somehow gained questions`);
+    }
+  });
+
+  test("drops groups that end up with no fields", () => {
+    for (const setId of FORM_SET_IDS) {
+      for (const group of filterSchemaForSet(schema, setId).groups) {
+        assert.ok(group.fields.length > 0, `${setId} kept empty group ${group.group}`);
+      }
+    }
+  });
+
+  test("a set's questions can fill at least one field on each of its forms", () => {
+    for (const setId of FORM_SET_IDS) {
+      const visible = filterSchemaForSet(schema, setId);
+      for (const formId of FORM_SETS[setId].formIds) {
+        const reachable = visible.groups.some((g) => g.fields.some((f) => f.targets[formId]?.length));
+        assert.ok(reachable, `${setId}: no visible question targets ${formId}`);
+      }
+    }
+  });
+});

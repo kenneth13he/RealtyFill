@@ -38,7 +38,7 @@ const MONTHS = [
  *  - `<key>_day` / `_month` / `_year` for every date — these forms write
  *    dates as "the ___ day of ___, 20___", three separate blanks.
  */
-function withComputedValues(answers: Record<string, string>): Record<string, string> {
+export function withComputedValues(answers: Record<string, string>): Record<string, string> {
   const out = { ...answers };
 
   // "203 College St #1706", the way a listing writes it — not "1706 203
@@ -118,7 +118,7 @@ const NAME_FIELD_EXCEPTION = /^txt(?:buyer|seller)sig\d+$|^txtTenant\dSig$/;
 const SYNTHESIZED_FIELD_ID = /^p\d+_/;
 const SIGNATURE_WORD = /(?:^|_)(?:sig|sign|signature|signatures|signed_by)(?:_|$)/i;
 
-function isSignatureField(fieldId: string): boolean {
+export function isSignatureField(fieldId: string): boolean {
   if (SYNTHESIZED_FIELD_ID.test(fieldId)) return SIGNATURE_WORD.test(fieldId);
   return SIGNATURE_FIELD_PATTERN.test(fieldId) && !NAME_FIELD_EXCEPTION.test(fieldId);
 }

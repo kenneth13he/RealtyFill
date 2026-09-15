@@ -13,10 +13,14 @@
 //     Python script is already proven correct against real forms, and
 //     porting risks re-introducing bugs like the multi-page field-clearing
 //     bug caught while building forms/blank_templates/*_blank.pdf): calls
-//     pdf-service/, a separate Vercel Service running the *same* fill logic
-//     (pdf-service/fill_fillable_fields.py is a byte-in/byte-out port of
-//     scripts/fill_fillable_fields.py — keep them in sync) over HTTP via the
-//     PDF_SERVICE_URL binding declared in vercel.json. Mode is selected by
+//     pdf-service/, a separate Vercel Service running the same fill logic
+//     over HTTP via the PDF_SERVICE_URL binding declared in vercel.json.
+//
+// Both modes run one shared implementation: pdf-service/fill_fillable_fields.py
+// holds the only copy, and scripts/fill_fillable_fields.py is a thin CLI
+// wrapper importing it (the dependency points that way because pdf-service/
+// deploys as its own Vercel root and can't import from outside itself).
+// There is nothing left to "keep in sync". Mode is selected by
 //     whether PDF_SERVICE_URL is set, so this file's exported signature
 //     doesn't change and neither does its one caller
 //     (app/api/deals/[dealId]/generate/route.ts).
