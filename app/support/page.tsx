@@ -34,7 +34,7 @@ export default async function SupportPage({
   const params = await searchParams;
   const { data } = await supabase
     .from("support_requests")
-    .select("id, subject, body, status, error_ref, created_at")
+    .select("id, subject, body, status, error_ref, created_at, admin_reply, replied_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(50);

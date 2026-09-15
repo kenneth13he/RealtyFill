@@ -14,6 +14,7 @@
 import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
 import { createClient } from "@/lib/supabase/server";
+import { isAdminUser } from "@/lib/admin";
 import { signOut } from "@/app/login/actions";
 
 function steps(dealId: string) {
@@ -79,6 +80,13 @@ export default async function Header({
           )}
           {user && (
             <div className="flex items-center gap-3 text-sm">
+              {/* Only rendered for an admin. The page and its API both check
+                  again — this link is a convenience, not the gate. */}
+              {isAdminUser(user) && (
+                <Link href="/admin/support" className="font-medium text-[var(--lime)] transition-opacity hover:opacity-80">
+                  Admin
+                </Link>
+              )}
               <Link href="/support" className="font-medium text-white/60 transition-colors hover:text-white">
                 Support
               </Link>

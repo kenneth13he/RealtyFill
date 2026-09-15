@@ -41,7 +41,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("support_requests")
-    .select("id, subject, body, status, error_ref, created_at")
+    .select("id, subject, body, status, error_ref, created_at, admin_reply, replied_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(50);

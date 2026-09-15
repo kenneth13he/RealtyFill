@@ -18,6 +18,8 @@ export interface SupportRequest {
   status: "open" | "in_progress" | "resolved";
   error_ref: string | null;
   created_at: string;
+  admin_reply: string | null;
+  replied_at: string | null;
 }
 
 const inputClasses =
@@ -97,6 +99,8 @@ export default function SupportForm({
           body,
           status: "open",
           error_ref: errorRef || null,
+          admin_reply: null,
+          replied_at: null,
           created_at: data?.request?.created_at ?? new Date().toISOString(),
         },
         ...prev,
@@ -220,6 +224,17 @@ export default function SupportForm({
                   {formatDate(req.created_at)}
                   {req.error_ref && <> · reference {req.error_ref}</>}
                 </p>
+                {/* The whole point of the support page: an answer you can
+                    read here, rather than a status badge changing colour and
+                    leaving you to guess what happened. */}
+                {req.admin_reply && (
+                  <div className="mt-3 rounded-lg border-l-4 border-[var(--color-accent)] bg-[var(--color-border)]/15 p-3">
+                    <p className="text-xs font-medium text-[var(--color-text)]">
+                      RealtyFill replied{req.replied_at ? ` · ${formatDate(req.replied_at)}` : ""}
+                    </p>
+                    <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--color-text)]">{req.admin_reply}</p>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
