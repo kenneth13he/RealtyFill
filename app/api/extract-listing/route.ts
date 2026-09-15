@@ -378,10 +378,28 @@ export async function extractWithRetry(
       }
     } catch (err) {
       lastErr = err;
+      // The retry exists for one thing: a malformed tool response. A refusal
+      // from the API — bad key, exhausted credits, a request we built wrong —
+      // will refuse identically the second time, so retrying only doubles the
+      // latency the realtor waits through before seeing the same failure.
+      // (Worth having: the credit balance ran out mid-way through an eval
+      // run, and every case paid for two round-trips to learn that twice.)
+      if (isNonRetryable(err)) break;
     }
   }
 
   return { result, lastErr };
+}
+
+/**
+ * True for API errors that will fail the same way on a second attempt.
+ *
+ * 429 and 5xx are excluded deliberately — those are transient and a retry is
+ * the right response to them.
+ */
+function isNonRetryable(err: unknown): boolean {
+  const status = (err as { status?: number })?.status;
+  return typeof status === "number" && status >= 400 && status < 500 && status !== 429;
 }
 
 /**
