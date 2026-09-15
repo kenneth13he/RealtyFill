@@ -38,6 +38,9 @@ import { NextResponse } from "next/server";
 import { claudeExtractWithTool } from "@/lib/claude";
 import { splitFullName } from "@/lib/splitFullName";
 import { createClient } from "@/lib/supabase/server";
+import { getOwnedDeal } from "@/lib/supabase/getOwnedDeal";
+import { getIntakeFormSchema } from "@/lib/schemas";
+import { DEFAULT_FORM_SET, filterSchemaForSet, toFormSetId, type FormSetId } from "@/lib/formTypes";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { LIMITS } from "@/lib/inputLimits";
 import { logError, userFacingError } from "@/lib/logger";
@@ -51,7 +54,31 @@ import type Anthropic from "@anthropic-ai/sdk";
 // long; on Hobby the cap is lower and the build clamps it.
 export const maxDuration = 300;
 
-const SYSTEM_PROMPT = `You are extracting structured data from a real-estate listing export (e.g. a REALM/MLS printout) for an Ontario rental deal. Accuracy matters more than completeness — this feeds real legal/transactional forms.
+// Which transaction this deal actually is.
+//
+// This prompt used to be a constant that opened "for an Ontario rental
+// deal", and the tool schema below was a hardcoded list of 34 lease fields
+// with no buyer, seller, purchase price or closing date in it at all. On a
+// sale deal that meant the model was asked to read a purchase update using
+// only rental vocabulary: "Bob is Buyer" had no buyer field to land in, the
+// nearest match was tenant1_full_name, and it correctly refused to guess and
+// flagged the mismatch instead. The model was right — the question it was
+// handed was wrong. Both the framing and the field list now follow the
+// deal's own form set.
+const TRANSACTION_FRAMING: Record<FormSetId, string> = {
+  lease_tenant:
+    "an Ontario residential LEASE, working for the TENANT's side. The parties are a landlord and one or more tenants.",
+  lease_landlord:
+    "an Ontario residential LEASE, working for the LANDLORD's (listing) side. The parties are a landlord and one or more tenants.",
+  sale_buyer:
+    "an Ontario residential PURCHASE, working for the BUYER's side. The parties are a buyer and a seller — there is no tenant, no landlord and no rent in this transaction, so read words like \"buyer\" and \"seller\" literally.",
+  sale_seller:
+    "an Ontario residential SALE, working for the SELLER's (listing) side. The parties are a seller and a buyer — there is no tenant, no landlord and no rent in this transaction, so read words like \"buyer\" and \"seller\" literally.",
+};
+
+export const buildSystemPrompt = (setId: FormSetId) => `You are extracting structured data from a real-estate document — an MLS/REALM printout, an email, or a short note the realtor typed — for ${TRANSACTION_FRAMING[setId]} Accuracy matters more than completeness — this feeds real legal/transactional forms.
+
+Only the fields in the tool schema exist for this deal; they are already narrowed to this transaction type. If the text mentions something with no matching field, leave it out rather than forcing it into a field that means something else.
 
 Rules:
 - Only put a value in \`fields\` if you're genuinely confident in it, either because the listing states it directly, or because a well-established real estate convention makes it a safe inference (e.g. commission phrasing, standard deposit terminology).
@@ -68,7 +95,12 @@ Rules:
 
 const TOOL_NAME = "record_listing_extraction";
 
-const FIELD_SCHEMA = {
+// Hand-tuned entries: the fields where the type isn't simply "string", or
+// where a description earned its place by fixing a real extraction mistake.
+// Anything in the intake schema that isn't listed here is generated below as
+// a plain string keyed by its own label, so adding a field to the intake
+// schema makes it extractable without touching this file.
+const FIELD_HINTS: Record<string, { type: string; description?: string }> = {
   property_street_number: { type: "string" },
   property_street_name: { type: "string" },
   property_unit_number: { type: "string" },
@@ -103,11 +135,65 @@ const FIELD_SCHEMA = {
   electricity_included: { type: "boolean" },
   heat_included: { type: "boolean" },
   water_included: { type: "boolean" },
-} as const;
+};
+
+/**
+ * The tool schema for one deal: every question its form set actually asks.
+ *
+ * Built from the intake schema rather than hardcoded, so the model is only
+ * ever offered fields that exist for this transaction — a purchase deal is
+ * never shown `tenant1_full_name`, which is what made "Bob is Buyer"
+ * ambiguous in the first place.
+ *
+ * Hidden fields are skipped: they're computed (split names, date parts,
+ * amounts in words) and filling them directly would fight lib/profileMapper.
+ */
+export function buildFieldSchema(setId: FormSetId): Record<string, { type: string; description?: string }> {
+  const schema = filterSchemaForSet(getIntakeFormSchema(), setId);
+  const properties: Record<string, { type: string; description?: string }> = {};
+
+  for (const group of schema.groups) {
+    for (const field of group.fields) {
+      if (field.hidden) continue;
+
+      const hint = FIELD_HINTS[field.key];
+      if (hint) {
+        properties[field.key] = hint;
+        continue;
+      }
+
+      // Everything reaching a PDF is written as text, so dates and money are
+      // strings with a stated format rather than JSON types — profileMapper
+      // parses ISO dates into the day/month/year blanks these forms print.
+      const description =
+        field.type === "date"
+          ? `${field.label} — ISO format, yyyy-mm-dd`
+          : field.type === "currency" || field.type === "number"
+            ? `${field.label} — numeric only, no currency symbols or commas`
+            : field.label;
+      properties[field.key] = { type: "string", description };
+    }
+  }
+
+  // The utility inclusion fields are stored under different answer keys than
+  // the model is asked for (see answerKeyOverrides below), so they'd never
+  // be generated by the loop above from their real keys.
+  for (const key of ["onsite_laundry_included", "electricity_included", "heat_included", "water_included"]) {
+    if (FIELD_HINTS[key] && !properties[key]) {
+      const stored = { onsite_laundry_included: "onsite_laundry", electricity_included: "electricity_responsibility",
+                       heat_included: "heat_responsibility", water_included: "water_responsibility" }[key]!;
+      if (schema.groups.some((g) => g.fields.some((f) => f.key === stored))) {
+        properties[key] = FIELD_HINTS[key];
+      }
+    }
+  }
+
+  return properties;
+}
 
 interface ExtractionResult {
-  fields: Partial<Record<keyof typeof FIELD_SCHEMA, string | boolean>>;
-  flagged: Partial<Record<keyof typeof FIELD_SCHEMA, string>>;
+  fields: Record<string, string | boolean>;
+  flagged: Record<string, string>;
 }
 
 async function getUserContent(request: Request): Promise<Anthropic.MessageParam["content"]> {
@@ -192,6 +278,26 @@ async function getUserContent(request: Request): Promise<Anthropic.MessageParam[
   return `Listing text:\n\n"""\n${text}\n"""`;
 }
 
+/**
+ * Which form set's fields to offer the model.
+ *
+ * `dealId` comes in on the query string rather than in the body on purpose:
+ * this endpoint accepts both JSON and multipart, a body can only be read
+ * once, and getUserContent() below needs it.
+ *
+ * Falls back to the default set when no usable deal id is given, so the
+ * endpoint keeps working for any caller that hasn't been updated.
+ */
+async function resolveFormSet(
+  request: Request,
+  supabase: Awaited<ReturnType<typeof createClient>>
+): Promise<FormSetId> {
+  const dealId = new URL(request.url).searchParams.get("dealId");
+  if (!dealId) return DEFAULT_FORM_SET;
+  const deal = await getOwnedDeal(supabase, dealId);
+  return deal ? toFormSetId(deal.form_set) : DEFAULT_FORM_SET;
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {
@@ -212,6 +318,11 @@ export async function POST(request: Request) {
   if (!(await checkRateLimit(`extract:${user.id}`, 60, 60 * 60 * 1000, { failOpen: false }))) {
     return NextResponse.json({ error: "Rate limit exceeded — please wait a while before trying again." }, { status: 429 });
   }
+
+  // Which deal this is for decides which fields exist. Read from the request
+  // but never trusted — getOwnedDeal is RLS-scoped, so a deal id belonging to
+  // someone else comes back null and is treated as "not specified".
+  const setId = await resolveFormSet(request, supabase);
 
   let userContent: Anthropic.MessageParam["content"];
   try {
@@ -237,7 +348,7 @@ export async function POST(request: Request) {
   for (let attempt = 0; attempt < 2 && !result; attempt++) {
     try {
       const candidate = await claudeExtractWithTool<ExtractionResult>(
-        SYSTEM_PROMPT,
+        buildSystemPrompt(setId),
         userContent,
         TOOL_NAME,
         "Record extracted listing fields, splitting confident values from ones that need human judgment.",
@@ -247,7 +358,7 @@ export async function POST(request: Request) {
             fields: {
               type: "object",
               description: "Confidently-extracted or safely-inferred values, keyed by field name. Omit anything you're not sure about.",
-              properties: FIELD_SCHEMA,
+              properties: buildFieldSchema(setId),
               additionalProperties: false,
             },
             flagged: {

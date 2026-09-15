@@ -128,7 +128,7 @@ export default function ReviewForm({
     setUpdating(true);
     setUpdateError(null);
     try {
-      const extractRes = await fetch("/api/extract-listing", {
+      const extractRes = await fetch(`/api/extract-listing?dealId=${dealId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: updateText, currentAnswers: answers }),

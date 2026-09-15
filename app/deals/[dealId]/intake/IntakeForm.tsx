@@ -65,7 +65,7 @@ export default function IntakeForm({
   async function handleExtractListingText() {
     if (!listingText.trim()) return;
     await runExtraction(() =>
-      fetch("/api/extract-listing", {
+      fetch(`/api/extract-listing?dealId=${dealId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: listingText, currentAnswers: answers }),
@@ -77,7 +77,7 @@ export default function IntakeForm({
     if (listingFiles.length === 0) return;
     const formData = new FormData();
     for (const file of listingFiles) formData.append("file", file);
-    await runExtraction(() => fetch("/api/extract-listing", { method: "POST", body: formData }));
+    await runExtraction(() => fetch(`/api/extract-listing?dealId=${dealId}`, { method: "POST", body: formData }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
