@@ -18,6 +18,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Spinner from "@/components/Spinner";
 import { DEFAULT_FORM_SET, FORM_SETS, FORM_SET_IDS, FormSetId, toFormSetId } from "@/lib/formTypes";
 
 export interface Deal {
@@ -44,6 +45,14 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(loadError);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  // Which deal is showing its "are you sure" row, and which is mid-delete.
+  // Separate from `updatingId` so a delete in flight can't be confused with a
+  // status change in flight — they disable different things.
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  // Announced to screen readers. Status changes and deletions both mutate the
+  // list without moving focus, which is silent without this.
+  const [liveStatus, setLiveStatus] = useState("");
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -76,6 +85,7 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Failed to update deal");
       setDeals((prev) => prev.map((d) => (d.id === dealId ? body.deal : d)));
+      setLiveStatus(`Deal moved to ${status}.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -83,10 +93,40 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
     }
   }
 
+  // Permanent, unlike Archive. The route deletes the deal's stored PDFs before
+  // the row, so nothing is left orphaned in Storage — see
+  // app/api/deals/[dealId]/route.ts for why that order matters.
+  async function handleDelete(dealId: string) {
+    const label = deals.find((d) => d.id === dealId)?.label ?? "Deal";
+    setDeletingId(dealId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/deals/${dealId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? "Failed to delete deal");
+      }
+      setDeals((prev) => prev.filter((d) => d.id !== dealId));
+      setConfirmingDeleteId(null);
+      setLiveStatus(`${label} deleted.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   const visibleDeals = deals.filter((d) => d.status === filter);
 
   return (
     <div className="flex flex-col gap-10">
+      {/* Deleting a deal or changing its status rewrites the list without
+          moving focus — silent to a screen reader without this. Visually
+          hidden because the change is already obvious on screen. */}
+      <p aria-live="polite" className="sr-only">
+        {liveStatus}
+      </p>
+
       {/* ---------------- CREATE ---------------- */}
       <form
         onSubmit={handleCreate}
@@ -177,8 +217,9 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
             <button
               type="submit"
               disabled={creating}
-              className="shrink-0 rounded-lg bg-[var(--color-accent)] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-accent)] px-6 py-2.5 text-sm font-semibold text-white outline-none transition-colors hover:bg-[var(--color-accent-hover)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
             >
+              {creating && <Spinner />}
               {creating ? "Creating…" : "Create deal"}
             </button>
           </div>
@@ -205,7 +246,7 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
                 type="button"
                 onClick={() => setFilter(status)}
                 className={
-                  "-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium capitalize transition-colors " +
+                  "-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium capitalize outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] " +
                   (filter === status
                     ? "border-[var(--color-accent)] text-[var(--color-accent)]"
                     : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)]")
@@ -241,9 +282,12 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
             {visibleDeals.map((deal) => (
               <li
                 key={deal.id}
-                className="group flex items-center justify-between gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 transition-all hover:border-[var(--color-accent)]/50 hover:shadow-sm"
+                className="group flex flex-col gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 transition-all hover:border-[var(--color-accent)]/50 hover:shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4"
               >
-                <Link href={`/deals/${deal.id}/review`} className="flex min-w-0 flex-1 items-center gap-4">
+                <Link
+                  href={`/deals/${deal.id}/review`}
+                  className="flex min-w-0 flex-1 items-center gap-4 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2"
+                >
                   {/* Document glyph — gives each row an anchor so a list of
                       similar addresses doesn't read as undifferentiated text. */}
                   <span
@@ -263,40 +307,78 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
                   </span>
                 </Link>
 
-                <div className="flex shrink-0 items-center gap-2 text-xs">
-                  {deal.status === "active" && (
-                    <StatusButton
-                      busy={updatingId === deal.id}
-                      onClick={() => handleStatusChange(deal.id, "closed")}
+                {confirmingDeleteId === deal.id ? (
+                  /* Replaces the action buttons rather than sitting beside
+                     them, so the only things clickable while confirming are
+                     "Delete forever" and "Cancel". */
+                  <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs">
+                    <span className="font-medium text-[var(--color-error-text)]">Delete permanently?</span>
+                    <button
+                      type="button"
+                      disabled={deletingId === deal.id}
+                      onClick={() => handleDelete(deal.id)}
+                      className="flex items-center gap-1.5 rounded-lg bg-[var(--color-error-text)] px-3 py-1.5 font-semibold text-white outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--color-error-text)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Close
-                    </StatusButton>
-                  )}
-                  {deal.status === "closed" && (
-                    <>
+                      {deletingId === deal.id && <Spinner className="h-3.5 w-3.5" />}
+                      {deletingId === deal.id ? "Deleting…" : "Delete forever"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={deletingId === deal.id}
+                      onClick={() => setConfirmingDeleteId(null)}
+                      className="rounded-lg px-2 py-1.5 font-medium text-[var(--color-text-muted)] outline-none transition-colors hover:text-[var(--color-text)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:opacity-40"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs">
+                    {deal.status === "active" && (
+                      <StatusButton
+                        busy={updatingId === deal.id}
+                        onClick={() => handleStatusChange(deal.id, "closed")}
+                      >
+                        Close
+                      </StatusButton>
+                    )}
+                    {deal.status === "closed" && (
+                      <>
+                        <StatusButton
+                          busy={updatingId === deal.id}
+                          onClick={() => handleStatusChange(deal.id, "active")}
+                        >
+                          Reopen
+                        </StatusButton>
+                        <StatusButton
+                          busy={updatingId === deal.id}
+                          onClick={() => handleStatusChange(deal.id, "archived")}
+                        >
+                          Archive
+                        </StatusButton>
+                      </>
+                    )}
+                    {deal.status === "archived" && (
                       <StatusButton
                         busy={updatingId === deal.id}
                         onClick={() => handleStatusChange(deal.id, "active")}
                       >
-                        Reopen
+                        Reactivate
                       </StatusButton>
-                      <StatusButton
-                        busy={updatingId === deal.id}
-                        onClick={() => handleStatusChange(deal.id, "archived")}
-                      >
-                        Archive
-                      </StatusButton>
-                    </>
-                  )}
-                  {deal.status === "archived" && (
-                    <StatusButton
-                      busy={updatingId === deal.id}
-                      onClick={() => handleStatusChange(deal.id, "active")}
+                    )}
+                    {/* Archive hides a deal; this erases it, along with every
+                        PDF generated from it. A realtor needs the second one to
+                        be able to remove a client's information on request. */}
+                    <button
+                      type="button"
+                      disabled={updatingId === deal.id}
+                      onClick={() => setConfirmingDeleteId(deal.id)}
+                      aria-label={`Delete ${deal.label}`}
+                      className="rounded-lg border border-transparent px-3 py-1.5 font-medium text-[var(--color-text-muted)] outline-none transition-colors hover:border-[var(--color-error-border)] hover:bg-[var(--color-error-bg)] hover:text-[var(--color-error-text)] focus-visible:ring-2 focus-visible:ring-[var(--color-error-text)] focus-visible:ring-offset-2 disabled:opacity-40"
                     >
-                      Reactivate
-                    </StatusButton>
-                  )}
-                </div>
+                      Delete
+                    </button>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -320,7 +402,7 @@ function StatusButton({
       type="button"
       disabled={busy}
       onClick={onClick}
-      className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 font-medium text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)]/50 hover:bg-[var(--color-accent)]/5 hover:text-[var(--color-accent)] disabled:opacity-40"
+      className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 font-medium text-[var(--color-text-muted)] outline-none transition-colors hover:border-[var(--color-accent)]/50 hover:bg-[var(--color-accent)]/5 hover:text-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 disabled:opacity-40"
     >
       {children}
     </button>
