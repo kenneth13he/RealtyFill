@@ -7,6 +7,11 @@
 // (brand → white → deep ink) rather than one continuous pale page. The product
 // mockup is rendered tonally in-brand instead of as a white screenshot.
 //
+// The hero is a scroll-driven stage (components/landing/ScrollStage.tsx): a 3D
+// apartment tower pinned in view, lighting floor by floor as you scroll while
+// the copy beside it advances. It carries the headline and CTAs, so this page
+// has no separate hero block of its own.
+//
 // Footer links to /terms and /privacy, which landed alongside this redesign
 // (REMAINING_WORK.md item 5). They were held back while those pages didn't
 // exist — a dead footer link reads worse than a shorter footer.
@@ -16,6 +21,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Wordmark from "@/components/Wordmark";
 import LandingNav from "@/components/landing/LandingNav";
+import ScrollStage from "@/components/landing/ScrollStage";
 import VisualProof from "@/components/landing/VisualProof";
 import Marquee from "@/components/landing/Marquee";
 import FadeIn from "@/components/landing/FadeIn";
@@ -53,70 +59,19 @@ export default async function HomePage() {
     <div className="bg-[var(--brand)]">
       <LandingNav />
 
-      {/* ---------------- HERO ---------------- */}
-      <section className="relative overflow-hidden">
-        {/* Line-art document, bleeding off the left edge */}
-        <svg
-          aria-hidden
-          viewBox="0 0 420 560"
-          className="pointer-events-none absolute -left-24 top-10 hidden h-[560px] w-[420px] text-white/20 lg:block"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <rect x="60" y="40" width="250" height="330" rx="14" />
-          <path d="M240 40v56a14 14 0 0 0 14 14h56" />
-          <path d="M92 130h120M92 166h150M92 202h150M92 238h96" />
-          <rect x="92" y="272" width="110" height="26" rx="6" />
-          <circle cx="300" cy="392" r="62" />
-          <path d="M272 392l20 20 40-44" strokeWidth="3" />
-          <path d="M120 400c-40 30-60 70-52 120M340 150c50 16 72 54 64 104" />
-        </svg>
-
-        <div className="relative mx-auto max-w-7xl px-6 pt-10 pb-20 sm:pt-16">
-          <div className="lg:pl-[28%]">
-            <h1 className="text-[3.25rem] font-semibold leading-[0.95] tracking-tight text-white sm:text-7xl xl:text-8xl">
-              Five lease forms.
-              <br />
-              One intake.
-            </h1>
-
-            <div className="mt-5 inline-block border-2 border-dashed border-white/35 px-5 py-2">
-              <span className="text-[3.25rem] font-semibold leading-none tracking-tight text-[var(--lime)] sm:text-7xl xl:text-8xl">
-                two minutes.
-              </span>
-            </div>
-
-            <p className="mt-9 max-w-lg text-lg leading-relaxed text-white/70">
-              Stop retyping the same tenant, landlord, and rent details into five separate PDFs. Enter it once,
-              review it, download the whole set — filled correctly.
-            </p>
-
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/login?mode=signup"
-                className="group inline-flex items-center justify-center gap-2 rounded-full bg-[var(--lime)] px-8 py-4 text-base font-semibold text-[var(--brand-deep)] transition-transform hover:-translate-y-0.5"
-              >
-                Get started free
-                <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-white/10"
-              >
-                Sign in
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ---------------- HERO: scroll-driven tower ----------------
+          Owns the headline, the CTAs and the product story. The tower stays
+          pinned while this section scrolls past and lights floor by floor.
+          Collapses to a plain stacked hero below `lg` — see ScrollStage. */}
+      <ScrollStage />
 
       {/* ---------------- PRODUCT MOCKUP ---------------- */}
-      <section className="mx-auto max-w-7xl px-6 pb-24">
+      <section className="mx-auto max-w-7xl px-6 pb-24 pt-12">
         <FadeIn>
           <VisualProof />
         </FadeIn>
       </section>
+
 
       {/* ---------------- STATEMENT + TICKER ---------------- */}
       <section className="px-6 py-28 text-center">
