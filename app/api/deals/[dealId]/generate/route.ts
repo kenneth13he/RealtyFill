@@ -27,6 +27,14 @@ import { createClient } from "@/lib/supabase/server";
 import { getOwnedDeal } from "@/lib/supabase/getOwnedDeal";
 import { logError } from "@/lib/logger";
 
+// A five-form set means five sequential fill round-trips to pdf-service plus
+// five Storage uploads (2229E alone is ~700KB), and the Python service may be
+// cold on the first one. The fill itself is fast — under a second for a whole
+// set, measured — so this is headroom for network and cold starts rather than
+// an expectation, but the platform default is short enough that one slow
+// upload would fail the whole batch after the user has filled everything in.
+export const maxDuration = 120;
+
 const TEMPLATES_DIR = path.join(process.cwd(), "forms", "blank_templates");
 
 export async function POST(request: Request, { params }: { params: Promise<{ dealId: string }> }) {

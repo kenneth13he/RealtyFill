@@ -42,6 +42,14 @@ import { checkRateLimit } from "@/lib/rateLimit";
 import { logError } from "@/lib/logger";
 import type Anthropic from "@anthropic-ai/sdk";
 
+// This route waits on a single Opus call with a whole listing document and
+// forced tool use, which can run well past a minute on a long PDF. The
+// platform's default function timeout is far shorter than that, so without
+// this the request is killed mid-inference and the realtor sees a generic
+// failure after a long wait. Requires a Vercel plan allowing durations this
+// long; on Hobby the cap is lower and the build clamps it.
+export const maxDuration = 300;
+
 const SYSTEM_PROMPT = `You are extracting structured data from a real-estate listing export (e.g. a REALM/MLS printout) for an Ontario rental deal. Accuracy matters more than completeness — this feeds real legal/transactional forms.
 
 Rules:
