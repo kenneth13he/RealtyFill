@@ -40,7 +40,7 @@ jobs:
       - name: Unit tests
         run: npx tsx --test tests/*.test.ts
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -78,7 +78,7 @@ jobs:
           npm audit --omit=dev --audit-level=high
           npm audit --audit-level=high || echo "::warning::advisory in dev dependencies — review, not blocking"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
