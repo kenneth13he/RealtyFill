@@ -167,6 +167,28 @@ export default function ReviewForm({
 
   const hasAnswers = groupsWithAnswers.length > 0;
 
+  // Fields that are empty AND feed at least one of the forms currently
+  // selected. Scoped to the selection deliberately — warning about a Form 410
+  // field while someone is generating only the 2229E would be noise. Fields
+  // whose label says "(optional)" are excluded, matching the same convention
+  // components/IntakeFieldsEditor.tsx uses for its red asterisks.
+  const missingForSelected: string[] = [];
+  if (selected.size > 0) {
+    for (const group of schema.groups) {
+      for (const field of group.fields) {
+        if (field.hidden || field.derived_from) continue;
+        if (field.label.toLowerCase().includes("(optional)")) continue;
+        if (field.type === "checkbox") continue;
+        const targetsSelected = (Object.keys(field.targets) as FormId[]).some((f) => selected.has(f));
+        if (!targetsSelected) continue;
+        const value = answers[field.key];
+        if (value === undefined || value === "" || value === "/Off") {
+          missingForSelected.push(field.label);
+        }
+      }
+    }
+  }
+
   const affectedForms = new Set<FormId>();
   if (changedKeys.size > 0) {
     for (const group of schema.groups) {
@@ -272,12 +294,37 @@ export default function ReviewForm({
             </label>
           ))}
         </div>
+        {missingForSelected.length > 0 && (
+          <div className="mt-4 rounded-md border border-[var(--color-warn-border)] bg-[var(--color-warn-bg)] px-3 py-2.5 text-sm text-[var(--color-warn-text)]">
+            <p className="font-medium">
+              {missingForSelected.length} field{missingForSelected.length === 1 ? "" : "s"} still empty on the forms
+              you&apos;ve selected
+            </p>
+            <p className="mt-1">
+              You can still generate — those spots will just be blank on the PDF. Fill them in under &quot;Edit
+              answers&quot; above if you want them completed.
+            </p>
+            <details className="mt-2">
+              <summary className="cursor-pointer font-medium">Show which fields</summary>
+              <ul className="mt-1.5 list-disc pl-5">
+                {missingForSelected.map((label) => (
+                  <li key={label}>{label}</li>
+                ))}
+              </ul>
+            </details>
+          </div>
+        )}
+
         <button
           onClick={handleGenerate}
           disabled={generating || selected.size === 0 || !hasAnswers}
           className="mt-4 w-full rounded-lg bg-[var(--color-accent)] px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
-          {generating ? "Generating…" : "Generate selected forms"}
+          {generating
+            ? "Generating…"
+            : missingForSelected.length > 0
+              ? "Generate anyway"
+              : "Generate selected forms"}
         </button>
       </div>
 

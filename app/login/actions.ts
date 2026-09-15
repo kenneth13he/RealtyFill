@@ -103,6 +103,50 @@ export async function signUp(formData: FormData) {
   redirect(redirectTo);
 }
 
+// Step 1 of password recovery: email a recovery link. The link lands on
+// /auth/callback (which already exchanges the code for a session) and is
+// then forwarded to /reset-password to actually set the new password.
+// Always reports success, even for an unknown address — telling an
+// anonymous caller whether an email is registered would leak who has an
+// account here.
+export async function requestPasswordReset(formData: FormData) {
+  const email = String(formData.get("email") ?? "");
+  const done = `/login?message=${encodeURIComponent("If that email has an account, a reset link is on its way.")}`;
+
+  if (!checkRateLimit(`reset:${await clientIp()}`, 5, 15 * 60 * 1000)) {
+    redirect(`/login?mode=reset&error=${encodeURIComponent("Too many reset requests — please wait a while and try again.")}`);
+  }
+
+  const supabase = await createClient();
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?redirectTo=${encodeURIComponent("/reset-password")}`,
+  });
+  redirect(done);
+}
+
+// Step 2: set the new password. Relies on the recovery session created by
+// /auth/callback — without it there's nobody to update, hence the auth check.
+export async function updatePassword(formData: FormData) {
+  const password = String(formData.get("password") ?? "");
+  if (password.length < 6) {
+    redirect(`/reset-password?error=${encodeURIComponent("Password must be at least 6 characters.")}`);
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    redirect(`/login?error=${encodeURIComponent("That reset link is invalid or has expired — request a new one.")}`);
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    redirect(`/reset-password?error=${encodeURIComponent(error.message)}`);
+  }
+  redirect("/dashboard");
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
