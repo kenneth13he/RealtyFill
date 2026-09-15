@@ -29,17 +29,10 @@
 import { chromium, type Browser, type ConsoleMessage, type Page, type Request } from "playwright";
 import fs from "fs";
 import path from "path";
+import { loadEnvLocal } from "./loadEnv";
 
 // ---------------------------------------------------------------- env + args
 
-function loadEnvLocal() {
-  const file = path.join(process.cwd(), ".env.local");
-  if (!fs.existsSync(file)) return;
-  for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/)) {
-    const m = /^([A-Z0-9_]+)=(.*)$/.exec(line.trim());
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
-  }
-}
 loadEnvLocal();
 
 const arg = (name: string) => {

@@ -26,6 +26,9 @@
 // Requires ANTHROPIC_API_KEY (and the Supabase vars, since route.ts imports
 // the schema loader). Load .env.local before running.
 
+import { loadEnvLocal } from "./loadEnv";
+loadEnvLocal();
+
 import { extractWithRetry, toStoredAnswers } from "../app/api/extract-listing/route";
 import { claudeExtractWithTool } from "../lib/claude";
 import { FORM_SET_IDS, type FormSetId } from "../lib/formTypes";
@@ -77,14 +80,19 @@ const CASES: EvalCase[] = [
     set: "sale_buyer",
     text: "Unit 1706, Level 17, TSCC 2510, one parking space and one locker. Building is The Rosedale.",
     expect: { condo_apt_unit_no: "1706", condo_level_no: "17", condo_property_name: "Rosedale" },
-    flagged: ["condo_unit_number"],
+    absent: ["condo_unit_number"],
     note:
       "This case was written expecting 1706 in condo_unit_number and the model was right to refuse. " +
       "On Form 101, 'Unit __, Level __, Plan No. __' is the LEGAL unit per the condominium plan, " +
       "which is frequently not the suite number on the door — 1706 is the apartment number and " +
       "belongs in condo_apt_unit_no. Putting a suite number on the legal-description line would " +
       "misdescribe the property being purchased. Kept as a case because that distinction is exactly " +
-      "the kind of thing a future prompt change could quietly break.",
+      "the kind of thing a future prompt change could quietly break. " +
+      "Asserts `absent` rather than `flagged` deliberately. Over three runs the model flagged " +
+      "condo_unit_number once and omitted it the other twice, and both are defensible — the prompt " +
+      "says a field the text never raises belongs in neither channel, and a suite number arguably " +
+      "doesn't raise the legal unit number at all. What must never happen is 1706 landing in that " +
+      "field, so that is what's asserted. Testing the coin flip instead just produced a flaky case.",
   },
   {
     name: "relative date must not be guessed",
