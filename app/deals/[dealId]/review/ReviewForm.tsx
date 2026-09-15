@@ -11,7 +11,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FORM_LABELS, FormId, IntakeFormSchema } from "@/lib/formTypes";
 import { useDerivedIntakeAnswers } from "@/lib/useDerivedIntakeAnswers";
 import IntakeFieldsEditor from "@/components/IntakeFieldsEditor";
@@ -46,6 +46,43 @@ export default function ReviewForm({
   const [changedKeys, setChangedKeys] = useState<Set<string>>(new Set());
 
   useDerivedIntakeAnswers(answers, setAnswers);
+
+  // Flagged fields are reported by their schema key ("tenant1_full_name");
+  // a person needs the label that's printed beside the input.
+  const fieldLabels = useMemo(() => {
+    const labels: Record<string, string> = {};
+    for (const group of schema.groups) {
+      for (const field of group.fields) labels[field.key] = field.label;
+    }
+    return labels;
+  }, [schema]);
+
+  /**
+   * Open the editor if it's closed, scroll the field into view and focus it.
+   *
+   * The rAF is not decoration: when the editor was closed, the input doesn't
+   * exist in the DOM yet at the moment this runs, so the lookup has to wait
+   * for React to commit the render that setEditing(true) triggers.
+   */
+  function revealField(key: string) {
+    setEditing(true);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(key);
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        (el as HTMLElement).focus({ preventScroll: true });
+      });
+    });
+  }
+
+  function dismissFlag(key: string) {
+    setUpdateFlagged((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }
 
   // Mirrors `answers` for the debounced autosave below, so the save always
   // sends the latest values even though the setTimeout callback closes over
@@ -212,7 +249,7 @@ export default function ReviewForm({
 
         {editing ? (
           <div className="mt-4">
-            <IntakeFieldsEditor schema={schema} answers={answers} onChange={setField} />
+            <IntakeFieldsEditor schema={schema} answers={answers} flaggedFields={updateFlagged} onChange={setField} />
           </div>
         ) : !hasAnswers ? (
           <p className="mt-3 text-sm text-[var(--color-text-muted)]">
@@ -333,10 +370,45 @@ export default function ReviewForm({
               {updateError}
             </p>
           )}
+          {/* Previously one grey italic sentence listing raw field keys. It
+              named things like "tenant1_full_name", gave no way to act on
+              them, and left you scrolling the editor to find the field it
+              meant. Each one is now the field's real label plus a button
+              that opens the editor and puts the cursor in it. */}
           {Object.keys(updateFlagged).length > 0 && (
-            <p className="mt-3 text-xs italic text-[var(--color-text-muted)]">
-              Left unchanged (ambiguous): {Object.entries(updateFlagged).map(([key, reason]) => `${key} (${reason})`).join("; ")}
-            </p>
+            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="text-sm font-medium text-amber-900">
+                {Object.keys(updateFlagged).length === 1
+                  ? "One field needs your call"
+                  : `${Object.keys(updateFlagged).length} fields need your call`}
+              </p>
+              <p className="mt-0.5 text-xs text-amber-800">
+                These were left as they were, rather than guessed at.
+              </p>
+              <ul className="mt-2 flex flex-col gap-2">
+                {Object.entries(updateFlagged).map(([key, reason]) => (
+                  <li key={key} className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
+                    <span className="font-medium text-amber-900">{fieldLabels[key] ?? key}</span>
+                    <span className="text-xs text-amber-800">— {reason}</span>
+                    <button
+                      type="button"
+                      onClick={() => revealField(key)}
+                      className="rounded border border-amber-300 bg-white px-2 py-0.5 text-xs font-medium text-amber-900 transition-colors hover:bg-amber-100"
+                    >
+                      Go to field
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => dismissFlag(key)}
+                      aria-label={`Dismiss ${fieldLabels[key] ?? key}`}
+                      className="text-xs text-amber-700 underline transition-colors hover:text-amber-900"
+                    >
+                      Dismiss
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
       </div>
 
