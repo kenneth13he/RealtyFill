@@ -15,11 +15,11 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <Header />
-      <main className="mx-auto max-w-3xl px-6 py-10">
-        <h1 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">Your deals</h1>
-        <p className="mt-1 text-[var(--color-text-muted)]">Create a new deal or pick up where you left off.</p>
-        <div className="mt-8">
+      <Header width="wide" />
+      <main className="mx-auto max-w-5xl px-6 py-12">
+        <h1 className="text-4xl font-semibold tracking-tight text-[var(--color-text)]">Your deals</h1>
+        <p className="mt-2 text-[var(--color-text-muted)]">Create a new deal or pick up where you left off.</p>
+        <div className="mt-10">
           <DealsList initialDeals={(data as Deal[]) ?? []} loadError={error?.message ?? null} />
         </div>
       </main>

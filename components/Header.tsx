@@ -23,7 +23,18 @@ function steps(dealId: string) {
   ] as const;
 }
 
-export default async function Header({ active, dealId }: { active?: "intake" | "review"; dealId?: string }) {
+export default async function Header({
+  active,
+  dealId,
+  width = "narrow",
+}: {
+  active?: "intake" | "review";
+  dealId?: string;
+  /** Match the page's own content column so the wordmark lines up with the
+      page heading. Form pages are a narrow reading column; the dashboard is
+      a wider grid. */
+  width?: "narrow" | "wide";
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -31,7 +42,12 @@ export default async function Header({ active, dealId }: { active?: "intake" | "
 
   return (
     <header className="bg-[var(--brand-deep)]">
-      <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-y-3 px-6 py-4">
+      <div
+        className={
+          "mx-auto flex flex-wrap items-center justify-between gap-y-3 px-6 py-4 " +
+          (width === "wide" ? "max-w-5xl" : "max-w-3xl")
+        }
+      >
         <div className="flex items-center gap-4">
           <Link href="/" className="text-xl">
             <Wordmark tone="dark" />

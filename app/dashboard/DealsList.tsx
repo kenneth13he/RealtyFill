@@ -3,6 +3,15 @@
 // close/reopen/archive one. Status filtering here IS "history" per the
 // scope agreed for this plan — a full field-level audit log is explicitly
 // out of scope for now.
+//
+// The form-set picker hides the native radio and paints the tile instead.
+// Three reasons it's worth the extra markup: the whole tile becomes the hit
+// target, the selected state can be a real border+ring rather than a 13px
+// dot, and the "coming soon" sets can be visibly inert without the greyed-out
+// native control doing the explaining. The input is still a real focusable
+// radio (sr-only, not display:none), so keyboard and screen-reader behaviour
+// is unchanged — `has-[:focus-visible]` puts the focus ring on the tile when
+// the hidden input inside it takes focus.
 
 "use client";
 
@@ -77,163 +86,243 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
   const visibleDeals = deals.filter((d) => d.status === filter);
 
   return (
-    <div className="flex flex-col gap-6">
-      <form onSubmit={handleCreate} className="rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5 p-5">
-        <h2 className="text-base font-semibold text-[var(--color-text)]">Start a new deal</h2>
-
-        <fieldset className="mt-4">
-          <legend className="text-sm font-medium text-[var(--color-text)]">Which forms do you need?</legend>
-          <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
-            This can&apos;t be changed later — each set asks for different information.
+    <div className="flex flex-col gap-10">
+      {/* ---------------- CREATE ---------------- */}
+      <form
+        onSubmit={handleCreate}
+        className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm"
+      >
+        <div className="border-b border-[var(--color-border)] bg-[var(--brand-deep)] px-6 py-4">
+          <h2 className="text-base font-semibold text-white">Start a new deal</h2>
+          <p className="mt-0.5 text-sm text-white/50">
+            Pick the forms you need — this can&apos;t be changed later.
           </p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {FORM_SET_IDS.map((setId) => {
-              const set = FORM_SETS[setId];
-              const isSelected = newFormSet === setId;
-              return (
-                <label
-                  key={setId}
-                  className={
-                    "flex gap-2.5 rounded-lg border p-3 text-left transition-colors " +
-                    (!set.ready
-                      ? "cursor-not-allowed border-[var(--color-border)] bg-[var(--color-bg)] opacity-60"
-                      : isSelected
-                        ? "cursor-pointer border-[var(--color-accent)] bg-white ring-2 ring-[var(--color-accent)]/20"
-                        : "cursor-pointer border-[var(--color-border)] bg-white hover:border-[var(--color-accent)]/50")
-                  }
-                >
-                  <input
-                    type="radio"
-                    name="formSet"
-                    value={setId}
-                    checked={isSelected}
-                    disabled={!set.ready}
-                    onChange={() => setNewFormSet(setId)}
-                    className="mt-0.5 shrink-0 accent-[var(--color-accent)]"
-                  />
-                  <span className="min-w-0">
-                    <span className="block text-sm font-medium text-[var(--color-text)]">
-                      {set.label}
-                      {!set.ready && (
-                        <span className="ml-1.5 rounded bg-[var(--color-border)] px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                          Coming soon
-                        </span>
-                      )}
-                    </span>
-                    <span className="mt-0.5 block text-xs text-[var(--color-text-muted)]">{set.description}</span>
-                    <span className="mt-1 block text-xs text-[var(--color-text-muted)]">
-                      {set.formIds.length} forms
-                    </span>
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-        </fieldset>
+        </div>
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <input
-            type="text"
-            value={newLabel}
-            onChange={(e) => setNewLabel(e.target.value)}
-            placeholder="e.g. 203 College St #1706 (optional — you can rename later)"
-            className="flex-1 rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)] shadow-sm outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
-          />
-          <button
-            type="submit"
-            disabled={creating}
-            className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {creating ? "Creating…" : "Create deal"}
-          </button>
+        <div className="p-6">
+          <fieldset>
+            <legend className="sr-only">Which forms do you need?</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {FORM_SET_IDS.map((setId) => {
+                const set = FORM_SETS[setId];
+                const isSelected = newFormSet === setId;
+                return (
+                  <label
+                    key={setId}
+                    className={
+                      "relative block rounded-xl border p-4 transition-all " +
+                      "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[var(--color-accent)] has-[:focus-visible]:ring-offset-2 " +
+                      (!set.ready
+                        ? "cursor-not-allowed border-[var(--color-border)] bg-[var(--color-bg)]"
+                        : isSelected
+                          ? "cursor-pointer border-[var(--color-accent)] bg-[var(--color-accent)]/[0.04] ring-2 ring-[var(--color-accent)]/25"
+                          : "cursor-pointer border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-accent)]/60 hover:bg-[var(--color-accent)]/[0.02]")
+                    }
+                  >
+                    <input
+                      type="radio"
+                      name="formSet"
+                      value={setId}
+                      checked={isSelected}
+                      disabled={!set.ready}
+                      onChange={() => setNewFormSet(setId)}
+                      className="sr-only"
+                    />
+
+                    {/* Selection dot, pinned top-right so it never sits in the
+                        middle of a two-line title. */}
+                    <span
+                      aria-hidden
+                      className={
+                        "absolute right-4 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors " +
+                        (isSelected
+                          ? "border-[var(--color-accent)] bg-[var(--color-accent)]"
+                          : "border-[var(--color-border)] bg-transparent")
+                      }
+                    >
+                      {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                    </span>
+
+                    <div className={"pr-8 " + (set.ready ? "" : "opacity-55")}>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="text-sm font-semibold text-[var(--color-text)]">{set.label}</span>
+                        {!set.ready && (
+                          <span className="whitespace-nowrap rounded-full bg-[var(--color-border)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
+                            Soon
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1.5 text-xs leading-relaxed text-[var(--color-text-muted)]">
+                        {set.description}
+                      </p>
+                      <p className="mt-2.5 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-accent)]">
+                        {set.formIds.length} forms
+                      </p>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+
+          <div className="mt-5 flex flex-col gap-3 border-t border-[var(--color-border)] pt-5 sm:flex-row">
+            <input
+              type="text"
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              aria-label="Deal name"
+              placeholder="e.g. 203 College St #1706 (optional — you can rename later)"
+              className="flex-1 rounded-lg border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition-shadow placeholder:text-[var(--color-text-muted)]/70 focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
+            />
+            <button
+              type="submit"
+              disabled={creating}
+              className="shrink-0 rounded-lg bg-[var(--color-accent)] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {creating ? "Creating…" : "Create deal"}
+            </button>
+          </div>
         </div>
       </form>
 
       {error && (
-        <p role="alert" className="rounded-md border border-[var(--color-error-border)] bg-[var(--color-error-bg)] px-3 py-2 text-sm text-[var(--color-error-text)]">
+        <p
+          role="alert"
+          className="rounded-lg border border-[var(--color-error-border)] bg-[var(--color-error-bg)] px-3.5 py-2.5 text-sm text-[var(--color-error-text)]"
+        >
           {error}
         </p>
       )}
 
-      <div className="flex gap-1 border-b border-[var(--color-border)]">
-        {STATUS_FILTERS.map((status) => (
-          <button
-            key={status}
-            type="button"
-            onClick={() => setFilter(status)}
-            className={
-              "-mb-px border-b-2 px-3 py-2 text-sm font-medium capitalize transition-colors " +
-              (filter === status
-                ? "border-[var(--color-accent)] text-[var(--color-accent)]"
-                : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)]")
-            }
-          >
-            {status} ({deals.filter((d) => d.status === status).length})
-          </button>
-        ))}
-      </div>
+      {/* ---------------- LIST ---------------- */}
+      <div>
+        <div className="flex gap-1 border-b border-[var(--color-border)]">
+          {STATUS_FILTERS.map((status) => {
+            const count = deals.filter((d) => d.status === status).length;
+            return (
+              <button
+                key={status}
+                type="button"
+                onClick={() => setFilter(status)}
+                className={
+                  "-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium capitalize transition-colors " +
+                  (filter === status
+                    ? "border-[var(--color-accent)] text-[var(--color-accent)]"
+                    : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)]")
+                }
+              >
+                {status}
+                <span
+                  className={
+                    "rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums " +
+                    (filter === status
+                      ? "bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
+                      : "bg-[var(--color-border)] text-[var(--color-text-muted)]")
+                  }
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-      {visibleDeals.length === 0 ? (
-        <p className="text-sm text-[var(--color-text-muted)]">No {filter} deals.</p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {visibleDeals.map((deal) => (
-            <li
-              key={deal.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
-            >
-              <Link href={`/deals/${deal.id}/review`} className="min-w-0 flex-1">
-                <p className="truncate font-medium text-[var(--color-text)]">{deal.label}</p>
-                <p className="text-xs text-[var(--color-text-muted)]">
-                  {FORM_SETS[toFormSetId(deal.form_set)].label} · Updated {formatDate(deal.updated_at)}
-                </p>
-              </Link>
-              <div className="flex shrink-0 items-center gap-2 text-xs">
-                {deal.status === "active" && (
-                  <button
-                    type="button"
-                    disabled={updatingId === deal.id}
-                    onClick={() => handleStatusChange(deal.id, "closed")}
-                    className="rounded-md border border-[var(--color-border)] px-2.5 py-1.5 font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] disabled:opacity-40"
+        {visibleDeals.length === 0 ? (
+          <div className="mt-6 rounded-2xl border-2 border-dashed border-[var(--color-border)] px-6 py-14 text-center">
+            <p className="text-sm font-medium text-[var(--color-text)]">No {filter} deals</p>
+            <p className="mx-auto mt-1.5 max-w-xs text-sm text-[var(--color-text-muted)]">
+              {filter === "active"
+                ? "Pick a form set above and create your first deal."
+                : `Deals you mark as ${filter} will show up here.`}
+            </p>
+          </div>
+        ) : (
+          <ul className="mt-6 flex flex-col gap-2.5">
+            {visibleDeals.map((deal) => (
+              <li
+                key={deal.id}
+                className="group flex items-center justify-between gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4 transition-all hover:border-[var(--color-accent)]/50 hover:shadow-sm"
+              >
+                <Link href={`/deals/${deal.id}/review`} className="flex min-w-0 flex-1 items-center gap-4">
+                  {/* Document glyph — gives each row an anchor so a list of
+                      similar addresses doesn't read as undifferentiated text. */}
+                  <span
+                    aria-hidden
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--color-accent)]/10 text-[var(--color-accent)] transition-colors group-hover:bg-[var(--color-accent)] group-hover:text-white"
                   >
-                    Close
-                  </button>
-                )}
-                {deal.status === "closed" && (
-                  <>
-                    <button
-                      type="button"
-                      disabled={updatingId === deal.id}
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 3v5h5" />
+                    </svg>
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate font-semibold text-[var(--color-text)]">{deal.label}</span>
+                    <span className="mt-0.5 block text-xs text-[var(--color-text-muted)]">
+                      {FORM_SETS[toFormSetId(deal.form_set)].label} · Updated {formatDate(deal.updated_at)}
+                    </span>
+                  </span>
+                </Link>
+
+                <div className="flex shrink-0 items-center gap-2 text-xs">
+                  {deal.status === "active" && (
+                    <StatusButton
+                      busy={updatingId === deal.id}
+                      onClick={() => handleStatusChange(deal.id, "closed")}
+                    >
+                      Close
+                    </StatusButton>
+                  )}
+                  {deal.status === "closed" && (
+                    <>
+                      <StatusButton
+                        busy={updatingId === deal.id}
+                        onClick={() => handleStatusChange(deal.id, "active")}
+                      >
+                        Reopen
+                      </StatusButton>
+                      <StatusButton
+                        busy={updatingId === deal.id}
+                        onClick={() => handleStatusChange(deal.id, "archived")}
+                      >
+                        Archive
+                      </StatusButton>
+                    </>
+                  )}
+                  {deal.status === "archived" && (
+                    <StatusButton
+                      busy={updatingId === deal.id}
                       onClick={() => handleStatusChange(deal.id, "active")}
-                      className="rounded-md border border-[var(--color-border)] px-2.5 py-1.5 font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] disabled:opacity-40"
                     >
-                      Reopen
-                    </button>
-                    <button
-                      type="button"
-                      disabled={updatingId === deal.id}
-                      onClick={() => handleStatusChange(deal.id, "archived")}
-                      className="rounded-md border border-[var(--color-border)] px-2.5 py-1.5 font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] disabled:opacity-40"
-                    >
-                      Archive
-                    </button>
-                  </>
-                )}
-                {deal.status === "archived" && (
-                  <button
-                    type="button"
-                    disabled={updatingId === deal.id}
-                    onClick={() => handleStatusChange(deal.id, "active")}
-                    className="rounded-md border border-[var(--color-border)] px-2.5 py-1.5 font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] disabled:opacity-40"
-                  >
-                    Reactivate
-                  </button>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+                      Reactivate
+                    </StatusButton>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
+  );
+}
+
+function StatusButton({
+  busy,
+  onClick,
+  children,
+}: {
+  busy: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={onClick}
+      className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 font-medium text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)]/50 hover:bg-[var(--color-accent)]/5 hover:text-[var(--color-accent)] disabled:opacity-40"
+    >
+      {children}
+    </button>
   );
 }
