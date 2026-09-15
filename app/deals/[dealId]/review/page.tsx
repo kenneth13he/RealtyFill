@@ -9,7 +9,7 @@
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import { getIntakeFormSchema } from "@/lib/schemas";
-import type { FormId } from "@/lib/formTypes";
+import { FORM_SETS, toFormSetId, type FormId } from "@/lib/formTypes";
 import { createClient } from "@/lib/supabase/server";
 import ReviewForm from "./ReviewForm";
 
@@ -18,7 +18,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ dealId:
   const supabase = await createClient();
 
   const [{ data: deal }, { data: intakeRow }, { data: generatedRows }, schema] = await Promise.all([
-    supabase.from("deals").select("id, label").eq("id", dealId).maybeSingle(),
+    supabase.from("deals").select("id, label, form_set").eq("id", dealId).maybeSingle(),
     supabase.from("deal_intake").select("answers").eq("deal_id", dealId).maybeSingle(),
     supabase.from("generated_forms").select("form_id").eq("deal_id", dealId),
     getIntakeFormSchema(),
@@ -28,6 +28,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ dealId:
     notFound();
   }
 
+  const formSet = FORM_SETS[toFormSetId(deal.form_set)];
   const answers = (intakeRow?.answers as Record<string, string>) ?? {};
   const initialResults = (generatedRows ?? []).map((row) => ({
     form: row.form_id as FormId,
@@ -39,11 +40,18 @@ export default async function ReviewPage({ params }: { params: Promise<{ dealId:
       <Header active="review" dealId={dealId} />
       <main className="mx-auto max-w-3xl px-6 py-10">
         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">{deal.label}</h1>
+        <p className="mt-1 text-sm font-medium text-[var(--color-accent)]">{formSet.label}</p>
         <p className="mt-1 text-[var(--color-text-muted)]">
           Double-check what you entered, pick which forms to generate, then download the filled PDFs.
         </p>
         <div className="mt-8">
-          <ReviewForm dealId={dealId} answers={answers} schema={schema} initialResults={initialResults} />
+          <ReviewForm
+            dealId={dealId}
+            answers={answers}
+            schema={schema}
+            initialResults={initialResults}
+            formIds={formSet.formIds}
+          />
         </div>
       </main>
     </>

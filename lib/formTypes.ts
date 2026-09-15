@@ -5,7 +5,30 @@
 // Kept separate from lib/schemas.ts specifically so importing this file never
 // pulls Node's `fs` into a client bundle.
 
-export type FormId = "2229e" | "form_400" | "form_410" | "form_324" | "form_372";
+// Every form the app knows about, across all four sets. Only the lease-tenant
+// five are generatable today — see FORM_SETS below for why the rest aren't.
+export type FormId =
+  // Lease — tenant side (the original set)
+  | "2229e"
+  | "form_400"
+  | "form_410"
+  | "form_324"
+  | "form_372"
+  // Lease — landlord / listing side
+  | "form_272"
+  | "form_292"
+  | "form_401"
+  // Purchase — buyer side
+  | "form_101"
+  | "form_303"
+  | "form_320"
+  | "form_371"
+  | "form_801"
+  // Sale — seller / listing side
+  | "form_203"
+  | "form_244"
+  | "form_271"
+  | "form_291";
 
 export interface IntakeFieldOption {
   value: string;
@@ -59,6 +82,106 @@ export const FORM_LABELS: Record<FormId, string> = {
   form_410: "Form 410 — Rental Application (Residential)",
   form_324: "Form 324 — Confirmation of Co-operation and Representation",
   form_372: "Form 372 — Tenant Designated Representation Agreement",
+
+  form_272: "Form 272 — Listing Agreement, Landlord Designated Representation",
+  form_292: "Form 292 — MLS® Data Information Form (Condo, Lease/Sub-Lease)",
+  form_401: "Form 401 — Schedule to Agreement to Lease (Residential)",
+
+  form_101: "Form 101 — Agreement of Purchase and Sale (Condominium Resale)",
+  form_303: "Form 303 — Schedule to Buyer Representation Agreement",
+  form_320: "Form 320 — Confirmation of Co-operation and Representation (Buyer/Seller)",
+  form_371: "Form 371 — Buyer Designated Representation Agreement",
+  form_801: "Form 801 — Offer Summary Document",
+
+  form_203: "Form 203 — Schedule to Listing Agreement (Authority to Offer for Sale)",
+  form_244: "Form 244 — Seller's Direction re: Property/Offers",
+  form_271: "Form 271 — Listing Agreement, Seller Designated Representation",
+  form_291: "Form 291 — MLS® Data Information Form (Condo, Sale)",
 };
 
-export const ALL_FORM_IDS: FormId[] = ["2229e", "form_400", "form_410", "form_324", "form_372"];
+// ---------------------------------------------------------------------------
+// Form sets
+//
+// A deal is for exactly one kind of transaction, and each kind needs its own
+// bundle of forms. Which set a deal belongs to is stored on the deal itself
+// (deals.form_set) and fixed at creation — the forms, and eventually the
+// intake questions, differ enough between them that switching mid-deal would
+// mean discarding answers.
+//
+// `ready: false` means the set is registered but cannot generate anything yet.
+// The blank templates for the three pending sets are in the repo but were
+// downloaded as flat PDFs with zero AcroForm fields, so there is nothing for
+// the fill pipeline to write into (it fills *named fields*; it can't type onto
+// a page). Each set's folder README explains this. Making one ready takes:
+//   1. fillable templates re-sourced from WEBForms / the OREA member portal,
+//   2. `scripts/extract_form_field_info.py` run over them into forms/schemas/,
+//   3. intake-schema `targets` added for the new field ids,
+//   4. `ready: true` here.
+// ---------------------------------------------------------------------------
+
+export type FormSetId = "lease_tenant" | "lease_landlord" | "sale_buyer" | "sale_seller";
+
+export interface FormSet {
+  id: FormSetId;
+  label: string;
+  description: string;
+  /** Subdirectory of forms/blank_templates/ holding this set's blanks. "" = the root (legacy location). */
+  templateDir: string;
+  formIds: FormId[];
+  ready: boolean;
+}
+
+export const FORM_SETS: Record<FormSetId, FormSet> = {
+  lease_tenant: {
+    id: "lease_tenant",
+    label: "Condo for lease — tenant side",
+    description: "You represent the tenant. Lease agreement, rental application, and co-operation forms.",
+    templateDir: "",
+    formIds: ["2229e", "form_400", "form_410", "form_324", "form_372"],
+    ready: true,
+  },
+  lease_landlord: {
+    id: "lease_landlord",
+    label: "Condo for lease — landlord side",
+    description: "You represent the landlord. Listing agreement, MLS® data form, and lease schedule.",
+    templateDir: "lease_landlord_condo",
+    formIds: ["form_272", "form_292", "form_401"],
+    ready: false,
+  },
+  sale_buyer: {
+    id: "sale_buyer",
+    label: "Condo for sale — buyer side",
+    description: "You represent the buyer. Agreement of purchase and sale, buyer representation, and offer summary.",
+    templateDir: "purchase_buyer_condo",
+    formIds: ["form_101", "form_303", "form_320", "form_371", "form_801"],
+    ready: false,
+  },
+  sale_seller: {
+    id: "sale_seller",
+    label: "Condo for sale — seller side",
+    description: "You represent the seller. Listing agreement, MLS® data form, and seller's direction.",
+    templateDir: "sale_seller_condo",
+    formIds: ["form_203", "form_244", "form_271", "form_291"],
+    ready: false,
+  },
+};
+
+export const FORM_SET_IDS = Object.keys(FORM_SETS) as FormSetId[];
+
+/** The set every pre-existing deal belongs to — matches the 0002 migration's column default. */
+export const DEFAULT_FORM_SET: FormSetId = "lease_tenant";
+
+export function isFormSetId(value: unknown): value is FormSetId {
+  return typeof value === "string" && value in FORM_SETS;
+}
+
+/** Normalises whatever came back from the database into a set id we can trust. */
+export function toFormSetId(value: unknown): FormSetId {
+  return isFormSetId(value) ? value : DEFAULT_FORM_SET;
+}
+
+export function formIdsForSet(setId: FormSetId): FormId[] {
+  return FORM_SETS[setId].formIds;
+}
+
+export const ALL_FORM_IDS: FormId[] = FORM_SET_IDS.flatMap((setId) => FORM_SETS[setId].formIds);

@@ -9,11 +9,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { DEFAULT_FORM_SET, FORM_SETS, FORM_SET_IDS, FormSetId, toFormSetId } from "@/lib/formTypes";
 
 export interface Deal {
   id: string;
   label: string;
   status: "active" | "closed" | "archived";
+  form_set: string;
   created_at: string;
   updated_at: string;
 }
@@ -29,6 +31,7 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
   const [deals, setDeals] = useState<Deal[]>(initialDeals);
   const [filter, setFilter] = useState<(typeof STATUS_FILTERS)[number]>("active");
   const [newLabel, setNewLabel] = useState("");
+  const [newFormSet, setNewFormSet] = useState<FormSetId>(DEFAULT_FORM_SET);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(loadError);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -41,7 +44,7 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
       const res = await fetch("/api/deals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: newLabel.trim() || undefined }),
+        body: JSON.stringify({ label: newLabel.trim() || undefined, formSet: newFormSet }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Failed to create deal");
@@ -77,7 +80,58 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
     <div className="flex flex-col gap-6">
       <form onSubmit={handleCreate} className="rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5 p-5">
         <h2 className="text-base font-semibold text-[var(--color-text)]">Start a new deal</h2>
-        <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+
+        <fieldset className="mt-4">
+          <legend className="text-sm font-medium text-[var(--color-text)]">Which forms do you need?</legend>
+          <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+            This can&apos;t be changed later — each set asks for different information.
+          </p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {FORM_SET_IDS.map((setId) => {
+              const set = FORM_SETS[setId];
+              const isSelected = newFormSet === setId;
+              return (
+                <label
+                  key={setId}
+                  className={
+                    "flex gap-2.5 rounded-lg border p-3 text-left transition-colors " +
+                    (!set.ready
+                      ? "cursor-not-allowed border-[var(--color-border)] bg-[var(--color-bg)] opacity-60"
+                      : isSelected
+                        ? "cursor-pointer border-[var(--color-accent)] bg-white ring-2 ring-[var(--color-accent)]/20"
+                        : "cursor-pointer border-[var(--color-border)] bg-white hover:border-[var(--color-accent)]/50")
+                  }
+                >
+                  <input
+                    type="radio"
+                    name="formSet"
+                    value={setId}
+                    checked={isSelected}
+                    disabled={!set.ready}
+                    onChange={() => setNewFormSet(setId)}
+                    className="mt-0.5 shrink-0 accent-[var(--color-accent)]"
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium text-[var(--color-text)]">
+                      {set.label}
+                      {!set.ready && (
+                        <span className="ml-1.5 rounded bg-[var(--color-border)] px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                          Coming soon
+                        </span>
+                      )}
+                    </span>
+                    <span className="mt-0.5 block text-xs text-[var(--color-text-muted)]">{set.description}</span>
+                    <span className="mt-1 block text-xs text-[var(--color-text-muted)]">
+                      {set.formIds.length} forms
+                    </span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <input
             type="text"
             value={newLabel}
@@ -130,7 +184,9 @@ export default function DealsList({ initialDeals, loadError }: { initialDeals: D
             >
               <Link href={`/deals/${deal.id}/review`} className="min-w-0 flex-1">
                 <p className="truncate font-medium text-[var(--color-text)]">{deal.label}</p>
-                <p className="text-xs text-[var(--color-text-muted)]">Updated {formatDate(deal.updated_at)}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  {FORM_SETS[toFormSetId(deal.form_set)].label} · Updated {formatDate(deal.updated_at)}
+                </p>
               </Link>
               <div className="flex shrink-0 items-center gap-2 text-xs">
                 {deal.status === "active" && (

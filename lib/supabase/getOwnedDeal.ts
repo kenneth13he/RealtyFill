@@ -11,8 +11,8 @@
 // for this user — before ever attempting the real operation.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- avoids depending on generated DB types that don't exist yet
-export async function getOwnedDeal(supabase: any, dealId: string): Promise<{ id: string } | null> {
-  const { data, error } = await supabase.from("deals").select("id").eq("id", dealId).maybeSingle();
+export async function getOwnedDeal(supabase: any, dealId: string): Promise<{ id: string; form_set: string } | null> {
+  const { data, error } = await supabase.from("deals").select("id, form_set").eq("id", dealId).maybeSingle();
   if (error) throw new Error(error.message);
   return data;
 }

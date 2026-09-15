@@ -12,7 +12,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ALL_FORM_IDS, FORM_LABELS, FormId, IntakeFormSchema } from "@/lib/formTypes";
+import { FORM_LABELS, FormId, IntakeFormSchema } from "@/lib/formTypes";
 import { useDerivedIntakeAnswers } from "@/lib/useDerivedIntakeAnswers";
 import IntakeFieldsEditor from "@/components/IntakeFieldsEditor";
 
@@ -21,11 +21,14 @@ export default function ReviewForm({
   answers: initialAnswers,
   schema,
   initialResults = [],
+  formIds,
 }: {
   dealId: string;
   answers: Record<string, string>;
   schema: IntakeFormSchema;
   initialResults?: { form: FormId; downloadUrl: string }[];
+  /** The forms in this deal's set — not every form the app knows about. */
+  formIds: FormId[];
 }) {
   const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers);
   const [editing, setEditing] = useState(false);
@@ -270,7 +273,7 @@ export default function ReviewForm({
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
         <h2 className="text-base font-semibold text-[var(--color-text)]">Select forms to generate</h2>
         <div className="mt-3 flex flex-col gap-2">
-          {ALL_FORM_IDS.map((formId) => (
+          {formIds.map((formId) => (
             <label
               key={formId}
               className="flex cursor-pointer items-center gap-3 rounded-lg border border-[var(--color-border)] px-3 py-2.5 text-sm transition-colors has-[:checked]:border-[var(--color-accent)] has-[:checked]:bg-[var(--color-accent)]/5"
