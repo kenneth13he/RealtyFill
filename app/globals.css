@@ -1,11 +1,17 @@
 /* app/globals.css
    Global styles + Tailwind entrypoint.
 
-   Two palettes on purpose. The signed-in app stays light and quiet (long
-   form-filling sessions, documents, readability). The marketing landing page
-   runs on a bold flat brand flood — vivid indigo with a lime accent, big
-   geometric type, hard section colour inversions — which is what makes it
-   read as designed rather than as a default template.
+   ONE palette, two intensities. The brand (vivid indigo + lime, deep-ink
+   shadow) is the source of truth; the landing page runs it at full flood
+   (edge-to-edge colour, huge display type, hard section inversions) while the
+   signed-in app runs the same hues at low saturation — brand-tinted greys,
+   white surfaces, indigo only on things you can act on. Long form-filling
+   sessions need calm, but "calm" shouldn't mean "a different product": the
+   deep-ink chrome and the lime accent carry across.
+
+   The in-app tokens below are deliberately the only place these colours are
+   written down — every app page reads --color-*, so retargeting them here
+   re-themes the whole signed-in surface without touching a page file.
 
    Typeface is Outfit via next/font (see app/layout.tsx): geometric, holds up
    at very large display sizes, which the landing page leans on heavily. */
@@ -13,26 +19,31 @@
 @import "tailwindcss";
 
 :root {
-  /* In-app (light) */
-  --color-bg: #f8fafc;
+  /* Brand — shared by the landing flood and the in-app chrome */
+  --brand: #2d28d9;
+  --brand-deep: #14124a;
+  --brand-light: #5b56ec;
+  --lime: #c9f73d;
+
+  /* In-app (light): the same hues pulled down to working saturation.
+     Greys are indigo-tinted rather than slate so white cards sit on a
+     surface that belongs to the brand instead of a neutral default. */
+  --color-bg: #f5f5fb;
   --color-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-text: #0f172a;
-  --color-text-muted: #64748b;
-  --color-accent: #1e3a5f;
-  --color-accent-hover: #16293f;
+  --color-border: #e4e3f2;
+  --color-text: #14124a; /* = --brand-deep; body copy is the brand's ink */
+  --color-text-muted: #6d6b91;
+  --color-accent: #2d28d9; /* = --brand */
+  --color-accent-hover: #211dab;
+
+  /* Status colours stay conventional — a warning that reads as "brand indigo"
+     stops reading as a warning. Amber/red are doing a semantic job here. */
   --color-warn-bg: #fffbeb;
   --color-warn-border: #fde68a;
   --color-warn-text: #92400e;
   --color-error-bg: #fef2f2;
   --color-error-border: #fecaca;
   --color-error-text: #b91c1c;
-
-  /* Landing page brand */
-  --brand: #2d28d9;
-  --brand-deep: #14124a;
-  --brand-light: #5b56ec;
-  --lime: #c9f73d;
 }
 
 body {
