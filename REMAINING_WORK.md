@@ -312,6 +312,41 @@ Until then it is documentation, not protection.
 
 ---
 
+### 15d. ✅ Request input limits — added
+Every write endpoint took its input on trust. `/api/deals/[dealId]/intake`
+stored the raw request body verbatim as the answers blob — any size, any
+shape; `label` had no length cap; `/api/extract-listing` base64'd every
+uploaded file into memory with no limit on size or count.
+
+Rate limiting doesn't cover this: it caps how *often* someone calls, not how
+much they send, so sixty permitted extractions an hour could still be sixty
+100 MB uploads — billed by the token against `ANTHROPIC_API_KEY`.
+
+`lib/inputLimits.ts` now caps upload size/count, pasted text length, the
+answers blob (keys, key length, value length, total bytes) and the deal
+label. All ceilings are far above real use and there's a test asserting that:
+the whole real intake schema, every field filled, still validates.
+
+`validateAnswers` also enforces the `Record<string, string>` shape the rest
+of the app assumes. A nested object stored there wouldn't have errored — it
+would have surfaced later as a mangled value in a real legal document.
+
+### 15e. ✅ Health check — `/api/health`
+Point an uptime monitor (UptimeRobot, Better Stack) at it. Deliberately not
+`return "ok"`: it makes one trivial round-trip to Postgres and returns 503 if
+that fails, because the app will happily serve pages while the database is
+unreachable — which is the outage that matters. Public, uncached, returns
+nothing identifying.
+
+### 15f. ✅ Missing env vars now fail loudly
+Every Supabase client read its config with a `!` non-null assertion, which
+silences TypeScript and does nothing at runtime. A missing anon key produced
+a client pointed at `undefined` and surfaced later as a confusing auth error
+— which is exactly what happened once during deployment. `lib/env.ts`'s
+`requireEnv` throws a named, actionable error instead.
+
+---
+
 ### 16. ⚠️ Logging exists, alerting doesn't
 `lib/logger.ts` writes structured JSON errors visible in Vercel's Logs tab,
 but nothing notifies you. If PDF generation starts failing for a realtor

@@ -13,6 +13,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnedDeal } from "@/lib/supabase/getOwnedDeal";
+import { validateAnswers, InputTooLargeError } from "@/lib/inputLimits";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ dealId: string }> }) {
   const { dealId } = await params;
@@ -36,9 +37,21 @@ export async function GET(_request: Request, { params }: { params: Promise<{ dea
 
 export async function POST(request: Request, { params }: { params: Promise<{ dealId: string }> }) {
   const { dealId } = await params;
-  const body = await request.json();
-  if (typeof body !== "object" || body === null) {
-    return NextResponse.json({ error: "Expected a JSON object of intake answers" }, { status: 400 });
+  const body = await request.json().catch(() => null);
+
+  // Previously the raw body was stored verbatim as the answers blob: any
+  // size, any shape. Everything downstream (profileMapper, the fill
+  // pipeline) indexes it as Record<string, string>, so a nested value
+  // wouldn't fail here — it would surface later as a mangled value in a
+  // real legal document.
+  let answers: Record<string, string>;
+  try {
+    answers = validateAnswers(body);
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof InputTooLargeError ? err.message : "Invalid intake answers" },
+      { status: 400 }
+    );
   }
 
   const supabase = await createClient();
@@ -54,7 +67,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ dea
 
   const { error } = await supabase
     .from("deal_intake")
-    .upsert({ deal_id: dealId, answers: body, updated_at: new Date().toISOString() }, { onConflict: "deal_id" });
+    .upsert({ deal_id: dealId, answers, updated_at: new Date().toISOString() }, { onConflict: "deal_id" });
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

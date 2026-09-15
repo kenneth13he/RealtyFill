@@ -9,12 +9,13 @@
 // proxy.ts's session refresh is the real cookie-writing path for that case.
 
 import { createServerClient } from "@supabase/ssr";
+import { requireEnv } from "../env";
 import { cookies } from "next/headers";
 
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+  return createServerClient(requireEnv("NEXT_PUBLIC_SUPABASE_URL"), requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"), {
     cookies: {
       getAll() {
         return cookieStore.getAll();

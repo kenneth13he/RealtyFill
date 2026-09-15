@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_FORM_SET, FORM_SETS, isFormSetId } from "@/lib/formTypes";
+import { LIMITS } from "@/lib/inputLimits";
 
 export async function GET() {
   const supabase = await createClient();
@@ -34,7 +35,10 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const label = typeof body?.label === "string" && body.label.trim() ? body.label.trim() : "Untitled deal";
+  // Capped: this is a property address, and an unbounded string here goes
+  // straight into the database and onto every dashboard row.
+  const rawLabel = typeof body?.label === "string" ? body.label.trim() : "";
+  const label = rawLabel ? rawLabel.slice(0, LIMITS.labelChars) : "Untitled deal";
 
   // Which bundle of forms this deal is for. Rejected rather than defaulted
   // when unrecognised: silently filing a deal under the wrong transaction

@@ -8,9 +8,10 @@
 // becomes the only thing standing between one user and another user's data.
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { requireEnv } from "../env";
 
 export function createAdminClient() {
-  return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+  return createSupabaseClient(requireEnv("NEXT_PUBLIC_SUPABASE_URL"), requireEnv("SUPABASE_SERVICE_ROLE_KEY"), {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }

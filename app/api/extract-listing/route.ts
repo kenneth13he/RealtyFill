@@ -39,6 +39,7 @@ import { claudeExtractWithTool } from "@/lib/claude";
 import { splitFullName } from "@/lib/splitFullName";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { LIMITS } from "@/lib/inputLimits";
 import { logError, userFacingError } from "@/lib/logger";
 import type Anthropic from "@anthropic-ai/sdk";
 
@@ -130,6 +131,24 @@ async function getUserContent(request: Request): Promise<Anthropic.MessageParam[
       throw new Error(`"${unsupported.name}" isn't a supported file type — only PDF and plain text (.txt) are.`);
     }
 
+    // Size is checked before anything is read into memory. Rate limiting
+    // caps how often this endpoint is called, not how much each call sends,
+    // and every byte of a PDF here is billed as tokens against
+    // ANTHROPIC_API_KEY once it reaches the model.
+    if (files.length > LIMITS.fileCount) {
+      throw new Error(`Too many files at once (max ${LIMITS.fileCount}).`);
+    }
+    const tooBig = files.find((f) => f.size > LIMITS.fileBytes);
+    if (tooBig) {
+      throw new Error(
+        `"${tooBig.name}" is too large (${Math.round(tooBig.size / 1024 / 1024)} MB; max ${LIMITS.fileBytes / 1024 / 1024} MB).`
+      );
+    }
+    const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
+    if (totalBytes > LIMITS.totalUploadBytes) {
+      throw new Error(`Those files are too large together (max ${LIMITS.totalUploadBytes / 1024 / 1024} MB).`);
+    }
+
     const blocks = await Promise.all(
       files.map(async (file) => {
         if (isPdf(file)) {
@@ -158,6 +177,10 @@ async function getUserContent(request: Request): Promise<Anthropic.MessageParam[
   const text = typeof body?.text === "string" ? body.text : "";
   if (!text.trim()) {
     throw new Error("No listing text found");
+  }
+  // Same reasoning as the upload limits above: this text is billed as tokens.
+  if (text.length > LIMITS.pastedTextChars) {
+    throw new Error(`That's too much text to read at once (max ${LIMITS.pastedTextChars.toLocaleString()} characters).`);
   }
   const currentAnswers =
     body?.currentAnswers && typeof body.currentAnswers === "object" ? body.currentAnswers : null;
