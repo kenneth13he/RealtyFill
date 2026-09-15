@@ -5,6 +5,7 @@
 // branching on "not created yet" everywhere.
 
 import { NextResponse } from "next/server";
+import { isSameOrigin, crossOriginRefusal } from "@/lib/sameOrigin";
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_FORM_SET, FORM_SETS, isFormSetId } from "@/lib/formTypes";
 import { LIMITS } from "@/lib/inputLimits";
@@ -26,6 +27,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // Defence in depth behind the SameSite=Lax session cookie — see
+  // lib/sameOrigin.ts for why a missing Origin is refused too.
+  if (!isSameOrigin(request)) return crossOriginRefusal();
   const supabase = await createClient();
   const {
     data: { user },

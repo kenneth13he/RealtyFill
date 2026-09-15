@@ -1,44 +1,49 @@
 // app/api/health/route.ts
-// Liveness check for an uptime monitor (UptimeRobot, Better Stack, Vercel's
-// own checks — anything that can poll a URL and alert on a non-200).
+// Liveness probe for an uptime monitor. Deliberately unauthenticated — a
+// monitor has no session — and deliberately vague: "ok"/"degraded" plus a
+// latency number, never a version, a hostname or an error message.
 //
-// Deliberately more than `return "ok"`: a Next.js app can happily serve
-// pages while the thing it actually depends on is unreachable, which is the
-// outage that matters here. So this makes one trivial round-trip to Postgres
-// and reports 503 if that fails. Item 16 in REMAINING_WORK.md — "logging
-// exists, alerting doesn't" — is what this is for: nothing here alerts, but
-// it gives a monitor something truthful to poll.
+// It is rate limited because it is the one open endpoint that touches the
+// database: without a cap, anyone who finds the URL can make us run a
+// service-role query as fast as they can send requests. The limit is set far
+// above real monitoring (a typical monitor polls every 30-60 seconds, and
+// several monitors from several regions still land nowhere near 60/minute
+// from one address), so it bounds abuse without ever throttling the thing it
+// exists for.
 //
-// Public on purpose (no auth): a monitor has no session. Nothing identifying
-// is returned — no counts, no versions, no error text — so it's not a
-// reconnaissance surface.
+// failOpen stays at its default (true): if the limiter itself can't be
+// reached, that almost certainly means the database is down, which is exactly
+// the moment a health check must still answer rather than return 429.
 
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { clientIpFrom } from "@/lib/clientIp";
 import { logError } from "@/lib/logger";
 
-// Never cached: a cached 200 would report health long after the database
-// stopped answering, which is worse than no check at all.
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const startedAt = Date.now();
+const NO_STORE = { "Cache-Control": "no-store" } as const;
 
+export async function GET(request: Request) {
+  if (!(await checkRateLimit(`health:${clientIpFrom(request.headers)}`, 60, 60 * 1000))) {
+    return NextResponse.json({ status: "rate_limited" }, { status: 429, headers: NO_STORE });
+  }
+
+  const startedAt = Date.now();
   try {
     const supabase = createAdminClient();
-    // head:true fetches no rows — this is a connectivity probe, not a query.
     const { error } = await supabase.from("deals").select("id", { count: "exact", head: true }).limit(1);
     if (error) throw new Error(error.message);
-
     return NextResponse.json(
       { status: "ok", database: "ok", latencyMs: Date.now() - startedAt },
-      { headers: { "Cache-Control": "no-store" } }
+      { headers: NO_STORE }
     );
   } catch (err) {
     logError({ route: "health" }, err);
     return NextResponse.json(
       { status: "degraded", database: "unreachable", latencyMs: Date.now() - startedAt },
-      { status: 503, headers: { "Cache-Control": "no-store" } }
+      { status: 503, headers: NO_STORE }
     );
   }
 }

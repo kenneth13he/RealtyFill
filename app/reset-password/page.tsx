@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
 import { updatePassword } from "@/app/login/actions";
+import { MIN_PASSWORD_LENGTH, PASSWORD_REQUIREMENT } from "@/lib/passwordPolicy";
 
 export const metadata: Metadata = {
   title: "Set a new password — RealtyFill",
@@ -51,11 +52,11 @@ export default async function ResetPasswordPage({
                 name="password"
                 type="password"
                 required
-                minLength={6}
+                minLength={MIN_PASSWORD_LENGTH}
                 autoComplete="new-password"
                 className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)] shadow-sm outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
               />
-              <p className="mt-1 text-xs text-[var(--color-text-muted)]">At least 6 characters.</p>
+              <p className="mt-1 text-xs text-[var(--color-text-muted)]">{PASSWORD_REQUIREMENT}</p>
             </div>
             <button
               type="submit"

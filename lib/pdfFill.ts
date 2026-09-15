@@ -89,9 +89,19 @@ async function fillPdfViaSubprocess(blankTemplatePath: string, fields: FillableF
 
 async function fillPdfViaService(blankTemplatePath: string, fields: FillableField[], outputPath: string): Promise<void> {
   const blankBytes = await fs.readFile(blankTemplatePath);
+
+  // Proves to pdf-service that this call came from us rather than from
+  // anyone who found its URL. The service only enforces it when it has the
+  // same value configured, so an unset variable leaves both sides behaving
+  // exactly as before — set PDF_SERVICE_SECRET on both to turn the check on.
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (process.env.PDF_SERVICE_SECRET) {
+    headers["X-PDF-Service-Secret"] = process.env.PDF_SERVICE_SECRET;
+  }
+
   const res = await fetch(new URL("/fill", process.env.PDF_SERVICE_URL), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ blank_pdf_base64: blankBytes.toString("base64"), fields }),
   });
 
