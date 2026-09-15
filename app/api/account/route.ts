@@ -13,7 +13,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { logError } from "@/lib/logger";
+import { logError, userFacingError } from "@/lib/logger";
 
 export async function DELETE() {
   const supabase = await createClient();
@@ -42,11 +42,8 @@ export async function DELETE() {
       throw new Error(deleteErr.message);
     }
   } catch (err) {
-    logError({ route: "account-delete", userId: user.id }, err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to delete account" },
-      { status: 500 }
-    );
+    const ref = logError({ route: "account-delete", userId: user.id }, err);
+    return NextResponse.json({ error: userFacingError(ref, "Couldn't delete your account."), ref }, { status: 500 });
   }
 
   // Clear the now-orphaned session cookie so the browser isn't left holding

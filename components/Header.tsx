@@ -79,6 +79,9 @@ export default async function Header({
           )}
           {user && (
             <div className="flex items-center gap-3 text-sm">
+              <Link href="/support" className="font-medium text-white/60 transition-colors hover:text-white">
+                Support
+              </Link>
               <Link href="/settings" className="font-medium text-white/60 transition-colors hover:text-white">
                 Settings
               </Link>

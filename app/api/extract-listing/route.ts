@@ -39,7 +39,7 @@ import { claudeExtractWithTool } from "@/lib/claude";
 import { splitFullName } from "@/lib/splitFullName";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rateLimit";
-import { logError } from "@/lib/logger";
+import { logError, userFacingError } from "@/lib/logger";
 import type Anthropic from "@anthropic-ai/sdk";
 
 // This route waits on a single Opus call with a whole listing document and
@@ -182,7 +182,11 @@ export async function POST(request: Request) {
   // authenticated — a generous cap meant to catch a runaway client/bug or
   // abuse, not to constrain normal usage (a realtor pasting updates all day
   // won't come close to 60/hour).
-  if (!checkRateLimit(`extract:${user.id}`, 60, 60 * 60 * 1000)) {
+  // failOpen: false — every call past this point bills ANTHROPIC_API_KEY, so
+  // if the limiter itself can't be reached, refusing is the cheap mistake and
+  // allowing is the expensive one. This is the only call site that inverts
+  // the default.
+  if (!(await checkRateLimit(`extract:${user.id}`, 60, 60 * 60 * 1000, { failOpen: false }))) {
     return NextResponse.json({ error: "Rate limit exceeded — please wait a while before trying again." }, { status: 429 });
   }
 
@@ -243,9 +247,9 @@ export async function POST(request: Request) {
   }
 
   if (!result) {
-    logError({ route: "extract-listing", userId: user.id }, lastErr);
+    const ref = logError({ route: "extract-listing", userId: user.id }, lastErr);
     return NextResponse.json(
-      { error: lastErr instanceof Error ? lastErr.message : "Extraction failed (is ANTHROPIC_API_KEY set?)" },
+      { error: userFacingError(ref, "Couldn't read that listing."), ref },
       { status: 502 }
     );
   }

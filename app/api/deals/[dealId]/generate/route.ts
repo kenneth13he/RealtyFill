@@ -25,7 +25,7 @@ import { mapIntakeToFormFields } from "@/lib/profileMapper";
 import { fillPdf } from "@/lib/pdfFill";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnedDeal } from "@/lib/supabase/getOwnedDeal";
-import { logError } from "@/lib/logger";
+import { logError, userFacingError } from "@/lib/logger";
 
 // A five-form set means five sequential fill round-trips to pdf-service plus
 // five Storage uploads (2229E alone is ~700KB), and the Python service may be
@@ -84,8 +84,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ dea
     .eq("deal_id", dealId)
     .maybeSingle();
   if (intakeErr) {
-    logError({ route: "generate", userId: user.id, dealId }, intakeErr);
-    return NextResponse.json({ error: intakeErr.message }, { status: 500 });
+    const ref = logError({ route: "generate", userId: user.id, dealId }, intakeErr);
+    return NextResponse.json({ error: userFacingError(ref, "Couldn't load this deal's answers."), ref }, { status: 500 });
   }
   if (!intakeRow) {
     return NextResponse.json({ error: "No intake data found — fill out intake first" }, { status: 400 });
@@ -124,8 +124,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ dea
       results.push({ form: formId, downloadUrl: `/api/deals/${dealId}/download/${formId}` });
     }
   } catch (err) {
-    logError({ route: "generate", userId: user.id, dealId, selectedForms }, err);
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Failed to generate PDF" }, { status: 500 });
+    // The raw message can name storage paths, table names and field ids —
+    // not things to render in a browser. The reference is what makes this
+    // actionable instead.
+    const ref = logError({ route: "generate", userId: user.id, dealId, selectedForms }, err);
+    return NextResponse.json({ error: userFacingError(ref, "Couldn't generate your forms."), ref }, { status: 500 });
   }
 
   return NextResponse.json({ results });

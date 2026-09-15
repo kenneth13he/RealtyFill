@@ -56,7 +56,7 @@ export async function signInWithGoogle(formData: FormData) {
 export async function signIn(formData: FormData) {
   const redirectTo = safeRedirectTarget(formData.get("redirectTo"));
 
-  if (!checkRateLimit(`signin:${await clientIp()}`, 10, 5 * 60 * 1000)) {
+  if (!(await checkRateLimit(`signin:${await clientIp()}`, 10, 5 * 60 * 1000))) {
     redirect(`/login?error=${encodeURIComponent("Too many sign-in attempts — please wait a few minutes and try again.")}&redirectTo=${encodeURIComponent(redirectTo)}`);
   }
 
@@ -74,7 +74,7 @@ export async function signIn(formData: FormData) {
 export async function signUp(formData: FormData) {
   const redirectTo = safeRedirectTarget(formData.get("redirectTo"));
 
-  if (!checkRateLimit(`signup:${await clientIp()}`, 5, 15 * 60 * 1000)) {
+  if (!(await checkRateLimit(`signup:${await clientIp()}`, 5, 15 * 60 * 1000))) {
     redirect(`/login?mode=signup&error=${encodeURIComponent("Too many sign-up attempts — please wait a while and try again.")}&redirectTo=${encodeURIComponent(redirectTo)}`);
   }
 
@@ -113,7 +113,7 @@ export async function requestPasswordReset(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const done = `/login?message=${encodeURIComponent("If that email has an account, a reset link is on its way.")}`;
 
-  if (!checkRateLimit(`reset:${await clientIp()}`, 5, 15 * 60 * 1000)) {
+  if (!(await checkRateLimit(`reset:${await clientIp()}`, 5, 15 * 60 * 1000))) {
     redirect(`/login?mode=reset&error=${encodeURIComponent("Too many reset requests — please wait a while and try again.")}`);
   }
 

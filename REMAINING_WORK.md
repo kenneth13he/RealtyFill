@@ -37,7 +37,16 @@ just "the request returned 200"):
   a second account could not read, download, or overwrite the first
   account's deal, and the first account's data was confirmed untouched
   afterward
-- ✅ Rate limiting on `/login` and `/api/extract-listing`
+- ✅ Rate limiting on `/login` and `/api/extract-listing` — **rewritten**:
+  the counters used to be a per-process in-memory Map, which on Vercel's
+  serverless runtime meant every limit was silently multiplied by the number
+  of warm instances. Now a single atomic SQL statement
+  (`check_rate_limit()`, migration 0003). Verified: 10 simultaneous calls
+  against a limit of 5 let exactly 5 through.
+- ✅ Cross-user isolation re-verified after adding `support_requests`:
+  with two real user ids, neither could read the other's deals, intake
+  answers, generated forms or support requests, and writes across the
+  boundary were refused by Postgres (`42501`), not just hidden.
 - ✅ HTTPS (automatic on Vercel)
 
 ---
@@ -265,6 +274,43 @@ at a rendered PDF — it's how the Form 101 purchase-price bug was caught).
 ---
 
 ## Operational
+
+### 15b. ✅ Support channel — built
+`/support` (linked from the header on every signed-in page). A realtor files
+a report; it lands in `public.support_requests`, RLS-scoped so each user sees
+only their own. Triage from the Supabase dashboard or with the service role —
+there is deliberately no update policy, so a submitted report can't be edited
+afterwards and `status` (open / in_progress / resolved) stays yours to set.
+
+The piece that makes it useful is the **error reference**. `lib/logger.ts`
+now stamps every logged error with a short id, returns it, and the API routes
+send it to the browser; the support form has a field for it. "Generating
+didn't work this morning" becomes one grep.
+
+That change also closed a small leak: `/api/generate`, `/download`,
+`/account` and `/extract-listing` were returning raw internal error messages
+to the browser — strings that can name tables, storage paths and field ids.
+They now return a generic sentence plus the reference.
+
+Still manual: nothing emails you when a request arrives. Check the table, or
+wire it to the SMTP provider once Blocker 2 is done.
+
+### 15c. ✅ Security response headers — added, CSP is report-only
+`next.config.ts` sets `X-Content-Type-Options`, `X-Frame-Options`,
+`Referrer-Policy`, `Permissions-Policy` and `Strict-Transport-Security` on
+every route, all enforced.
+
+The Content Security Policy ships as **`Content-Security-Policy-Report-Only`**
+on purpose. A slightly-wrong CSP doesn't degrade, it blanks the page, and
+nobody has clicked through this app in a browser yet (item 11). Report-only
+logs violations to the console and blocks nothing.
+
+**To finish:** open the site with devtools, sign in, run an intake, generate,
+preview a PDF. If the console reports no CSP violations, change `CSP_HEADER`
+in `next.config.ts` to `"Content-Security-Policy"` and it starts enforcing.
+Until then it is documentation, not protection.
+
+---
 
 ### 16. ⚠️ Logging exists, alerting doesn't
 `lib/logger.ts` writes structured JSON errors visible in Vercel's Logs tab,
