@@ -24,16 +24,28 @@ export function getIntakeFormSchema(): IntakeFormSchema {
   return readJson<IntakeFormSchema>("intake_form_schema.json");
 }
 
-// Only forms in a `ready` set have an extracted field schema. The other three
-// sets' templates are flat PDFs with no fillable fields, so there is nothing
-// to extract yet — hence Partial, and an explicit error rather than a
-// confusing ENOENT if something ever routes a pending form here.
+// Partial because PropTx 291/292 are intentionally not part of any set (see
+// lib/formTypes.ts) and so have no extracted schema — an explicit error beats
+// a confusing ENOENT if something ever routes one of them here.
 const RAW_SCHEMA_FILES: Partial<Record<FormId, string>> = {
   "2229e": "2229e_raw.json",
   form_400: "form_400_raw.json",
   form_410: "form_410_raw.json",
   form_324: "form_324_raw.json",
   form_372: "form_372_raw.json",
+
+  form_272: "form_272_raw.json",
+  form_401: "form_401_raw.json",
+
+  form_101: "form_101_raw.json",
+  form_303: "form_303_raw.json",
+  form_320: "form_320_raw.json",
+  form_371: "form_371_raw.json",
+  form_801: "form_801_raw.json",
+
+  form_203: "form_203_raw.json",
+  form_244: "form_244_raw.json",
+  form_271: "form_271_raw.json",
 };
 
 export function getRawFormSchema(formId: FormId): RawFieldInfo[] {

@@ -1,0 +1,590 @@
+[
+  {
+    "field_id": "p1_brokerage",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      98.4,
+      635.3,
+      571.5,
+      647.3
+    ],
+    "label_hint": "BROKERAGE"
+  },
+  {
+    "field_id": "p1_cont",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      617.3,
+      321.4,
+      629.3
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_the_listing_brokerage_tel_no",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      437.8,
+      617.3,
+      570.9,
+      629.3
+    ],
+    "label_hint": "(the \u201cListing Brokerage\u201d) Tel. No"
+  },
+  {
+    "field_id": "p1_seller",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      72.4,
+      599.3,
+      528.2,
+      611.3
+    ],
+    "label_hint": "SELLER"
+  },
+  {
+    "field_id": "p1_designated_representative_s",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      179.4,
+      581.3,
+      571.2,
+      593.3
+    ],
+    "label_hint": "DESIGNATED REPRESENTATIVE(S)"
+  },
+  {
+    "field_id": "p1_cont_2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      560.3,
+      570.3,
+      572.3
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_ting_the_real_property_for_sale_known_as",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      325.1,
+      532.3,
+      571.5,
+      544.3
+    ],
+    "label_hint": "isting Brokerage listing the real property for sale known as"
+  },
+  {
+    "field_id": "p1_cont_3",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      515.3,
+      518.5,
+      527.3
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_commencing_at",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      95.1,
+      486.3,
+      173.9,
+      498.3
+    ],
+    "label_hint": "commencing at"
+  },
+  {
+    "field_id": "p1_on_the",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      200.3,
+      486.3,
+      266.9,
+      498.3
+    ],
+    "label_hint": "commencing at ................................ on the"
+  },
+  {
+    "field_id": "p1_n_the_day_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      294.2,
+      486.3,
+      501.1,
+      498.3
+    ],
+    "label_hint": ".................. on the ........................... day of"
+  },
+  {
+    "field_id": "p1_20",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      518.4,
+      486.3,
+      567.7,
+      498.3
+    ],
+    "label_hint": "....................................................... , 20"
+  },
+  {
+    "field_id": "p1_and_expiring_at_11_59_p_m_on_the",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      163.1,
+      465.3,
+      227.2,
+      477.3
+    ],
+    "label_hint": "and expiring at 11:59 p.m. on the"
+  },
+  {
+    "field_id": "p1_on_the_day_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      254.5,
+      465.3,
+      441.7,
+      477.3
+    ],
+    "label_hint": "iring at 11:59 p.m. on the .......................... day of"
+  },
+  {
+    "field_id": "p1_20_2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      456.5,
+      465.3,
+      498.4,
+      477.3
+    ],
+    "label_hint": "........................................................, 20"
+  },
+  {
+    "field_id": "p1_dollars_cdn",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      466.8,
+      415.3,
+      570.3,
+      427.3
+    ],
+    "label_hint": "Dollars (CDN$)"
+  },
+  {
+    "field_id": "p1_cont_4",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      398.3,
+      543.2,
+      410.3
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_schedule_a",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      82.3,
+      343.3,
+      244.9,
+      355.3
+    ],
+    "label_hint": "Schedule A"
+  },
+  {
+    "field_id": "p1_ay_the_listing_brokerage_a_commission_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      290.5,
+      222.3,
+      327.4,
+      234.3
+    ],
+    "label_hint": "e Seller agrees to pay the Listing Brokerage a commission of"
+  },
+  {
+    "field_id": "p1_of_the_sale_price_of_the_property_or",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      460.6,
+      222.3,
+      571.5,
+      234.3
+    ],
+    "label_hint": "ion of ...............% of the sale price of the Property or"
+  },
+  {
+    "field_id": "p1_cont_5",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      58.5,
+      208.3,
+      282.7,
+      220.3
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_e_co_operating_brokerage_a_commission_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      208.4,
+      170.3,
+      247.8,
+      182.3
+    ],
+    "label_hint": "the co-operating brokerage a commission of"
+  },
+  {
+    "field_id": "p1_of_the_sale_price_of_the_property_or_2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      374.4,
+      170.3,
+      571.5,
+      182.3
+    ],
+    "label_hint": "ion of................% of the sale price of the Property or"
+  },
+  {
+    "field_id": "p1_on_the_seller_s_behalf_within",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      156.8,
+      102.3,
+      228.2,
+      114.3
+    ],
+    "label_hint": "on the Seller\u2019s behalf within"
+  },
+  {
+    "field_id": "p3_cont",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      373.4,
+      269.7,
+      385.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_2",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      282.0,
+      373.4,
+      378.1,
+      385.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_3",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      390.5,
+      373.4,
+      570.4,
+      385.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_4",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      303.4,
+      269.7,
+      315.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_5",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      303.8,
+      303.4,
+      417.2,
+      315.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_6",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      426.1,
+      303.4,
+      571.5,
+      315.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_7",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      283.4,
+      269.7,
+      295.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_8",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      303.8,
+      283.4,
+      417.2,
+      295.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_9",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      426.1,
+      283.4,
+      571.5,
+      295.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_10",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      237.4,
+      269.7,
+      249.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_11",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      303.8,
+      237.4,
+      417.2,
+      249.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_12",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      426.1,
+      237.4,
+      571.5,
+      249.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_the_salesperson_broker_broker_of_record",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      197.6,
+      193.4,
+      564.8,
+      205.4
+    ],
+    "label_hint": "The Salesperson/Broker/Broker of Record"
+  },
+  {
+    "field_id": "p3_cont_13",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      158.4,
+      161.4,
+      562.5,
+      173.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_on_the",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      80.2,
+      111.4,
+      138.0,
+      123.4
+    ],
+    "label_hint": "on the \u2026\u2026"
+  },
+  {
+    "field_id": "p3_day_of",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      204.8,
+      111.4,
+      327.3,
+      123.4
+    ],
+    "label_hint": "on the \u2026\u2026......................... day of \u2026\u2026\u2026\u2026\u2026"
+  },
+  {
+    "field_id": "p3_cont_14",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      335.3,
+      111.4,
+      386.2,
+      123.4
+    ],
+    "label_hint": " \u2026\u2026\u2026\u2026\u2026.....................................................\u2026"
+  },
+  {
+    "field_id": "p3_20",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      442.2,
+      111.4,
+      555.5,
+      123.4
+    ],
+    "label_hint": "...........................\u2026......................\u2026\u2026\u2026\u2026, 20 \u2026"
+  },
+  {
+    "field_id": "p3_cont_15",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      93.4,
+      420.0,
+      105.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_16",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      427.3,
+      93.4,
+      570.3,
+      105.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_17",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      40.5,
+      71.4,
+      420.0,
+      83.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p3_cont_18",
+    "type": "text",
+    "page": 3,
+    "rect": [
+      427.3,
+      71.4,
+      570.3,
+      83.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p4_brokerage",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      93.9,
+      648.5,
+      555.0,
+      660.5
+    ],
+    "label_hint": "BROKERAGE"
+  },
+  {
+    "field_id": "p4_seller",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      73.8,
+      625.5,
+      571.5,
+      637.5
+    ],
+    "label_hint": "SELLER"
+  },
+  {
+    "field_id": "p4_property",
+    "type": "text",
+    "page": 4,
+    "rect": [
+      86.1,
+      602.5,
+      571.5,
+      614.5
+    ],
+    "label_hint": "PROPERTY"
+  }
+]

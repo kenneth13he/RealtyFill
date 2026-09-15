@@ -1,0 +1,62 @@
+[
+  {
+    "field_id": "p1_brokerage",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      98.3,
+      658.5,
+      551.7,
+      670.5
+    ],
+    "label_hint": "BROKERAGE"
+  },
+  {
+    "field_id": "p1_buyer",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      73.8,
+      635.5,
+      571.5,
+      647.5
+    ],
+    "label_hint": "BUYER"
+  },
+  {
+    "field_id": "p1_dated_the",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      75.8,
+      612.5,
+      194.0,
+      624.5
+    ],
+    "label_hint": "dated the"
+  },
+  {
+    "field_id": "p1_day_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      221.5,
+      612.5,
+      485.2,
+      624.5
+    ],
+    "label_hint": " the ................................................ day of"
+  },
+  {
+    "field_id": "p1_20",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      500.0,
+      612.5,
+      571.5,
+      624.5
+    ],
+    "label_hint": "........................................................, 20"
+  }
+]

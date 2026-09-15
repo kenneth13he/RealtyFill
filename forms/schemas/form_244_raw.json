@@ -1,0 +1,290 @@
+[
+  {
+    "field_id": "p1_property_address",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      130.4,
+      665.5,
+      571.5,
+      677.5
+    ],
+    "label_hint": "PROPERTY ADDRESS"
+  },
+  {
+    "field_id": "p1_seller",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      73.8,
+      640.5,
+      571.5,
+      652.5
+    ],
+    "label_hint": "SELLER"
+  },
+  {
+    "field_id": "p1_listing_brokerage",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      132.9,
+      618.5,
+      571.5,
+      630.5
+    ],
+    "label_hint": "LISTING BROKERAGE"
+  },
+  {
+    "field_id": "p1_mls_number_s",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      116.7,
+      595.5,
+      353.2,
+      607.5
+    ],
+    "label_hint": "MLS\u00ae NUMBER(S)"
+  },
+  {
+    "field_id": "p1_l_br_id",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      401.5,
+      595.5,
+      571.5,
+      607.5
+    ],
+    "label_hint": "................................................. L/BR ID. #"
+  },
+  {
+    "field_id": "p1_interboard_mls_number",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      161.7,
+      572.5,
+      289.9,
+      584.5
+    ],
+    "label_hint": "INTERBOARD MLS\u00ae NUMBER"
+  },
+  {
+    "field_id": "p1_board",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      327.6,
+      572.5,
+      571.5,
+      584.5
+    ],
+    "label_hint": ": .................................................... BOARD"
+  },
+  {
+    "field_id": "p1_listing_commencement_date",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      177.3,
+      549.5,
+      571.5,
+      561.5
+    ],
+    "label_hint": "LISTING COMMENCEMENT DATE"
+  },
+  {
+    "field_id": "p1_ce_of_any_written_signed_offers_prior_to",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      356.1,
+      449.5,
+      402.9,
+      461.5
+    ],
+    "label_hint": "NO CONVEYANCE OF ANY WRITTEN SIGNED OFFERS prior to"
+  },
+  {
+    "field_id": "p1_fers_prior_to_on_the",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      427.9,
+      449.5,
+      452.5,
+      461.5
+    ],
+    "label_hint": "NY WRITTEN SIGNED OFFERS prior to ................... on the"
+  },
+  {
+    "field_id": "p1_on_the_day_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      478.4,
+      449.5,
+      542.4,
+      461.5
+    ],
+    "label_hint": "OFFERS prior to ................... on the .......... day of"
+  },
+  {
+    "field_id": "p1_day_of_20",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      556.7,
+      449.5,
+      571.5,
+      461.5
+    ],
+    "label_hint": ".... on the .......... day of .........................., 20"
+  },
+  {
+    "field_id": "p1_other_directions",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      192.0,
+      412.5,
+      571.5,
+      424.5
+    ],
+    "label_hint": "OTHER DIRECTIONS"
+  },
+  {
+    "field_id": "p1_cont",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      112.5,
+      397.0,
+      570.8,
+      409.0
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_other_directions_2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      192.0,
+      370.0,
+      571.5,
+      382.0
+    ],
+    "label_hint": "OTHER DIRECTIONS"
+  },
+  {
+    "field_id": "p1_cont_2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      112.5,
+      354.5,
+      570.8,
+      366.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_3",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      175.5,
+      360.8,
+      187.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_4",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      400.5,
+      175.5,
+      570.5,
+      187.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_5",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      148.5,
+      360.8,
+      160.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_6",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      400.5,
+      148.5,
+      570.5,
+      160.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_7",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      101.5,
+      570.3,
+      113.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_8",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      74.5,
+      252.4,
+      86.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_9",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      263.9,
+      74.5,
+      384.6,
+      86.5
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_10",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      400.5,
+      74.5,
+      570.5,
+      86.5
+    ],
+    "label_hint": ""
+  }
+]

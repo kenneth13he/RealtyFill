@@ -46,6 +46,8 @@ export interface IntakeField {
   default?: string;
   derived_from?: string;
   form_specific?: FormId;
+  /** Form sets this field applies to. Absent means every set. */
+  sets?: FormSetId[];
   note?: string;
   // Computed automatically (see lib/splitFullName.ts) and never rendered as
   // its own input — exists purely so its `targets` still get filled (e.g.
@@ -58,6 +60,8 @@ export interface IntakeGroup {
   label: string;
   note?: string;
   form_specific?: FormId;
+  /** Form sets this group applies to. Absent means every set. */
+  sets?: FormSetId[];
   fields: IntakeField[];
 }
 
@@ -98,6 +102,12 @@ export const FORM_LABELS: Record<FormId, string> = {
   form_271: "Form 271 — Listing Agreement, Seller Designated Representation",
   form_291: "Form 291 — MLS® Data Information Form (Condo, Sale)",
 };
+
+// PropTx's MLS data forms (291 sale / 292 lease) are deliberately absent from
+// the sets above. They are 13-page data-entry sheets — hundreds of checkboxes
+// with max-select rules and a 99-row room table — whose content barely
+// overlaps the intake schema, and a realtor enters that data in PropTx
+// directly. Their blanks stay in forms/blank_templates/ if that changes.
 
 // ---------------------------------------------------------------------------
 // Form sets
@@ -143,10 +153,10 @@ export const FORM_SETS: Record<FormSetId, FormSet> = {
   lease_landlord: {
     id: "lease_landlord",
     label: "Condo for lease — landlord side",
-    description: "You represent the landlord. Listing agreement, MLS® data form, and lease schedule.",
+    description: "You represent the landlord. Listing agreement and lease schedule.",
     templateDir: "lease_landlord_condo",
-    formIds: ["form_272", "form_292", "form_401"],
-    ready: false,
+    formIds: ["form_272", "form_401"],
+    ready: true,
   },
   sale_buyer: {
     id: "sale_buyer",
@@ -154,15 +164,15 @@ export const FORM_SETS: Record<FormSetId, FormSet> = {
     description: "You represent the buyer. Agreement of purchase and sale, buyer representation, and offer summary.",
     templateDir: "purchase_buyer_condo",
     formIds: ["form_101", "form_303", "form_320", "form_371", "form_801"],
-    ready: false,
+    ready: true,
   },
   sale_seller: {
     id: "sale_seller",
     label: "Condo for sale — seller side",
-    description: "You represent the seller. Listing agreement, MLS® data form, and seller's direction.",
+    description: "You represent the seller. Listing agreement, seller's direction, and schedule.",
     templateDir: "sale_seller_condo",
-    formIds: ["form_203", "form_244", "form_271", "form_291"],
-    ready: false,
+    formIds: ["form_203", "form_244", "form_271"],
+    ready: true,
   },
 };
 
@@ -185,3 +195,21 @@ export function formIdsForSet(setId: FormSetId): FormId[] {
 }
 
 export const ALL_FORM_IDS: FormId[] = FORM_SET_IDS.flatMap((setId) => FORM_SETS[setId].formIds);
+
+/**
+ * Narrow the intake schema to the questions one form set actually needs.
+ *
+ * The schema covers all four sets, so without this a purchase deal would ask
+ * for rent, utilities and tenant insurance. Groups and fields with no `sets`
+ * key apply everywhere (property address, brokerage), which keeps the common
+ * ones from having to list every set.
+ */
+export function filterSchemaForSet(schema: IntakeFormSchema, setId: FormSetId): IntakeFormSchema {
+  const applies = (sets?: FormSetId[]) => !sets || sets.includes(setId);
+  return {
+    groups: schema.groups
+      .filter((g) => applies(g.sets))
+      .map((g) => ({ ...g, fields: g.fields.filter((f) => applies(f.sets)) }))
+      .filter((g) => g.fields.length > 0),
+  };
+}

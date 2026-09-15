@@ -1,0 +1,434 @@
+[
+  {
+    "field_id": "p1_buyer",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      72.9,
+      678.7,
+      570.6,
+      690.7
+    ],
+    "label_hint": "BUYER"
+  },
+  {
+    "field_id": "p1_seller",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      72.8,
+      661.7,
+      570.5,
+      673.7
+    ],
+    "label_hint": "SELLER"
+  },
+  {
+    "field_id": "p1_the_transaction_on_the_property_known_as",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      197.0,
+      644.7,
+      571.5,
+      656.7
+    ],
+    "label_hint": "For the transaction on the property known as"
+  },
+  {
+    "field_id": "p1_cont",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      58.5,
+      429.7,
+      571.0,
+      441.7
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_2",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      58.5,
+      416.7,
+      571.0,
+      428.7
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_3",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      58.5,
+      349.2,
+      571.0,
+      361.2
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_4",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      58.5,
+      336.2,
+      571.0,
+      348.2
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_in_the_amount_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      271.2,
+      196.7,
+      335.3,
+      208.7
+    ],
+    "label_hint": "in the amount of \u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026"
+  },
+  {
+    "field_id": "p1_cont_5",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      135.0,
+      162.2,
+      571.1,
+      174.2
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_6",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      135.0,
+      149.2,
+      571.1,
+      161.2
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_7",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      58.5,
+      123.7,
+      571.0,
+      135.7
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_cont_8",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      58.5,
+      110.7,
+      571.0,
+      122.7
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      40.5,
+      608.6,
+      296.8,
+      620.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_2",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      309.4,
+      608.6,
+      565.7,
+      620.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_3",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      40.5,
+      584.6,
+      296.8,
+      596.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_4",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      309.4,
+      584.6,
+      565.7,
+      596.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_tel",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      56.8,
+      563.6,
+      157.8,
+      575.6
+    ],
+    "label_hint": "Tel"
+  },
+  {
+    "field_id": "p2_fax",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      177.7,
+      563.6,
+      295.9,
+      575.6
+    ],
+    "label_hint": "Tel.: ......................................... Fax"
+  },
+  {
+    "field_id": "p2_tel_2",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      325.7,
+      563.6,
+      426.7,
+      575.6
+    ],
+    "label_hint": "Tel"
+  },
+  {
+    "field_id": "p2_fax_2",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      446.6,
+      563.6,
+      564.8,
+      575.6
+    ],
+    "label_hint": "Tel.: ......................................... Fax"
+  },
+  {
+    "field_id": "p2_cont_5",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      40.5,
+      542.6,
+      296.8,
+      554.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_6",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      309.4,
+      542.6,
+      565.7,
+      554.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_7",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      40.5,
+      521.6,
+      210.5,
+      533.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_8",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      217.9,
+      521.6,
+      296.8,
+      533.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_9",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      309.4,
+      521.6,
+      479.4,
+      533.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_10",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      486.8,
+      521.6,
+      565.7,
+      533.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_11",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      40.5,
+      497.6,
+      296.8,
+      509.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_12",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      309.4,
+      497.6,
+      565.7,
+      509.6
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_13",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      40.5,
+      326.0,
+      180.9,
+      338.0
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_14",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      190.5,
+      326.0,
+      308.8,
+      338.0
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_15",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      333.5,
+      326.0,
+      459.2,
+      338.0
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_16",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      473.5,
+      326.0,
+      569.6,
+      338.0
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_17",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      40.5,
+      303.0,
+      180.9,
+      315.0
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_18",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      190.5,
+      303.0,
+      308.8,
+      315.0
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_19",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      333.5,
+      303.0,
+      459.2,
+      315.0
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p2_cont_20",
+    "type": "text",
+    "page": 2,
+    "rect": [
+      473.5,
+      303.0,
+      569.6,
+      315.0
+    ],
+    "label_hint": ""
+  }
+]

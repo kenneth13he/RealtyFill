@@ -1,0 +1,86 @@
+[
+  {
+    "field_id": "p1_brokerage",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      96.9,
+      657.4,
+      552.8,
+      669.4
+    ],
+    "label_hint": "BROKERAGE"
+  },
+  {
+    "field_id": "p1_seller",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      72.8,
+      634.4,
+      570.5,
+      646.4
+    ],
+    "label_hint": "SELLER"
+  },
+  {
+    "field_id": "p1_for_the_property_known_as",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      132.4,
+      611.4,
+      571.0,
+      623.4
+    ],
+    "label_hint": "for the property known as"
+  },
+  {
+    "field_id": "p1_cont",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      40.5,
+      588.4,
+      222.8,
+      600.4
+    ],
+    "label_hint": ""
+  },
+  {
+    "field_id": "p1_dated_the",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      260.4,
+      588.4,
+      312.2,
+      600.4
+    ],
+    "label_hint": " dated the"
+  },
+  {
+    "field_id": "p1_dated_the_day_of",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      339.5,
+      588.4,
+      524.3,
+      600.4
+    ],
+    "label_hint": " dated the ..................... day of"
+  },
+  {
+    "field_id": "p1_20",
+    "type": "text",
+    "page": 1,
+    "rect": [
+      539.1,
+      588.4,
+      571.1,
+      600.4
+    ],
+    "label_hint": "........................................................, 20"
+  }
+]
