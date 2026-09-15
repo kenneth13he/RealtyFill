@@ -220,9 +220,16 @@ async function run(browser: Browser) {
     record("flow", "dashboard", "found no create-deal button");
   } else {
     await createButton.click();
-    await page.waitForTimeout(2500);
+    // Wait for the navigation, not a guessed duration: production is slower
+    // than localhost, and a fixed timeout silently skipped the whole
+    // review/generate half of this run on the deployed site.
+    await page.waitForURL(/\/intake/, { timeout: 45_000 }).catch(() => {});
+    await page.waitForTimeout(1200);
     currentPageName = "intake";
     await checkOverflow(page, "intake");
+    if (!page.url().includes("/intake")) {
+      record("flow", "dashboard", `create-deal did not reach intake — landed on ${new URL(page.url()).pathname}`);
+    }
   }
 
   // 4. Intake — type into the first few text inputs
@@ -236,13 +243,21 @@ async function run(browser: Browser) {
     await checkOverflow(page, "intake (filled)");
 
     const cont = page.locator("button", { hasText: /continue|review|save/i }).first();
-    if ((await cont.count()) > 0) {
+    if ((await cont.count()) === 0) {
+      record("flow", "intake", "no continue/review button found");
+    } else {
       await cont.click();
-      await page.waitForTimeout(2500);
+      await page.waitForURL(/\/review/, { timeout: 45_000 }).catch(() => {});
+      await page.waitForTimeout(1200);
     }
+  } else {
+    record("flow", "intake", `skipped — not on an intake page (${new URL(page.url()).pathname})`);
   }
 
   // 5. Review + generate
+  if (!page.url().includes("/review")) {
+    record("flow", "review", `skipped — never reached review (on ${new URL(page.url()).pathname})`);
+  }
   if (page.url().includes("/review")) {
     currentPageName = "review";
     await checkOverflow(page, "review");
@@ -379,9 +394,12 @@ async function main() {
   if (blocking === 0 && by("a11y").length === 0) {
     console.log("No CSP violations, console errors, overflow or missing focus rings.\n");
   }
+  const enforcing = !/Report-Only/i.test(
+    fs.readFileSync(path.join(process.cwd(), "next.config.ts"), "utf8").match(/const CSP_HEADER = "(.+)"/)?.[1] ?? ""
+  );
   console.log(
     by("csp").length === 0
-      ? "CSP: clean on this run — safe to set CSP_HEADER to \"Content-Security-Policy\" once mobile passes too."
+      ? `CSP: clean on this run (policy is ${enforcing ? "ENFORCING" : "report-only — flip CSP_HEADER once mobile passes too"}).`
       : `CSP: ${by("csp").length} violation(s) — fix the page, don't widen the policy.`
   );
   process.exit(blocking > 0 ? 1 : 0);

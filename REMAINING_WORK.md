@@ -206,10 +206,27 @@ Doing this properly needs a real notion of which fields are genuinely
 required *per form*, which doesn't exist in `intake_form_schema.json` today
 and overlaps with the item 9 audit. Worth revisiting together with that.
 
-### 11. ❌ Nothing has been verified in an actual browser
-Every test so far has been HTTP-level (curl + pypdf). Nobody has clicked
-through the real UI. Buttons, layout, the PDF preview iframe, mobile
-rendering — all unverified visually. **Do this before handing it to anyone.**
+### 11. 🟡 Browser verification — automated, one gap left
+`npx tsx scripts/browser_check.ts` drives Chromium through the real flow:
+sign in → create deal → fill intake → generate all five forms → expand a
+preview → delete the deal → settings → support → admin. Add `--mobile` for a
+375px iPhone SE viewport, `--url https://realtyfill.vercel.app` for
+production, `--headed --slow` to watch it.
+
+It reports what a person has to catch by eye: CSP violations and console
+errors per page, horizontal overflow (measured, not eyeballed), and focus
+rings checked by tabbing and reading computed styles.
+
+**Clean on all four combinations** — localhost and production, desktop and
+mobile — with the CSP enforcing. Generation completing on production is the
+notable one: that is the `pdf-service` sidecar confirmed working end to end
+in a real browser, not just by HTTP.
+
+**Still a real gap: nobody has opened it on an actual iPhone.** iOS Safari
+refuses to render PDFs in an iframe in ways no emulator reproduces, and the
+preview is exactly where that bites. The mobile fallback (`hidden sm:block`
+plus an "Open in new tab" link) is asserted to be the visible one at 375px,
+but asserted in Chromium, which is not the browser that has the problem.
 
 ---
 
@@ -305,10 +322,15 @@ on purpose. A slightly-wrong CSP doesn't degrade, it blanks the page, and
 nobody has clicked through this app in a browser yet (item 11). Report-only
 logs violations to the console and blocks nothing.
 
-**To finish:** open the site with devtools, sign in, run an intake, generate,
-preview a PDF. If the console reports no CSP violations, change `CSP_HEADER`
-in `next.config.ts` to `"Content-Security-Policy"` and it starts enforcing.
-Until then it is documentation, not protection.
+**Done.** `CSP_HEADER` is now `"Content-Security-Policy"` — enforcing, in
+production. Confirmed by running the browser pass again with it on rather
+than by reasoning about it: the PDF preview iframe still loads (frame-src
+covers the Supabase signed URL) and nothing else is blocked.
+
+One change while verifying: `upgrade-insecure-requests` is production-only
+now. It does nothing in a Report-Only policy — Chromium logs a notice saying
+so on every page load, which was the only "violation" the first run found —
+and it has no place in a local http dev server once enforcing.
 
 ---
 
