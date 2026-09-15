@@ -14,6 +14,7 @@ import { safeRedirectTarget } from "@/lib/safeRedirect";
 import { clientIpFrom } from "@/lib/clientIp";
 import { logError } from "@/lib/logger";
 import { checkPassword } from "@/lib/passwordPolicy";
+import { authCallbackUrl } from "@/lib/siteOrigin";
 
 // Both helpers below used to be defined here. They moved to lib/ because
 // app/auth/callback/route.ts needed the redirect guard too and never had it —
@@ -36,7 +37,7 @@ export async function signInWithGoogle(formData: FormData) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`,
+      redirectTo: await authCallbackUrl(redirectTo),
     },
   });
 
@@ -97,7 +98,7 @@ export async function signUp(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`,
+      emailRedirectTo: await authCallbackUrl(redirectTo),
     },
   });
   if (error) {
@@ -130,7 +131,7 @@ export async function requestPasswordReset(formData: FormData) {
 
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?redirectTo=${encodeURIComponent("/reset-password")}`,
+    redirectTo: await authCallbackUrl("/reset-password"),
   });
   redirect(done);
 }
