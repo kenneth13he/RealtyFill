@@ -1,0 +1,39 @@
+# .github/dependabot.yml
+# Both ecosystems, because the audit that prompted this found the Node tree
+# clean and the Python tree never checked at all.
+#
+# Note the two separate pip entries: requirements.txt (the Docker/Render path)
+# and pdf-service/requirements.txt (the Vercel service) are different files
+# and Dependabot treats each directory independently.
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    # Security fixes always open a PR regardless of this grouping; grouping
+    # only keeps routine version bumps from becoming a stream of PRs.
+    groups:
+      all-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: pip
+    directory: "/pdf-service"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly

@@ -15,7 +15,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <Header width="wide" />
+      <Header />
       <main className="mx-auto max-w-5xl px-6 py-12">
         <h1 className="text-4xl font-semibold tracking-tight text-[var(--color-text)]">Your deals</h1>
         <p className="mt-2 text-[var(--color-text-muted)]">Create a new deal or pick up where you left off.</p>

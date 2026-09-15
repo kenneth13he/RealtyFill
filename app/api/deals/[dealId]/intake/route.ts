@@ -11,6 +11,7 @@
 // defense, and don't rely on the app-level check alone either.
 
 import { NextResponse } from "next/server";
+import { isSameOrigin, crossOriginRefusal } from "@/lib/sameOrigin";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnedDeal } from "@/lib/supabase/getOwnedDeal";
 import { validateAnswers, InputTooLargeError } from "@/lib/inputLimits";
@@ -36,6 +37,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ dea
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ dealId: string }> }) {
+  // Defence in depth behind the SameSite=Lax session cookie — see
+  // lib/sameOrigin.ts for why a missing Origin is refused too.
+  if (!isSameOrigin(request)) return crossOriginRefusal();
   const { dealId } = await params;
   const body = await request.json().catch(() => null);
 

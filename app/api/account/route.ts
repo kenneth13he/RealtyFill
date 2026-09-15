@@ -11,11 +11,15 @@
 // clean them up.
 
 import { NextResponse } from "next/server";
+import { isSameOrigin, crossOriginRefusal } from "@/lib/sameOrigin";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logError, userFacingError } from "@/lib/logger";
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
+  // Defence in depth behind the SameSite=Lax session cookie — see
+  // lib/sameOrigin.ts for why a missing Origin is refused too.
+  if (!isSameOrigin(request)) return crossOriginRefusal();
   const supabase = await createClient();
   const {
     data: { user },

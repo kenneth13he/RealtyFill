@@ -6,7 +6,18 @@
 # works on Render, Railway, Fly.io, or a plain VM without further code
 # changes to lib/pdfFill.ts's own Python-candidate probing.
 
-FROM node:20-slim
+# Pinned by digest, not just by tag. A bare "node:24-slim" resolves to
+# different content on every rebuild, so the image that passed testing is not
+# necessarily the image that ships. The digest below is node:24-slim as of
+# 2026-09-15; bump it deliberately, and re-run `npm run build` plus
+# `npm run test:py` against the new image when you do.
+#
+# Was node:20-slim. Node 20 reached end-of-life on 2026-04-30 (per the Node
+# release schedule), so it no longer receives security patches — neither the
+# runtime nor the Debian base layer underneath it. Node 24 is the current LTS
+# and is supported until 2028-04-30. Next 16 requires >=20.9.0, so this is
+# comfortably inside what the framework asks for.
+FROM node:24-slim@sha256:2fe369e969550cde8e867afc3fe370b260140cab4a23d467074295b42163d553
 
 # python3-pip on Debian bookworm+ marks the system Python as "externally
 # managed" (PEP 668) and refuses a bare `pip install`. This container is

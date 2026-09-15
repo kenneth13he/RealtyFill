@@ -27,14 +27,9 @@ function steps(dealId: string) {
 export default async function Header({
   active,
   dealId,
-  width = "narrow",
 }: {
   active?: "intake" | "review";
   dealId?: string;
-  /** Match the page's own content column so the wordmark lines up with the
-      page heading. Form pages are a narrow reading column; the dashboard is
-      a wider grid. */
-  width?: "narrow" | "wide";
 }) {
   const supabase = await createClient();
   const {
@@ -43,12 +38,12 @@ export default async function Header({
 
   return (
     <header className="bg-[var(--brand-deep)]">
-      <div
-        className={
-          "mx-auto flex flex-wrap items-center justify-between gap-y-3 px-6 py-4 " +
-          (width === "wide" ? "max-w-5xl" : "max-w-3xl")
-        }
-      >
+      {/* One width on every signed-in page. This used to match each page's own
+          content column (max-w-3xl on the form pages, max-w-5xl on the
+          dashboard) so the wordmark lined up with the page heading — but that
+          made the bar itself move when navigating between them. Global chrome
+          holding still beats per-page heading alignment. */}
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-y-3 px-6 py-4">
         <div className="flex items-center gap-4">
           <Link href="/" className="text-xl">
             <Wordmark tone="dark" />

@@ -8,6 +8,7 @@
 import Link from "next/link";
 import Wordmark from "@/components/Wordmark";
 import { signIn, signUp, signInWithGoogle, requestPasswordReset } from "./actions";
+import { MIN_PASSWORD_LENGTH } from "@/lib/passwordPolicy";
 
 export default async function LoginPage({
   searchParams,
@@ -126,7 +127,7 @@ export default async function LoginPage({
             name="password"
             type="password"
             required
-            minLength={6}
+            minLength={MIN_PASSWORD_LENGTH}
             autoComplete={isSignup ? "new-password" : "current-password"}
             className="w-full rounded-md border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)] shadow-sm outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
           />

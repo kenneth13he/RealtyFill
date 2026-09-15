@@ -1,0 +1,89 @@
+# .github/workflows/ci.yml
+# The checks that were previously only ever run by hand.
+#
+# `audit` is the security-relevant half: npm audit covers the Node tree, and
+# pip-audit covers the Python one, which nothing had ever looked at. They run
+# as a separate job from the build so a newly-published advisory shows up as
+# its own red check rather than being mistaken for a broken build.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Advisories are published against code that hasn't changed, so a repo with
+  # no commits this week can still become vulnerable. Monday 08:00 UTC.
+  schedule:
+    - cron: "0 8 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        run: npx tsx --test tests/*.test.ts
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Python tests
+        run: |
+          pip install -r pdf-service/requirements.txt
+          python -m unittest discover -s pdf-service -p "test_*.py"
+
+      - name: Build
+        # A build needs these present, not correct — Next inlines NEXT_PUBLIC_*
+        # at build time and lib/env.ts throws on a missing one. They are
+        # obvious placeholders so nothing here can be mistaken for a real
+        # credential.
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          NEXT_PUBLIC_SITE_URL: https://example.invalid
+        run: npm run build
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: npm audit
+        # Production dependencies are what ships; a dev-only advisory
+        # shouldn't block a deploy, so it is reported without failing.
+        run: |
+          npm audit --omit=dev --audit-level=high
+          npm audit --audit-level=high || echo "::warning::advisory in dev dependencies — review, not blocking"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: pip-audit
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+          pip-audit -r pdf-service/requirements.txt

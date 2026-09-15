@@ -10,20 +10,17 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { safeRedirectTarget } from "@/lib/safeRedirect";
+import { clientIpFrom } from "@/lib/clientIp";
+import { logError } from "@/lib/logger";
+import { checkPassword } from "@/lib/passwordPolicy";
 
-function safeRedirectTarget(raw: FormDataEntryValue | null): string {
-  const value = typeof raw === "string" ? raw : "";
-  // Only ever redirect within this app — never follow an absolute/external URL.
-  return value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
-}
-
-// Best-effort client IP: trusts the first hop's x-forwarded-for, which is
-// fine once Step 9 puts a real reverse proxy/host in front of this (it sets
-// that header itself) — in local dev without one, everything just shares a
-// single "unknown" bucket, which is an acceptable dev-only limitation.
+// Both helpers below used to be defined here. They moved to lib/ because
+// app/auth/callback/route.ts needed the redirect guard too and never had it —
+// that gap was a live open redirect. See lib/safeRedirect.ts and
+// lib/clientIp.ts for why each is shaped the way it is.
 async function clientIp(): Promise<string> {
-  const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  return clientIpFrom(await headers());
 }
 
 // Google sign-in/sign-up (same action for both — OAuth creates the account
@@ -66,7 +63,16 @@ export async function signIn(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}&redirectTo=${encodeURIComponent(redirectTo)}`);
+    // Deliberately one message for every failure mode. Supabase distinguishes
+    // "Invalid login credentials" from "Email not confirmed", and forwarding
+    // that difference told an anonymous caller which addresses have accounts
+    // here. The real reason still goes to the logs, where debugging it doesn't
+    // cost the user's privacy — the same stance requestPasswordReset already
+    // takes below.
+    logError({ route: "signin", reason: error.message }, error);
+    redirect(
+      `/login?error=${encodeURIComponent("That email and password don't match an account.")}&redirectTo=${encodeURIComponent(redirectTo)}`
+    );
   }
   redirect(redirectTo);
 }
@@ -80,6 +86,11 @@ export async function signUp(formData: FormData) {
 
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
+
+  const weak = checkPassword(password);
+  if (weak) {
+    redirect(`/login?mode=signup&error=${encodeURIComponent(weak)}&redirectTo=${encodeURIComponent(redirectTo)}`);
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -128,8 +139,9 @@ export async function requestPasswordReset(formData: FormData) {
 // /auth/callback — without it there's nobody to update, hence the auth check.
 export async function updatePassword(formData: FormData) {
   const password = String(formData.get("password") ?? "");
-  if (password.length < 6) {
-    redirect(`/reset-password?error=${encodeURIComponent("Password must be at least 6 characters.")}`);
+  const weak = checkPassword(password);
+  if (weak) {
+    redirect(`/reset-password?error=${encodeURIComponent(weak)}`);
   }
 
   const supabase = await createClient();

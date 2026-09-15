@@ -6,6 +6,7 @@
 // brokerage fields.
 
 import { NextResponse } from "next/server";
+import { isSameOrigin, crossOriginRefusal } from "@/lib/sameOrigin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
@@ -27,6 +28,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // Defence in depth behind the SameSite=Lax session cookie — see
+  // lib/sameOrigin.ts for why a missing Origin is refused too.
+  if (!isSameOrigin(request)) return crossOriginRefusal();
   const body = await request.json().catch(() => ({}));
   const fields = ["full_name", "phone", "brokerage_name", "brokerage_address"] as const;
   const update: Record<string, string> = {};

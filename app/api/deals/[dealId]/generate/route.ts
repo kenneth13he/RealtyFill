@@ -17,6 +17,7 @@
 // here, so every caller of the mapper gets this for free.
 
 import { NextResponse } from "next/server";
+import { isSameOrigin, crossOriginRefusal } from "@/lib/sameOrigin";
 import fs from "fs/promises";
 import os from "os";
 import path from "path";
@@ -38,6 +39,9 @@ export const maxDuration = 120;
 const TEMPLATES_DIR = path.join(process.cwd(), "forms", "blank_templates");
 
 export async function POST(request: Request, { params }: { params: Promise<{ dealId: string }> }) {
+  // Defence in depth behind the SameSite=Lax session cookie — see
+  // lib/sameOrigin.ts for why a missing Origin is refused too.
+  if (!isSameOrigin(request)) return crossOriginRefusal();
   const { dealId } = await params;
   const body = await request.json();
   const selectedForms: FormId[] = Array.isArray(body?.selectedForms) ? body.selectedForms : [];
